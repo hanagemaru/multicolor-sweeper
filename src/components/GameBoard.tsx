@@ -40,7 +40,7 @@ function Clue({ cell, colorCount }: { cell: Cell; colorCount: 3 | 4 }): React.JS
   return (
     <span className={`clue clue-${colorCount}`} aria-label={`周囲の爆弾 ${cell.adjacentCounts.join(",")}`}>
       {cell.adjacentCounts.map((count, color) => (
-        <span key={color} style={{ color: COLORS[color].hex }}>{count}</span>
+        <span key={color} style={{ color: COLORS[color].hex }}>{count === 0 ? "" : count}</span>
       ))}
     </span>
   );
@@ -104,7 +104,10 @@ export function GameBoard({
       className="board"
       role="grid"
       aria-label={`${GRID_SIZE}×${GRID_SIZE} マインスイーパー盤面`}
-      style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)` }}
+      style={{
+        gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+        gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`
+      }}
     >
       {board.cells.flat().map((cell) => (
         <button
