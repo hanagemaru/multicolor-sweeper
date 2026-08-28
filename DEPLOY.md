@@ -9,10 +9,12 @@
 Cloudflareアカウントがまだ無い場合は、この順で進める。
 
 1. Cloudflareに登録する（無料プランで足りる）
-2. `hanage.app` をCloudflareに追加する
-   - サブドメイン `mcsweeper.hanage.app` だけを使う段階では、既存DNSのまま該当サブドメインのCNAMEをWorkerへ向ける形でも動く
-   - ただしapex（`hanage.app` 自体）をCloudflareに載せる段階では、ネームサーバーごとCloudflareへ移す必要がある。他プロダクトも移すなら最初からゾーンごと移したほうが後戻りが少ない
-3. ローカルから初回デプロイする
+2. まず `*.workers.dev` の暫定URLで動作確認する（独自ドメインより先にここまで到達できる）
+3. `hanage.app` をCloudflareにゾーンとして追加し、ネームサーバーをCloudflareへ向ける
+   - Workersのカスタムドメインは、対象ゾーンがCloudflare上で有効になっている必要がある。
+     外部DNSからCNAMEをWorkerへ向ける方法は使えない
+   - ネームサーバーを移す際、既存の `hanage.app`（Netlify配信）のDNSレコードもCloudflare側へ移設すればそのまま動く
+4. ローカルから初回デプロイする
 
    ```
    npm ci
@@ -21,7 +23,7 @@ Cloudflareアカウントがまだ無い場合は、この順で進める。
    npm run deploy
    ```
 
-4. Cloudflareダッシュボードの Workers & Pages → `multicolor-sweeper` → Settings → Domains & Routes で
+5. Cloudflareダッシュボードの Workers & Pages → `multicolor-sweeper` → Settings → Domains & Routes で
    カスタムドメイン `mcsweeper.hanage.app` を追加する
 
 ## 以降のデプロイ
