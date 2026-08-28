@@ -76,9 +76,16 @@
 ## 技術構成
 
 - React / Vite / TypeScript
-- PWA（生成Service Worker）
+- PWA（生成Service Worker、manifest、maskable含むPNGアイコン一式）
 - 盤面生成・Solverはmodule Web Worker
-- Cloudflare Pagesを第一候補とし、静的成果物は `dist/` に出力
+
+## 配信
+
+- 配信先は Cloudflare Workers（Static Assets）。静的成果物は `dist/` に出力し、`wrangler.jsonc` がそのまま配る
+- 公開URLは `https://mcsweeper.hanage.app/`
+- hanage-hub の方針どおり製品ごとに独立したサブドメインを持ち、ハブ側には紹介ページのみを置いて別タブで開く
+- 専用ドメイン前提のため Vite の `base` と manifest の `start_url` / `scope` はいずれも `/`。サブパス配信にするとService Workerのscopeとアセットの絶対パスが崩れる
+- ヘッダーは `public/_headers` で指定（manifestのContent-Type、`X-Frame-Options` 等）
 
 ## 今回の対象外
 

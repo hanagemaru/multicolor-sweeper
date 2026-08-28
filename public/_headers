@@ -1,0 +1,15 @@
+# Cloudflare Workers (Static Assets) が読み込むヘッダー設定。
+# dist/ 直下へコピーされ、配信時に適用される。
+# HTMLの Cache-Control は既定で must-revalidate になるため、ここでは指定しない。
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+
+# Service Workerが長期キャッシュされると更新が届かなくなる。
+/sw.js
+  Cache-Control: no-cache
