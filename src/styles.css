@@ -259,10 +259,6 @@ legend {
   text-shadow: 1px 1px 0 #05060b;
 }
 
-.clue-3 span:last-child {
-  grid-column: 1 / 3;
-}
-
 .flag {
   position: relative;
   display: block;
