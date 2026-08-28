@@ -1,0 +1,13 @@
+MaruMonica
+x12y16pxMaruMonica, Version 2025-09-03
+Copyright (c) 2021-2025 hicc / 患者長ひっく
+Source and license: https://hicchicc.github.io/00ff/
+The distributor permits use, embedding, modification, and redistribution under
+the original license shown on the source page. The font itself may not be sold.
+
+VT323
+Copyright 2011 The VT323 Project Authors
+Source: https://github.com/phoikoi/VT323
+License: SIL Open Font License 1.1
+The packaged font is provided by @fontsource/vt323.
+The full license text is included as VT323-OFL.txt.
