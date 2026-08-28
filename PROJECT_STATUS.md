@@ -1,6 +1,6 @@
 # Project Status
 
-最終更新: 2026-08-27
+最終更新: 2026-08-28
 
 ## 現在地
 
@@ -14,6 +14,9 @@
 - MaruMonica、VT323とライセンス表記を収録済み
 - Seed再現性、条件C、Solver soundness、Worker非同期境界を自動テスト済み
 - 製品版Repoへ初回実装をPR #1として提出済み
+- PWAアイコン一式（192/512、maskable、apple-touch-icon 180）を `scripts/generate-icons.mjs` から生成済み
+- iOS向けメタとmanifestの `id` / `scope` / `start_url` を整備済み
+- Cloudflare Workers（Static Assets）向けの `wrangler.jsonc` と `public/_headers` を追加済み
 
 ## 検証結果
 
@@ -21,6 +24,7 @@
 - `npm test`: 20テスト成功
 - `npm run build`: 成功
 - PWA Service Worker、Web Worker、manifestをproduction buildで生成確認済み
+- production buildでmanifestの `start_url` / `scope` / `id` が `/`、PNGアイコン4種が出力されることを確認済み
 
 ## 確定事項
 
@@ -28,15 +32,18 @@
 - Chordは混合判定（旗総数一致＋各色旗が色Clue以下。無色旗が残り色を補完）
 - 生成中表示の開始閾値は120ms
 - タイマーはWorker生成完了・初手開封後に開始
-- Cloudflare Pagesをホスティング第一候補とする
+- 配信先は Cloudflare Workers（Static Assets）
+- 公開URLは `https://mcsweeper.hanage.app/`
+- ハブサイトには紹介ページのみを置き、ゲーム本体は独立サブドメインで配信する
 
 ## 残課題
 
 - PR #1のGitHub Actions結果確認、レビュー、mainへのマージ
+- Cloudflareアカウント登録と初回デプロイ（手順は `DEPLOY.md`）
+- hanage-hub側に `/games/multicolor-sweeper/` 紹介ページと `src/lib/site.ts` のエントリを追加（別Repo）
 - iPhone実機で25爆弾の生成時間、120ms表示、スワイプ方向固定を確認
 - 完成デザインと画面遷移を設計・実装
 - 6部門ランキングのバックエンド、認証、不正対策を決定
-- PWA用PNGアイコンとストア/ホーム画面向け最終アセットを作成
 - アクセシビリティと端末別タッチ操作の追加QA
 
 ## 次セッション候補

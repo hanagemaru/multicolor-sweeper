@@ -2,18 +2,27 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
 
+// mcsweeper.hanage.app 専用ドメインに配信するため base は "/" 固定。
+// サブパス配信にするとService Workerのscopeとアセットの絶対パスが崩れる。
 export default defineConfig({
+  base: "/",
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
         "icon.svg",
+        "apple-touch-icon.png",
+        "icons/icon-192.png",
+        "icons/icon-512.png",
+        "icons/maskable-192.png",
+        "icons/maskable-512.png",
         "fonts/marumonica.woff2",
         "fonts/FONT-NOTICES.txt",
         "fonts/VT323-OFL.txt"
       ],
       manifest: {
+        id: "/",
         name: "Multicolor Sweeper",
         short_name: "MCSweeper",
         description: "3色・4色のNo-Guessマインスイーパー",
@@ -21,19 +30,44 @@ export default defineConfig({
         background_color: "#15182b",
         display: "standalone",
         orientation: "portrait",
-        start_url: ".",
+        start_url: "/",
+        scope: "/",
         lang: "ja",
         icons: [
           {
-            src: "icon.svg",
+            src: "/icons/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any"
+          },
+          {
+            src: "/icons/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any"
+          },
+          {
+            src: "/icons/maskable-192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable"
+          },
+          {
+            src: "/icons/maskable-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable"
+          },
+          {
+            src: "/icon.svg",
             sizes: "any",
             type: "image/svg+xml",
-            purpose: "any maskable"
+            purpose: "any"
           }
         ]
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,woff2,txt}"]
+        globPatterns: ["**/*.{js,css,html,woff2,txt,png,svg}"]
       }
     })
   ],

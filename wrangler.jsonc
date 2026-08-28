@@ -1,0 +1,19 @@
+{
+  // Cloudflare Workers (Static Assets) で mcsweeper.hanage.app に配信する。
+  // Workerスクリプト（main）は持たず、dist/ をそのまま配る静的アセット専用Worker。
+  //
+  //   npm run build && npm run deploy
+  //
+  // 初回のみ Cloudflare ダッシュボードで独自ドメインを割り当てる。手順は DEPLOY.md を参照。
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "multicolor-sweeper",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    // 単一ページのため、存在しないパスはindex.htmlへ寄せずそのまま404を返す。
+    "not_found_handling": "none"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
