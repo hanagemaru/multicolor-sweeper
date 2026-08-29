@@ -1,32 +1,46 @@
 import { COLORS } from "../game/rules";
 import type { MineColor } from "../game/types";
 
-// 16x16のドット絵。1文字が1ドット。
-//   . 透明 / o 輪郭 / b 本体 / d 陰 / h ハイライト / f 導火線 / s 火花
-// 本体・陰・ハイライトは爆弾の色から算出するので、4色ぶんの図案は要らない。
-// 💣のシルエットを参考に、本体は左右対称に近い丸形、導火線は短く右上へ伸ばす。
+// 15x21のドット絵。1文字が1ドット。元絵(docs/art/bomb.png)のピクセルをそのまま写している。
+//   . 透明 / o 輪郭 / b 本体 / h 強ハイライト / m 弱ハイライト / c 口金
+//   f 導火線(明) / g 導火線(暗) / s 炎 / S 炎(黄) / W 炎の芯
+// 本体まわりの3階調は爆弾の色から算出するので、4色ぶんの図案は要らない。
+// 元絵が15x21なので枠もそれに合わせる。幅が奇数だと中央の列(x=7)が実在するため、
+// 丸い本体の輪郭が左右対称にきれいに閉じる。
 const SPRITE = [
-  "...........s....",
-  "..........sss...",
-  "...........s....",
-  "..........ff....",
-  ".........ff.....",
-  ".......oooo.....",
-  ".....ohhbbo.....",
-  "....ohhbbbbo....",
-  "...ohbbbbbbbbo..",
-  "..obbbbbbbbbdo..",
-  "..obbbbbbbbbdo..",
-  "..obbbbbbbbddo..",
-  "..obbbbbbbbddo..",
-  "...obbbbbbbddo..",
-  "....obbbbbddo...",
-  ".....oooooo....."
+  "...........s...",
+  "..........sSs..",
+  ".........sSWSs.",
+  ".........fsSs..",
+  "........fg.s...",
+  ".......fg......",
+  ".....oogoo.....",
+  "...ooocccooo...",
+  "..obbboooobbo..",
+  ".obbhbbbbbbbbo.",
+  ".obhhmbbbbbbbo.",
+  "obbhmbbbbbbbbbo",
+  "obbbbbbbbbbbbbo",
+  "obbbbbbbbbbbbbo",
+  "obbbbbbbbbbbbbo",
+  "obbbbbbbbbbbbbo",
+  ".obbbbbbbbbbbo.",
+  ".obbbbbbbbbbbo.",
+  "..obbbbbbbbbo..",
+  "...oobbbbboo...",
+  ".....ooooo....."
 ];
 
+const SPRITE_WIDTH = 15;
+const SPRITE_HEIGHT = 21;
+
 const OUTLINE = "#0b0d18";
-const FUSE = "#8c8f9e";
-const SPARK = "#ffe9a8";
+const CAP = "#41404a";
+const FUSE_LIGHT = "#c8a16b";
+const FUSE_DARK = "#8d6c4b";
+const FLAME = "#f96b04";
+const FLAME_MID = "#fed406";
+const FLAME_CORE = "#fefc0c";
 
 function mix(hex: string, target: number, ratio: number): string {
   const value = Number.parseInt(hex.slice(1), 16);
@@ -41,10 +55,14 @@ function paletteFor(hex: string): Record<string, string> {
   return {
     o: OUTLINE,
     b: hex,
-    d: mix(hex, 0, 0.35),
     h: mix(hex, 255, 0.55),
-    f: FUSE,
-    s: SPARK
+    m: mix(hex, 255, 0.26),
+    c: CAP,
+    f: FUSE_LIGHT,
+    g: FUSE_DARK,
+    s: FLAME,
+    S: FLAME_MID,
+    W: FLAME_CORE
   };
 }
 
@@ -73,7 +91,7 @@ export function BombIcon({ color }: { color: MineColor }): React.JSX.Element {
   return (
     <svg
       className="bomb"
-      viewBox="0 0 16 16"
+      viewBox={`0 0 ${SPRITE_WIDTH} ${SPRITE_HEIGHT}`}
       shapeRendering="crispEdges"
       aria-label={`${COLORS[color].label}の爆弾`}
       role="img"

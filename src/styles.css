@@ -302,10 +302,12 @@ legend {
   filter: drop-shadow(1px 1px 0 #111426);
 }
 
+/* ドット絵が15x21の縦長なので、高さを基準にして幅は縦横比に任せる。
+   width/heightを両方指定すると正方形の枠に収まるぶん横が痩せる。 */
 .bomb {
   display: block;
-  width: 78%;
-  height: 78%;
+  width: auto;
+  height: 82%;
 }
 
 /* 答え合わせで、爆弾でないマスに立っていた旗。 */
