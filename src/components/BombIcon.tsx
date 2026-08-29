@@ -1,4 +1,5 @@
 import { COLORS } from "../game/rules";
+import { spriteRects } from "./pixel-art";
 import type { MineColor } from "../game/types";
 
 // 11x17のドット絵。1文字が1ドット。元絵(docs/art/bomb-v2.png)のピクセルをそのまま写している。
@@ -46,26 +47,6 @@ function paletteFor(hex: string): Record<string, string> {
   };
 }
 
-// 同じ色が横に続くぶんは1つの矩形にまとめる。
-function rects(palette: Record<string, string>): React.JSX.Element[] {
-  const out: React.JSX.Element[] = [];
-  SPRITE.forEach((row, y) => {
-    let x = 0;
-    while (x < row.length) {
-      const slot = row[x];
-      let width = 1;
-      while (x + width < row.length && row[x + width] === slot) width += 1;
-      if (slot !== ".") {
-        out.push(
-          <rect key={`${x}-${y}`} x={x} y={y} width={width} height={1} fill={palette[slot]} />
-        );
-      }
-      x += width;
-    }
-  });
-  return out;
-}
-
 export function BombIcon({ color }: { color: MineColor }): React.JSX.Element {
   const hex = COLORS[color].hex;
   return (
@@ -76,7 +57,7 @@ export function BombIcon({ color }: { color: MineColor }): React.JSX.Element {
       aria-label={`${COLORS[color].label}の爆弾`}
       role="img"
     >
-      {rects(paletteFor(hex))}
+      {spriteRects(SPRITE, paletteFor(hex))}
     </svg>
   );
 }
