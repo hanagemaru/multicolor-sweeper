@@ -271,6 +271,19 @@ export function mineColorCounts(board: Board): number[] {
   return counts;
 }
 
+// 決着後の答え合わせで、そのマスに何を描くか。
+// 盤面データは書き換えず、描画側だけで答え合わせを表現するための判定。
+export type ReviewMark = "mine" | "correct-flag" | "wrong-flag" | null;
+
+export function reviewMark(cell: Cell): ReviewMark {
+  if (cell.state !== "hidden") return null;
+  if (cell.mineColor !== null) {
+    // 無色旗は色を当てたわけではないので、正解扱いにはしない。
+    return cell.flag === cell.mineColor ? "correct-flag" : "mine";
+  }
+  return cell.flag !== null ? "wrong-flag" : null;
+}
+
 export function flagColorHex(flag: FlagColor): string {
   if (flag === "neutral") return NEUTRAL_FLAG_HEX;
   return COLORS[flag as MineColor].hex;

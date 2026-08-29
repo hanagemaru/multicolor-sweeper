@@ -1,11 +1,14 @@
 import { useRef } from "react";
 import { COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
-import { flagColorHex, totalAdjacent } from "../game/game-core";
+import { flagColorHex, reviewMark, totalAdjacent } from "../game/game-core";
+import { BombIcon, WrongMark } from "./BombIcon";
 import type { Board, Cell, FlagColor } from "../game/types";
 
 interface GameBoardProps {
   board: Board;
   interactive: boolean;
+  // 決着後、伏せたままのマスに答えを描く。
+  review: boolean;
   awaitingFirst: boolean;
   onOpen: (row: number, col: number) => void;
   onFlag: (row: number, col: number, flag: FlagColor) => void;
@@ -46,11 +49,31 @@ function Clue({ cell, colorCount }: { cell: Cell; colorCount: 3 | 4 }): React.JS
   );
 }
 
-function CellFace({ cell, colorCount }: { cell: Cell; colorCount: 3 | 4 }): React.JSX.Element | null {
-  if (cell.state === "exploded") {
-    return <span className="mine mine-exploded" style={{ color: COLORS[cell.mineColor ?? 0].hex }}>✦</span>;
-  }
+function CellFace({
+  cell,
+  colorCount,
+  review
+}: {
+  cell: Cell;
+  colorCount: 3 | 4;
+  review: boolean;
+}): React.JSX.Element | null {
+  if (cell.state === "exploded") return <BombIcon color={cell.mineColor ?? 0} />;
   if (cell.state === "revealed") return <Clue cell={cell} colorCount={colorCount} />;
+
+  if (review) {
+    const mark = reviewMark(cell);
+    if (mark === "mine") return <BombIcon color={cell.mineColor ?? 0} />;
+    if (mark === "wrong-flag") {
+      return (
+        <span className="flag-wrong">
+          <Flag flag={cell.flag ?? "neutral"} />
+          <WrongMark />
+        </span>
+      );
+    }
+  }
+
   if (cell.flag !== null) return <Flag flag={cell.flag} />;
   return null;
 }
@@ -58,6 +81,7 @@ function CellFace({ cell, colorCount }: { cell: Cell; colorCount: 3 | 4 }): Reac
 export function GameBoard({
   board,
   interactive,
+  review,
   awaitingFirst,
   onOpen,
   onFlag
@@ -114,7 +138,9 @@ export function GameBoard({
           key={`${cell.row}-${cell.col}`}
           type="button"
           role="gridcell"
-          className={`cell cell-${cell.state}`}
+          className={`cell cell-${cell.state}${
+            review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
+          }`}
           disabled={!interactive}
           aria-label={`${cell.row + 1}行${cell.col + 1}列`}
           onPointerDown={(event) => handlePointerDown(event, cell)}
@@ -126,7 +152,7 @@ export function GameBoard({
           }}
           onContextMenu={(event) => event.preventDefault()}
         >
-          <CellFace cell={cell} colorCount={board.colorCount} />
+          <CellFace cell={cell} colorCount={board.colorCount} review={review} />
         </button>
       ))}
     </div>

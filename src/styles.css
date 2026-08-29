@@ -302,10 +302,39 @@ legend {
   filter: drop-shadow(1px 1px 0 #111426);
 }
 
-.mine {
-  font-family: "VT323", monospace;
-  font-size: clamp(24px, 7vw, 38px);
-  text-shadow: 2px 2px 0 #080910;
+.bomb {
+  display: block;
+  width: 78%;
+  height: 78%;
+}
+
+/* 答え合わせで、爆弾でないマスに立っていた旗。 */
+.flag-wrong {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* 旗を隠すと「どの色を間違えたか」が分からなくなるので、
+   ×は右下に小さく重ねる。 */
+.wrong-mark {
+  position: absolute;
+  right: -2%;
+  bottom: -2%;
+  width: 54%;
+  height: 54%;
+}
+
+/* 色まで当てられていた旗。 */
+/* box-shadowは先に書いたものが手前に描かれる。枠を後ろに置くと
+   ベベルの影に隠れてしまうので、緑の枠を先頭に置く。 */
+.cell-correct {
+  box-shadow:
+    inset 0 0 0 2px #57e0a2,
+    inset 2px 2px 0 #5b6288,
+    inset -2px -2px 0 #1b1f36;
 }
 
 .generating-overlay {
