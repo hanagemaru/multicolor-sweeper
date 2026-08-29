@@ -306,9 +306,9 @@ legend {
   filter: drop-shadow(1px 1px 0 #111426);
 }
 
-/* ドット絵が15x21の縦長。widthをautoにするとSVGが内在サイズで広がり、
+/* ドット絵が11x17の縦長。widthをautoにするとSVGが内在サイズで広がり、
    マスの高さが確定していない場面でグリッドの行を押し広げてしまう。
-   幅と高さの両方を割合で与え、15:21の比はpreserveAspectRatioに任せる。 */
+   幅と高さの両方を割合で与え、11:17の比はpreserveAspectRatioに任せる。 */
 .bomb {
   display: block;
   width: 100%;
@@ -317,7 +317,7 @@ legend {
 
 /* 答え合わせの重ね描き用。
    width/height:100%だと、マスがグリッドの項目なので割合が解決されず
-   auto扱いになり、中のSVGが内在サイズ(15:21)で膨らんでマスをはみ出す。
+   auto扱いになり、中のSVGが内在サイズ(11:17)で膨らんでマスをはみ出す。
    .cellはposition:relativeなので、inset:0で確実にマスいっぱいにする。 */
 .flag-wrong,
 .mine-wrong {

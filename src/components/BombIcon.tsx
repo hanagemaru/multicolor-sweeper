@@ -1,65 +1,45 @@
 import { COLORS } from "../game/rules";
 import type { MineColor } from "../game/types";
 
-// 15x21のドット絵。1文字が1ドット。元絵(docs/art/bomb.png)のピクセルをそのまま写している。
-//   . 透明 / o 輪郭 / b 本体 / h 強ハイライト / m 弱ハイライト / c 口金
-//   f 導火線(明) / g 導火線(暗) / s 炎 / S 炎(黄) / W 炎の芯
-// 本体まわりの3階調は爆弾の色から算出するので、4色ぶんの図案は要らない。
-// 元絵が15x21なので枠もそれに合わせる。幅が奇数だと中央の列(x=7)が実在するため、
-// 丸い本体の輪郭が左右対称にきれいに閉じる。
+// 11x17のドット絵。1文字が1ドット。元絵(docs/art/bomb-v2.png)のピクセルをそのまま写している。
+//   . 透明 / b 本体 / h ハイライト / f 導火線 / s 炎(赤) / S 炎(橙) / W 炎(黄)
+// 元絵は4色ぶん並んでいるが、違うのは本体色だけで形も炎もハイライトも完全に同じ。
+// なので図案は1つだけ持ち、bをCOLORSの色に差し替えて4色を作る。
+// 色の定義はrules.tsが唯一の出処なので、旗と爆弾の色が食い違うことはない。
 const SPRITE = [
-  "...........s...",
-  "..........sSs..",
-  ".........sSWSs.",
-  ".........fsSs..",
-  "........fg.s...",
-  ".......fg......",
-  ".....oogoo.....",
-  "...ooocccooo...",
-  "..obbboooobbo..",
-  ".obbhbbbbbbbbo.",
-  ".obhhmbbbbbbbo.",
-  "obbhmbbbbbbbbbo",
-  "obbbbbbbbbbbbbo",
-  "obbbbbbbbbbbbbo",
-  "obbbbbbbbbbbbbo",
-  "obbbbbbbbbbbbbo",
-  ".obbbbbbbbbbbo.",
-  ".obbbbbbbbbbbo.",
-  "..obbbbbbbbbo..",
-  "...oobbbbboo...",
-  ".....ooooo....."
+  "..s........",
+  ".sSs.......",
+  "sSWff......",
+  ".sSs.f.....",
+  "..s..f.....",
+  "....bbb....",
+  "....bbb....",
+  "..bbbbbbb..",
+  ".bbbhbbbbb.",
+  "bbbhbbbbbbb",
+  "bbhbbbbbbbb",
+  "bhhbbbbbbbb",
+  "bbhbbbbbbbb",
+  "bbbbbbbbbbb",
+  "bbbbbbbbbbb",
+  ".bbbbbbbbb.",
+  "..bbbbbbb.."
 ];
 
-const SPRITE_WIDTH = 15;
-const SPRITE_HEIGHT = 21;
+const SPRITE_WIDTH = 11;
+const SPRITE_HEIGHT = 17;
 
-const OUTLINE = "#0b0d18";
-const CAP = "#41404a";
-const FUSE_LIGHT = "#c8a16b";
-const FUSE_DARK = "#8d6c4b";
-const FLAME = "#f96b04";
-const FLAME_MID = "#fed406";
-const FLAME_CORE = "#fefc0c";
-
-function mix(hex: string, target: number, ratio: number): string {
-  const value = Number.parseInt(hex.slice(1), 16);
-  const channel = (shift: number): string => {
-    const from = (value >> shift) & 0xff;
-    return Math.round(from + (target - from) * ratio).toString(16).padStart(2, "0");
-  };
-  return `#${channel(16)}${channel(8)}${channel(0)}`;
-}
+const HIGHLIGHT = "#ffffff";
+const FUSE = "#000000";
+const FLAME = "#ed1c24";
+const FLAME_MID = "#ff7f27";
+const FLAME_CORE = "#ffc90e";
 
 function paletteFor(hex: string): Record<string, string> {
   return {
-    o: OUTLINE,
     b: hex,
-    h: mix(hex, 255, 0.55),
-    m: mix(hex, 255, 0.26),
-    c: CAP,
-    f: FUSE_LIGHT,
-    g: FUSE_DARK,
+    h: HIGHLIGHT,
+    f: FUSE,
     s: FLAME,
     S: FLAME_MID,
     W: FLAME_CORE
