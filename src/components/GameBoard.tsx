@@ -66,7 +66,8 @@ function cellLabel(cell: Cell, review: boolean): string {
 
 // 10x17のドット絵。1文字が1ドット。 . 透明 / p 竿 / c 布
 // 元絵(docs/art/flag.png)のピクセルをそのまま写している。色だけ差し替えていて、
-// 元絵の赤#ed1c24はCOLORSの赤へ、竿の灰#c3c3c3は従来の竿の色へ置き換える。
+// 元絵の赤#ed1c24はCOLORSの赤へ置き換える。竿は元絵の灰のまま。白より暗い灰に
+// しておかないと、無色旗のときに竿と布が同じ白になって区別が付かなくなる。
 // 布は5色ぶん要るが、形は共通なので図案は1つだけ持つ。
 const FLAG_SPRITE = [
   "pccc......",
@@ -91,7 +92,7 @@ const FLAG_SPRITE = [
 const FLAG_WIDTH = 10;
 const FLAG_HEIGHT = 17;
 
-const FLAG_POLE = "#f2f2f6";
+const FLAG_POLE = "#c3c3c3";
 
 function Flag({ flag }: { flag: FlagColor }): React.JSX.Element {
   return (
