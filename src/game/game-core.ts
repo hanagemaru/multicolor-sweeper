@@ -1,4 +1,4 @@
-import { activeMineColors, GRID_SIZE, isColorCount } from "./rules";
+import { activeMineColors, COLORS, GRID_SIZE, isColorCount, NEUTRAL_FLAG_HEX } from "./rules";
 import type {
   Board,
   Cell,
@@ -272,6 +272,6 @@ export function mineColorCounts(board: Board): number[] {
 }
 
 export function flagColorHex(flag: FlagColor): string {
-  if (flag === "neutral") return "#e9eef4";
-  return ["#e45462", "#4d7de8", "#31a873", "#e3a72f"][flag as MineColor];
+  if (flag === "neutral") return NEUTRAL_FLAG_HEX;
+  return COLORS[flag as MineColor].hex;
 }

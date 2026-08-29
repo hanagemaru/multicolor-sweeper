@@ -18,27 +18,37 @@ export const DIFFICULTIES: ReadonlyArray<{
   { id: "hard", label: "HARD", mineCount: 25 }
 ];
 
+// 盤面の色はここが唯一の定義。旗の布も矢印もこの値を参照する。
+//
+// 明度を離す方向で調整してある。数字は細く小さいため、色相だけで分けると
+// 小視野トリタノピア（細かい対象では誰でも青系の弁別が落ちる）で青と緑が
+// 潰れる。緑を明るくしてL*差を稼ぐことで、その条件下でも分離を保つ。
+// あわせて4色とも開いたマス（#20243c）に対するコントラストを4.5以上にした。
 export const COLORS: ReadonlyArray<{
   id: "red" | "blue" | "green" | "yellow";
   label: "赤" | "青" | "緑" | "黄";
   hex: string;
 }> = [
-  { id: "red", label: "赤", hex: "#e45462" },
-  { id: "blue", label: "青", hex: "#4d7de8" },
-  { id: "green", label: "緑", hex: "#31a873" },
-  { id: "yellow", label: "黄", hex: "#e3a72f" }
+  { id: "red", label: "赤", hex: "#ef5f6d" },
+  { id: "blue", label: "青", hex: "#4d88ff" },
+  { id: "green", label: "緑", hex: "#57e0a2" },
+  { id: "yellow", label: "黄", hex: "#e9b53a" }
 ];
 
+export const NEUTRAL_FLAG_HEX = "#e9eef4";
+
+// angleは上向きを0度とした時計回りの角度。矢印はSVGを回して描くので、
+// 文字の矢印と違って環境によらず指定どおりの角度になる。
 export const FLAG_GESTURES: ReadonlyArray<{
   label: string;
-  arrow: string;
+  angle: number;
   flag: FlagColor;
 }> = [
-  { label: "赤旗", arrow: "↖", flag: 0 },
-  { label: "青旗", arrow: "↗", flag: 1 },
-  { label: "緑旗", arrow: "↙", flag: 2 },
-  { label: "黄旗", arrow: "↘", flag: 3 },
-  { label: "無色旗", arrow: "↑", flag: "neutral" }
+  { label: "赤旗", angle: -45, flag: 0 },
+  { label: "青旗", angle: 45, flag: 1 },
+  { label: "緑旗", angle: -135, flag: 2 },
+  { label: "黄旗", angle: 135, flag: 3 },
+  { label: "無色旗", angle: 0, flag: "neutral" }
 ];
 
 export function isColorCount(value: number): value is ColorCount {

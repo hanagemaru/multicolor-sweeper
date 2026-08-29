@@ -12,6 +12,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const BACKGROUND = "#15182b";
 
 // 盤面と4色のタイル。512x512座標系で記述する。
+// 4色は src/game/rules.ts の COLORS と同じ値。片方だけ変えないこと。
 const board = (inset) => {
   const scale = (1024 - inset * 2) / 1024;
   const shift = inset;
@@ -21,10 +22,10 @@ const board = (inset) => {
   const size = (v) => round(v * scale);
   return [
     `<rect x="${at(76)}" y="${at(76)}" width="${size(360)}" height="${size(360)}" rx="${size(22)}" fill="#20243c" stroke="#555b7c" stroke-width="${size(20)}"/>`,
-    `<rect x="${at(116)}" y="${at(116)}" width="${size(128)}" height="${size(128)}" fill="#e45462"/>`,
-    `<rect x="${at(268)}" y="${at(116)}" width="${size(128)}" height="${size(128)}" fill="#4d7de8"/>`,
-    `<rect x="${at(116)}" y="${at(268)}" width="${size(128)}" height="${size(128)}" fill="#31a873"/>`,
-    `<rect x="${at(268)}" y="${at(268)}" width="${size(128)}" height="${size(128)}" fill="#e3a72f"/>`
+    `<rect x="${at(116)}" y="${at(116)}" width="${size(128)}" height="${size(128)}" fill="#ef5f6d"/>`,
+    `<rect x="${at(268)}" y="${at(116)}" width="${size(128)}" height="${size(128)}" fill="#4d88ff"/>`,
+    `<rect x="${at(116)}" y="${at(268)}" width="${size(128)}" height="${size(128)}" fill="#57e0a2"/>`,
+    `<rect x="${at(268)}" y="${at(268)}" width="${size(128)}" height="${size(128)}" fill="#e9b53a"/>`
   ].join("\n  ");
 };
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GameBoard } from "./components/GameBoard";
+import { GestureArrow } from "./components/GestureArrow";
 import {
   canChord,
   checkWin,
@@ -7,6 +8,7 @@ import {
   cloneBoard,
   countFlags,
   createEmptyBoard,
+  flagColorHex,
   revealCell,
   setFlag
 } from "./game/game-core";
@@ -251,7 +253,7 @@ export default function App(): React.JSX.Element {
               <div className="gesture-guide" aria-label="旗のスワイプ方向">
                 {FLAG_GESTURES.map((gesture) => (
                   <span key={gesture.label}>
-                    <b style={{ color: gesture.flag === "neutral" ? "#e9eef4" : undefined }}>{gesture.arrow}</b>
+                    <GestureArrow angle={gesture.angle} color={flagColorHex(gesture.flag)} />
                     {gesture.label}
                   </span>
                 ))}
