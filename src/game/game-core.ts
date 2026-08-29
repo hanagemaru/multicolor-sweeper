@@ -273,13 +273,21 @@ export function mineColorCounts(board: Board): number[] {
 
 // 決着後の答え合わせで、そのマスに何を描くか。
 // 盤面データは書き換えず、描画側だけで答え合わせを表現するための判定。
-export type ReviewMark = "mine" | "correct-flag" | "wrong-flag" | null;
+export type ReviewMark =
+  | "mine"
+  | "mine-wrong-color"
+  | "correct-flag"
+  | "wrong-flag"
+  | null;
 
 export function reviewMark(cell: Cell): ReviewMark {
   if (cell.state !== "hidden") return null;
   if (cell.mineColor !== null) {
     // 無色旗は色を当てたわけではないので、正解扱いにはしない。
-    return cell.flag === cell.mineColor ? "correct-flag" : "mine";
+    if (cell.flag === cell.mineColor) return "correct-flag";
+    // 爆弾があること自体は当てていて色だけ外した場合、旗を消してしまうと
+    // 何色で間違えたのかが分からなくなるので、爆弾とは別の印にする。
+    return cell.flag !== null ? "mine-wrong-color" : "mine";
   }
   return cell.flag !== null ? "wrong-flag" : null;
 }

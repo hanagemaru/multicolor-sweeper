@@ -115,8 +115,8 @@ describe("答え合わせの判定", () => {
 
   it("色まで当てた旗だけを正解とする", () => {
     expect(reviewMark(cell({ mineColor: 2, flag: 2 }))).toBe("correct-flag");
-    expect(reviewMark(cell({ mineColor: 2, flag: 1 }))).toBe("mine");
-    expect(reviewMark(cell({ mineColor: 2, flag: "neutral" }))).toBe("mine");
+    expect(reviewMark(cell({ mineColor: 2, flag: 1 }))).toBe("mine-wrong-color");
+    expect(reviewMark(cell({ mineColor: 2, flag: "neutral" }))).toBe("mine-wrong-color");
     expect(reviewMark(cell({ mineColor: 2, flag: null }))).toBe("mine");
   });
 

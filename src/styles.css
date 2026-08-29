@@ -215,6 +215,7 @@ legend {
   position: relative;
   display: grid;
   min-width: 0;
+  min-height: 0;
   padding: 0;
   place-items: center;
   border: 0;
@@ -302,31 +303,51 @@ legend {
   filter: drop-shadow(1px 1px 0 #111426);
 }
 
-/* ドット絵が15x21の縦長なので、高さを基準にして幅は縦横比に任せる。
-   width/heightを両方指定すると正方形の枠に収まるぶん横が痩せる。 */
+/* ドット絵が15x21の縦長。widthをautoにするとSVGが内在サイズで広がり、
+   マスの高さが確定していない場面でグリッドの行を押し広げてしまう。
+   幅と高さの両方を割合で与え、15:21の比はpreserveAspectRatioに任せる。 */
 .bomb {
   display: block;
-  width: auto;
+  width: 100%;
   height: 82%;
 }
 
-/* 答え合わせで、爆弾でないマスに立っていた旗。 */
-.flag-wrong {
-  position: relative;
+/* 答え合わせの重ね描き用。
+   width/height:100%だと、マスがグリッドの項目なので割合が解決されず
+   auto扱いになり、中のSVGが内在サイズ(15:21)で膨らんでマスをはみ出す。
+   .cellはposition:relativeなので、inset:0で確実にマスいっぱいにする。 */
+.flag-wrong,
+.mine-wrong {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  width: 100%;
-  height: 100%;
 }
 
 /* 旗を隠すと「どの色を間違えたか」が分からなくなるので、
    ×は右下に小さく重ねる。 */
 .wrong-mark {
   position: absolute;
-  right: -2%;
-  bottom: -2%;
+  right: 0;
+  bottom: 0;
   width: 54%;
   height: 54%;
+}
+
+/* 爆弾はあったが色を外したマス。爆弾を主役にし、立てていた旗は隅に小さく置く。
+   ドット絵の左上は空いているので、旗は左上に寄せて本体に重ならないようにする。 */
+.mine-wrong-flag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 48%;
+  height: 48%;
+}
+
+.mine-wrong-flag .flag {
+  width: 100%;
+  height: 100%;
 }
 
 /* 色まで当てられていた旗。 */

@@ -29,9 +29,43 @@ function classifySwipe(dx: number, dy: number): FlagColor {
   return dx < 0 ? 2 : 3;
 }
 
+function flagLabel(flag: FlagColor): string {
+  return flag === "neutral" ? "無色旗" : `${COLORS[flag].label}旗`;
+}
+
+// buttonにaria-labelを付けると子孫要素の文言は読み上げられなくなるので、
+// マスの状態までを1つの読み上げ名にまとめる。
+function cellLabel(cell: Cell, review: boolean): string {
+  const at = `${cell.row + 1}行${cell.col + 1}列`;
+  if (cell.state === "exploded") {
+    return `${at} ${COLORS[cell.mineColor ?? 0].label}の爆弾 爆発`;
+  }
+  if (cell.state === "revealed") {
+    return totalAdjacent(cell) === 0
+      ? `${at} 空き`
+      : `${at} 周囲の爆弾 ${cell.adjacentCounts.join(",")}`;
+  }
+  if (review) {
+    const mineLabel = cell.mineColor === null ? "" : `${COLORS[cell.mineColor].label}の爆弾`;
+    switch (reviewMark(cell)) {
+      case "correct-flag":
+        return `${at} ${mineLabel} 正解`;
+      case "mine-wrong-color":
+        return `${at} ${mineLabel} ${flagLabel(cell.flag as FlagColor)}で誤答`;
+      case "mine":
+        return `${at} ${mineLabel} 旗なし`;
+      case "wrong-flag":
+        return `${at} ${flagLabel(cell.flag as FlagColor)} 爆弾なし`;
+      default:
+        return `${at} 空き`;
+    }
+  }
+  return cell.flag === null ? `${at} 未開放` : `${at} ${flagLabel(cell.flag)}`;
+}
+
 function Flag({ flag }: { flag: FlagColor }): React.JSX.Element {
   return (
-    <span className="flag" aria-label={flag === "neutral" ? "無色旗" : `${COLORS[flag].label}旗`}>
+    <span className="flag" aria-label={flagLabel(flag)}>
       <span className="flag-pole" />
       <span className="flag-cloth" style={{ backgroundColor: flagColorHex(flag) }} />
     </span>
@@ -64,6 +98,17 @@ function CellFace({
   if (review) {
     const mark = reviewMark(cell);
     if (mark === "mine") return <BombIcon color={cell.mineColor ?? 0} />;
+    if (mark === "mine-wrong-color" && cell.mineColor !== null && cell.flag !== null) {
+      // 正解の爆弾を主役にしつつ、立てていた旗を隅に小さく残す。
+      return (
+        <span className="mine-wrong">
+          <BombIcon color={cell.mineColor} />
+          <span className="mine-wrong-flag">
+            <Flag flag={cell.flag} />
+          </span>
+        </span>
+      );
+    }
     if (mark === "wrong-flag") {
       return (
         <span className="flag-wrong">
@@ -129,8 +174,10 @@ export function GameBoard({
       role="grid"
       aria-label={`${GRID_SIZE}×${GRID_SIZE} マインスイーパー盤面`}
       style={{
-        gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-        gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`
+        // minmax(0, 1fr)にしないと、マスの中身が大きいときに行や列が
+        // 押し広げられて正方形が崩れる。
+        gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
+        gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`
       }}
     >
       {board.cells.flat().map((cell) => (
@@ -142,7 +189,7 @@ export function GameBoard({
             review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
           }`}
           disabled={!interactive}
-          aria-label={`${cell.row + 1}行${cell.col + 1}列`}
+          aria-label={cellLabel(cell, review)}
           onPointerDown={(event) => handlePointerDown(event, cell)}
           onPointerMove={handlePointerMove}
           onPointerUp={finishGesture}
