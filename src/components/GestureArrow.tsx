@@ -4,23 +4,89 @@ interface GestureArrowProps {
   color: string;
 }
 
-// スワイプ方向の矢印。以前は ↖ などの文字を使っていたが、VT323が矢印を持たず
-// OS任せのフォールバックになるため、Windowsでは45度に見えなかった。
-// SVGを回して描けば環境によらず指定どおりの角度になる。
+interface PixelRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const VIEWBOX_SIZE = 16;
+
+// 斜め矢印はSVGの直線を45度回転させず、整数座標の矩形だけで階段状に描く。
+// これによりOSやアンチエイリアスに依存せず、20px表示でもピクセル感を保てる。
+const UP: readonly PixelRect[] = [
+  { x: 7, y: 1, width: 2, height: 2 },
+  { x: 5, y: 3, width: 6, height: 2 },
+  { x: 3, y: 5, width: 10, height: 2 },
+  { x: 7, y: 7, width: 2, height: 8 }
+];
+
+const UP_RIGHT: readonly PixelRect[] = [
+  // 1pxずつずらした2x2矩形を重ね、はっきりした階段状の軸にする。
+  { x: 2, y: 12, width: 2, height: 2 },
+  { x: 3, y: 11, width: 2, height: 2 },
+  { x: 4, y: 10, width: 2, height: 2 },
+  { x: 5, y: 9, width: 2, height: 2 },
+  { x: 6, y: 8, width: 2, height: 2 },
+  { x: 7, y: 7, width: 2, height: 2 },
+  { x: 8, y: 6, width: 2, height: 2 },
+  { x: 9, y: 5, width: 2, height: 2 },
+  { x: 10, y: 4, width: 2, height: 2 },
+  { x: 11, y: 3, width: 2, height: 2 },
+  // 矢じりも水平・垂直の矩形で構成し、斜線を使わない。
+  { x: 8, y: 2, width: 6, height: 2 },
+  { x: 12, y: 2, width: 2, height: 6 }
+];
+
+function mirrorX(rects: readonly PixelRect[]): PixelRect[] {
+  return rects.map((rect) => ({
+    ...rect,
+    x: VIEWBOX_SIZE - rect.x - rect.width
+  }));
+}
+
+function mirrorY(rects: readonly PixelRect[]): PixelRect[] {
+  return rects.map((rect) => ({
+    ...rect,
+    y: VIEWBOX_SIZE - rect.y - rect.height
+  }));
+}
+
+const PIXEL_ARROWS: Readonly<Record<number, readonly PixelRect[]>> = {
+  0: UP,
+  45: UP_RIGHT,
+  135: mirrorY(UP_RIGHT),
+  225: mirrorY(mirrorX(UP_RIGHT)),
+  315: mirrorX(UP_RIGHT)
+};
+
+function normalizedAngle(angle: number): number {
+  return ((angle % 360) + 360) % 360;
+}
+
 export function GestureArrow({ angle, color }: GestureArrowProps): React.JSX.Element {
+  const rects = PIXEL_ARROWS[normalizedAngle(angle)] ?? UP;
+
   return (
     <svg
       className="gesture-arrow"
-      viewBox="0 0 16 16"
+      viewBox={`0 0 ${VIEWBOX_SIZE} ${VIEWBOX_SIZE}`}
       width="20"
       height="20"
+      shapeRendering="crispEdges"
       aria-hidden="true"
-      style={{ transform: `rotate(${angle}deg)`, color }}
     >
-      <g stroke="currentColor" strokeWidth="2" strokeLinecap="square" fill="none">
-        <line x1="8" y1="14" x2="8" y2="3" />
-        <polyline points="3.5,7.5 8,3 12.5,7.5" />
-      </g>
+      {rects.map((rect, index) => (
+        <rect
+          key={`${rect.x}-${rect.y}-${index}`}
+          x={rect.x}
+          y={rect.y}
+          width={rect.width}
+          height={rect.height}
+          fill={color}
+        />
+      ))}
     </svg>
   );
 }
