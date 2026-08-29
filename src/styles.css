@@ -279,7 +279,7 @@ legend {
   font-size: clamp(17px, 5.6vw, 30px);
 }
 
-/* 爆弾と同じで、ドット絵が10x16の縦長。widthをautoにするとSVGが内在サイズで
+/* 爆弾と同じで、ドット絵が10x17の縦長。widthをautoにするとSVGが内在サイズで
    広がってグリッドの行を押し広げるので、幅と高さの両方を割合で与える。 */
 .flag {
   display: block;

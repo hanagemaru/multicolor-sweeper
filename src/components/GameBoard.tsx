@@ -64,34 +64,34 @@ function cellLabel(cell: Cell, review: boolean): string {
   return cell.flag === null ? `${at} 未開放` : `${at} ${flagLabel(cell.flag)}`;
 }
 
-// 10x16のドット絵。1文字が1ドット。 . 透明 / p 竿 / c 布 / d 影
-// 布は右上を頂点にした三角。斜辺を1ドットずつの階段にして、爆弾と同じ
-// ドット絵の質感に揃える。CSSのclip-pathだと辺が滑らかに描かれてしまう。
-// 影は塗った点の下と右に1ドット置く。元のdrop-shadow(1px 1px)と同じ向き。
+// 10x17のドット絵。1文字が1ドット。 . 透明 / p 竿 / c 布
+// 元絵(docs/art/flag.png)のピクセルをそのまま写している。色だけ差し替えていて、
+// 元絵の赤#ed1c24はCOLORSの赤へ、竿の灰#c3c3c3は従来の竿の色へ置き換える。
+// 布は5色ぶん要るが、形は共通なので図案は1つだけ持つ。
 const FLAG_SPRITE = [
-  "pccccccd..",
-  "pcccccccd.",
-  "pccccccd..",
-  "pcccccd...",
-  "pccccd....",
-  "pcccd.....",
-  "pccd......",
-  "pcd.......",
-  "pd........",
-  "pd........",
-  "pd........",
-  "pd........",
-  "pd........",
-  "pd........",
-  "pd........",
-  "pd........"
+  "pccc......",
+  "pcccccc...",
+  "pccccccccc",
+  "pccccccccc",
+  "pcccccccc.",
+  "pcccccc...",
+  "pccccc....",
+  "pccc......",
+  "pcc.......",
+  "pp........",
+  "pp........",
+  "pp........",
+  "pp........",
+  "pp........",
+  "pp........",
+  "pp........",
+  "pp........"
 ];
 
 const FLAG_WIDTH = 10;
-const FLAG_HEIGHT = 16;
+const FLAG_HEIGHT = 17;
 
 const FLAG_POLE = "#f2f2f6";
-const FLAG_SHADOW = "#111426";
 
 function Flag({ flag }: { flag: FlagColor }): React.JSX.Element {
   return (
@@ -102,7 +102,7 @@ function Flag({ flag }: { flag: FlagColor }): React.JSX.Element {
       aria-label={flagLabel(flag)}
       role="img"
     >
-      {spriteRects(FLAG_SPRITE, { p: FLAG_POLE, c: flagColorHex(flag), d: FLAG_SHADOW })}
+      {spriteRects(FLAG_SPRITE, { p: FLAG_POLE, c: flagColorHex(flag) })}
     </svg>
   );
 }
