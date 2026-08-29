@@ -37,8 +37,9 @@ export const COLORS: ReadonlyArray<{
 
 export const NEUTRAL_FLAG_HEX = "#e9eef4";
 
-// angleは上向きを0度とした時計回りの角度。矢印はSVGを回して描くので、
-// 文字の矢印と違って環境によらず指定どおりの角度になる。
+// angleは上向きを0度とした時計回りの角度。
+// GestureArrow側で各方向を整数座標の矩形だけで描き、斜め方向は階段状の
+// ピクセルアートにする。文字フォントや回転SVGのアンチエイリアスには依存しない。
 export const FLAG_GESTURES: ReadonlyArray<{
   label: string;
   angle: number;
