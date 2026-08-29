@@ -5,22 +5,22 @@ import type { MineColor } from "../game/types";
 //   . 透明 / o 輪郭 / b 本体 / d 陰 / h ハイライト / f 導火線 / s 火花
 // 本体・陰・ハイライトは爆弾の色から算出するので、4色ぶんの図案は要らない。
 const SPRITE = [
-  "...........s....",
-  "..........sss...",
-  "...........s....",
-  ".........ff.....",
-  "........ff......",
-  "......offo......",
-  ".....ooooo......",
-  "....ohbbbbo.....",
-  "...ohhbbbbbo....",
-  "...obbbbbbbo....",
-  "..obbbbbbbbdo...",
-  "..obbbbbbbddo...",
-  "...obbbbbddo....",
-  "...obbbbdddo....",
-  "....obbdddo.....",
-  ".....ooooo......"
+  "..........s.....",
+  ".........sss....",
+  "..........f.....",
+  "........off.....",
+  ".......ooooo....",
+  ".....oohbbbbo...",
+  "....ohhbbbbbo...",
+  "...obbbbbbbbbo..",
+  "..obbbbbbbbbdo..",
+  "..obbbbbbbbddo..",
+  "..obbbbbbbbddo..",
+  "...obbbbbbbddo..",
+  "...obbbbbbdddo..",
+  "....obbbbdddo...",
+  ".....obbbddo....",
+  "......ooooo....."
 ];
 
 const OUTLINE = "#0b0d18";
