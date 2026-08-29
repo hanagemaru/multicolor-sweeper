@@ -15,7 +15,7 @@
 - Seed再現性、条件C、Solver soundness、Worker非同期境界を自動テスト済み
 - PWAアイコン一式（192/512、maskable、apple-touch-icon 180）を `scripts/generate-icons.mjs` から生成済み
 - iOS向けメタとmanifestの `id` / `scope` / `start_url` を整備済み
-- Cloudflare Workers（Static Assets）へデプロイ済み。`https://mcsweeper.hanage.app/` で公開中
+- Cloudflare Workers（Static Assets）へデプロイ済み。現在の配信URLは `https://multicolor-sweeper.jibunnha.workers.dev/`（Workerの既定URL）
 - 盤面のマス高さ・数字位置・0非表示を実機の指摘にあわせて修正済み（PR #3）
 - スワイプ方向の矢印を文字からSVGのドット絵へ置き換え、4色の明度を離して弁別性を確保済み（PR #4）
 
@@ -46,7 +46,7 @@
 - 生成中表示の開始閾値は120ms
 - タイマーはWorker生成完了・初手開封後に開始
 - 配信先は Cloudflare Workers（Static Assets）
-- 公開URLは `https://mcsweeper.hanage.app/`
+- 公開URLは `https://mcsweeper.hanage.app/` を予定。カスタムドメインは未割り当てで、現在は `*.workers.dev` の既定URLで配信している
 - ハブサイトには紹介ページのみを置き、ゲーム本体は独立サブドメインで配信する
 - 盤面の図案はSVGのドット絵で持つ。フォントやOSのフォールバックに依存させない
 - 色の定義は `rules.ts` の `COLORS` が唯一の出処
@@ -55,6 +55,7 @@
 
 - PR #5のレビューとmainへのマージ
 - `art/bomb-source` / `art/bomb-v2` ブランチの削除（元絵は `docs/art/` に取り込み済み）
+- `hanage.app` ゾーンのCloudflare移管と、`mcsweeper.hanage.app` のカスタムドメイン割り当て（手順は `DEPLOY.md` の初回セットアップ 3 と 5）
 - hanage-hub側に `/games/multicolor-sweeper/` 紹介ページと `src/lib/site.ts` のエントリを追加（別Repo）
 - iPhone実機で25爆弾の生成時間、120ms表示、スワイプ方向固定を確認
 - 完成デザインと画面遷移を設計・実装

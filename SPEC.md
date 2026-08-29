@@ -82,7 +82,7 @@
 ## 配信
 
 - 配信先は Cloudflare Workers（Static Assets）。静的成果物は `dist/` に出力し、`wrangler.jsonc` がそのまま配る
-- 公開URLは `https://mcsweeper.hanage.app/`
+- 公開URLは `https://mcsweeper.hanage.app/`（カスタムドメイン割り当て前は `*.workers.dev` の既定URLで配信）
 - hanage-hub の方針どおり製品ごとに独立したサブドメインを持ち、ハブ側には紹介ページのみを置いて別タブで開く
 - 専用ドメイン前提のため Vite の `base` と manifest の `start_url` / `scope` はいずれも `/`。サブパス配信にするとService Workerのscopeとアセットの絶対パスが崩れる
 - ヘッダーは `public/_headers` で指定（manifestのContent-Type、`X-Frame-Options` 等）

@@ -1,6 +1,9 @@
 # デプロイ手順
 
-配信先は **Cloudflare Workers（Static Assets）**、公開URLは `https://mcsweeper.hanage.app/`。
+配信先は **Cloudflare Workers（Static Assets）**、公開URLは `https://mcsweeper.hanage.app/` を予定。
+
+**カスタムドメインはまだ割り当てていない。** 現在の配信URLは Worker の既定URL
+`https://multicolor-sweeper.jibunnha.workers.dev/`。下記「初回セットアップ」の 3 と 5 が未了のため。
 
 `wrangler.jsonc` に Worker スクリプトは無く、ビルド成果物 `dist/` をそのまま配る静的アセット専用の構成にしている。
 
