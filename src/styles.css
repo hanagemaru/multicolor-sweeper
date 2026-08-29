@@ -215,6 +215,7 @@ legend {
   position: relative;
   display: grid;
   min-width: 0;
+  min-height: 0;
   padding: 0;
   place-items: center;
   border: 0;
@@ -250,9 +251,12 @@ legend {
 /* 行を明示しないと、0で空になったマス目の高さが0になり、余りの分配で
    上段だけ・下段だけ・両方のときに数字の位置がずれる。 */
 .clue {
+  /* マスはグリッドの項目なので、割合の高さがautoに落ちて2行ぶんの行送りが
+     そのまま高さになり、下段の数字がマスの外へこぼれていた。
+     .cellはposition:relativeなので、inset指定で高さを確定させる。 */
+  position: absolute;
+  inset: 6%;
   display: grid;
-  width: 88%;
-  height: 88%;
   /* minmaxで最小を0にする。1frの最小は既定でautoなので、文字が行より高いと
      行が広がってしまい、下段だけが押し下げられる。 */
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -275,37 +279,69 @@ legend {
   font-size: clamp(17px, 5.6vw, 30px);
 }
 
+/* 爆弾と同じで、ドット絵が10x17の縦長。widthをautoにするとSVGが内在サイズで
+   広がってグリッドの行を押し広げるので、幅と高さの両方を割合で与える。 */
 .flag {
-  position: relative;
   display: block;
-  width: 58%;
-  height: 66%;
+  width: 100%;
+  height: 46%;
 }
 
-.flag-pole {
+/* ドット絵が11x17の縦長。widthをautoにするとSVGが内在サイズで広がり、
+   マスの高さが確定していない場面でグリッドの行を押し広げてしまう。
+   幅と高さの両方を割合で与え、11:17の比はpreserveAspectRatioに任せる。 */
+.bomb {
+  display: block;
+  width: 100%;
+  height: 70%;
+}
+
+/* 答え合わせの重ね描き用。
+   width/height:100%だと、マスがグリッドの項目なので割合が解決されず
+   auto扱いになり、中のSVGが内在サイズ(11:17)で膨らんでマスをはみ出す。
+   .cellはposition:relativeなので、inset:0で確実にマスいっぱいにする。 */
+.flag-wrong,
+.mine-wrong {
   position: absolute;
-  left: 45%;
-  top: 16%;
-  width: 2px;
-  height: 67%;
-  background: #f2f2f6;
-  box-shadow: 1px 0 0 #111426;
+  inset: 0;
+  display: grid;
+  place-items: center;
 }
 
-.flag-cloth {
+/* 旗を隠すと「どの色を間違えたか」が分からなくなるので、
+   ×は右下に小さく重ねる。 */
+.wrong-mark {
   position: absolute;
-  left: 48%;
-  top: 16%;
-  width: 42%;
-  height: 35%;
-  clip-path: polygon(0 0, 100% 20%, 0 100%);
-  filter: drop-shadow(1px 1px 0 #111426);
+  right: 0;
+  bottom: 0;
+  width: 54%;
+  height: 54%;
 }
 
-.mine {
-  font-family: "VT323", monospace;
-  font-size: clamp(24px, 7vw, 38px);
-  text-shadow: 2px 2px 0 #080910;
+/* 爆弾はあったが色を外したマス。爆弾を主役にし、立てていた旗は隅に小さく置く。
+   ドット絵は導火線と炎が左上に伸びているので、旗は右上に寄せる。 */
+.mine-wrong-flag {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: block;
+  width: 34%;
+  height: 34%;
+}
+
+.mine-wrong-flag .flag {
+  width: 100%;
+  height: 100%;
+}
+
+/* 色まで当てられていた旗。 */
+/* box-shadowは先に書いたものが手前に描かれる。枠を後ろに置くと
+   ベベルの影に隠れてしまうので、緑の枠を先頭に置く。 */
+.cell-correct {
+  box-shadow:
+    inset 0 0 0 2px #57e0a2,
+    inset 2px 2px 0 #5b6288,
+    inset -2px -2px 0 #1b1f36;
 }
 
 .generating-overlay {

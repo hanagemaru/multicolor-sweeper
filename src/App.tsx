@@ -234,6 +234,7 @@ export default function App(): React.JSX.Element {
               <GameBoard
                 board={board}
                 interactive={phase === "awaiting-first" || phase === "playing"}
+                review={phase === "won" || phase === "lost"}
                 awaitingFirst={phase === "awaiting-first"}
                 onOpen={handleOpen}
                 onFlag={handleFlag}
@@ -262,7 +263,9 @@ export default function App(): React.JSX.Element {
 
             {(phase === "won" || phase === "lost" || phase === "error") ? (
               <div className="result-panel">
-                {phase === "won" ? <p>TIME <strong>{formatTime(elapsedMs)}</strong></p> : null}
+                {phase === "won" || phase === "lost" ? (
+                  <p>TIME <strong>{formatTime(elapsedMs)}</strong></p>
+                ) : null}
                 {phase === "error" ? <p>{errorMessage}</p> : null}
                 <button type="button" onClick={enterBoard}>RETRY</button>
                 <button type="button" onClick={resetToSettings}>SETTINGS</button>

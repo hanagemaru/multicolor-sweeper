@@ -10,10 +10,12 @@ import {
   mineColorCounts,
   minePositions,
   recomputeAdjacentCounts,
+  reviewMark,
   revealCell,
   setFlag
 } from "./game-core";
 import { GRID_SIZE } from "./rules";
+import type { Cell } from "./types";
 
 describe("game core", () => {
   it("同じSeed・初手なら同じ盤面になる", () => {
@@ -97,5 +99,35 @@ describe("game core", () => {
     setFlag(board, 3, 3, 0);
     setFlag(board, 3, 4, 0);
     expect(canChord(board, 4, 4)).toBe(false);
+  });
+});
+
+describe("答え合わせの判定", () => {
+  const cell = (over: Partial<Cell>): Cell => ({
+    row: 0,
+    col: 0,
+    state: "hidden",
+    flag: null,
+    mineColor: null,
+    adjacentCounts: [0, 0, 0, 0],
+    ...over
+  });
+
+  it("色まで当てた旗だけを正解とする", () => {
+    expect(reviewMark(cell({ mineColor: 2, flag: 2 }))).toBe("correct-flag");
+    expect(reviewMark(cell({ mineColor: 2, flag: 1 }))).toBe("mine-wrong-color");
+    expect(reviewMark(cell({ mineColor: 2, flag: "neutral" }))).toBe("mine-wrong-color");
+    expect(reviewMark(cell({ mineColor: 2, flag: null }))).toBe("mine");
+  });
+
+  it("爆弾でないマスの旗を誤りとする", () => {
+    expect(reviewMark(cell({ mineColor: null, flag: 0 }))).toBe("wrong-flag");
+    expect(reviewMark(cell({ mineColor: null, flag: "neutral" }))).toBe("wrong-flag");
+    expect(reviewMark(cell({ mineColor: null, flag: null }))).toBeNull();
+  });
+
+  it("既に開いているマスには何も描かない", () => {
+    expect(reviewMark(cell({ state: "revealed" }))).toBeNull();
+    expect(reviewMark(cell({ state: "exploded", mineColor: 0 }))).toBeNull();
   });
 });
