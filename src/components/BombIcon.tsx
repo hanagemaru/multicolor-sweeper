@@ -4,23 +4,24 @@ import type { MineColor } from "../game/types";
 // 16x16のドット絵。1文字が1ドット。
 //   . 透明 / o 輪郭 / b 本体 / d 陰 / h ハイライト / f 導火線 / s 火花
 // 本体・陰・ハイライトは爆弾の色から算出するので、4色ぶんの図案は要らない。
+// 💣のシルエットを参考に、本体は左右対称に近い丸形、導火線は短く右上へ伸ばす。
 const SPRITE = [
-  "..........s.....",
-  ".........sss....",
-  "..........f.....",
-  "........off.....",
-  ".......ooooo....",
-  ".....oohbbbbo...",
-  "....ohhbbbbbo...",
-  "...obbbbbbbbbo..",
+  "...........s....",
+  "..........sss...",
+  "...........s....",
+  "..........ff....",
+  ".........ff.....",
+  ".......oooo.....",
+  ".....ohhbbo.....",
+  "....ohhbbbbo....",
+  "...ohbbbbbbbbo..",
+  "..obbbbbbbbbdo..",
   "..obbbbbbbbbdo..",
   "..obbbbbbbbddo..",
   "..obbbbbbbbddo..",
   "...obbbbbbbddo..",
-  "...obbbbbbdddo..",
-  "....obbbbdddo...",
-  ".....obbbddo....",
-  "......ooooo....."
+  "....obbbbbddo...",
+  ".....oooooo....."
 ];
 
 const OUTLINE = "#0b0d18";
