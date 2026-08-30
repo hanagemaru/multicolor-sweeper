@@ -206,6 +206,7 @@ export function revealCell(board: Board, row: number, col: number): RevealResult
 export function setFlag(board: Board, row: number, col: number, flag: FlagColor): void {
   const cell = board.cells[row][col];
   if (cell.state !== "hidden") return;
+  if (flag !== "neutral" && flag >= board.colorCount) return;
   cell.flag = cell.flag === flag ? null : flag;
 }
 
