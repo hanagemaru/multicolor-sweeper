@@ -257,7 +257,7 @@ export default function App(): React.JSX.Element {
 
             <p className={`status status-${phase}`} aria-live="polite">{statusText[phase]}</p>
 
-            {phase === "playing" || phase === "awaiting-first" ? (
+            {phase === "playing" || phase === "awaiting-first" || phase === "generating" ? (
               <div className={`gesture-guide gesture-guide-${colorCount}`} aria-label="旗のスワイプ方向">
                 {FLAG_GESTURES[colorCount].map((gesture) => (
                   <span key={gesture.label}>
