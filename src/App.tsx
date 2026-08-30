@@ -72,7 +72,7 @@ export default function App(): React.JSX.Element {
     return () => window.clearInterval(interval);
   }, [phase, startedAt]);
 
-  const flagsRemaining = remainingFlagCount(board);
+  const flagsRemaining = remainingFlagCount(mineCount, board);
   const selectedDifficulty = useMemo(
     () => DIFFICULTIES.find((difficulty) => difficulty.mineCount === mineCount),
     [mineCount]
