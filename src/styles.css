@@ -111,10 +111,38 @@ button:focus-visible {
   border-bottom: 2px solid #343957;
 }
 
+.language-switch {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 3px;
+  padding: 3px;
+  border: 2px solid #414766;
+  border-radius: 5px;
+  background: #111426;
+}
+
+.language-switch button {
+  min-width: 32px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 3px;
+  color: #9198bd;
+  background: transparent;
+  font-family: "VT323", "MaruMonica", monospace;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.language-switch button.selected {
+  color: #17151a;
+  background: #f1c85d;
+}
+
 .eyebrow {
   margin: 0 0 3px;
   color: #a5abc9;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 16px;
   letter-spacing: 0.08em;
 }
@@ -122,7 +150,7 @@ button:focus-visible {
 h1 {
   max-width: 230px;
   margin: 0;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: clamp(28px, 8vw, 38px);
   font-weight: 400;
   line-height: 0.84;
@@ -131,7 +159,7 @@ h1 {
 .metrics {
   display: flex;
   gap: 10px;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 26px;
   line-height: 1;
 }
@@ -173,7 +201,7 @@ fieldset {
 legend {
   padding: 0 8px;
   color: #c7cbed;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 22px;
 }
 
@@ -193,7 +221,7 @@ legend {
   color: #d9dcf6;
   background: #242844;
   box-shadow: inset 0 -3px 0 #111426;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 21px;
   cursor: pointer;
 }
@@ -226,7 +254,7 @@ legend {
   color: #17151a;
   background: #f1c85d;
   box-shadow: inset 0 -5px 0 #b08028, 0 4px 0 #080910;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 34px;
   cursor: pointer;
 }
@@ -237,7 +265,7 @@ legend {
   justify-content: space-between;
   margin: 12px 0 8px;
   color: #c7cbed;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 19px;
 }
 
@@ -330,7 +358,7 @@ legend {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   place-items: center;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: clamp(15px, 5vw, 26px);
   line-height: 1;
   /* 全周に輪郭を付けて実効的な線幅を上げる。細い線は色の弁別が落ちる。 */
@@ -420,7 +448,7 @@ legend {
   place-items: center;
   background: rgba(12, 14, 26, 0.88);
   color: #fff3b5;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   letter-spacing: 0.08em;
 }
 
@@ -454,7 +482,7 @@ legend {
 .result-dialog h2 {
   margin: 0;
   color: #76e6ab;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: clamp(32px, 11cqw, 48px);
   font-weight: 400;
   line-height: 0.9;
@@ -472,7 +500,7 @@ legend {
 
 .result-time {
   color: #c7cbed;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 20px;
 }
 
@@ -551,14 +579,14 @@ legend {
 
 .status-won {
   color: #76e6ab;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 27px;
 }
 
 .status-lost,
 .status-error {
   color: #ff8894;
-  font-family: "VT323", monospace;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 27px;
 }
 

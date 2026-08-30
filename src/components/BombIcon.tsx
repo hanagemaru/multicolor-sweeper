@@ -1,6 +1,7 @@
 import { COLORS } from "../game/rules";
 import { spriteRects } from "./pixel-art";
 import type { MineColor } from "../game/types";
+import { bombLabel, wrongFlagLabel, type Language } from "../i18n";
 
 // 11x17のドット絵。1文字が1ドット。元絵(docs/art/bomb-v2.png)のピクセルをそのまま写している。
 //   . 透明 / b 本体 / h ハイライト / f 導火線 / s 炎(赤) / S 炎(橙) / W 炎(黄)
@@ -47,14 +48,14 @@ function paletteFor(hex: string): Record<string, string> {
   };
 }
 
-export function BombIcon({ color }: { color: MineColor }): React.JSX.Element {
+export function BombIcon({ color, language }: { color: MineColor; language: Language }): React.JSX.Element {
   const hex = COLORS[color].hex;
   return (
     <svg
       className="bomb"
       viewBox={`0 0 ${SPRITE_WIDTH} ${SPRITE_HEIGHT}`}
       shapeRendering="crispEdges"
-      aria-label={`${COLORS[color].label}の爆弾`}
+      aria-label={bombLabel(language, color)}
       role="img"
     >
       {spriteRects(SPRITE, paletteFor(hex))}
@@ -63,9 +64,9 @@ export function BombIcon({ color }: { color: MineColor }): React.JSX.Element {
 }
 
 // 間違った旗に重ねる×印。文字だとフォントに依存するのでSVGで描く。
-export function WrongMark(): React.JSX.Element {
+export function WrongMark({ language }: { language: Language }): React.JSX.Element {
   return (
-    <svg className="wrong-mark" viewBox="0 0 16 16" aria-label="誤った旗" role="img">
+    <svg className="wrong-mark" viewBox="0 0 16 16" aria-label={wrongFlagLabel(language)} role="img">
       {/* 下に暗い線を敷いて、旗の色の上でも×が沈まないようにする。 */}
       <g strokeLinecap="round" fill="none">
         <g stroke="#12060a" strokeWidth="4.5">
