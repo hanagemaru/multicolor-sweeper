@@ -50,7 +50,7 @@ export const FLAG_GESTURES: Readonly<Record<ColorCount, readonly FlagGesture[]>>
   3: [
     { label: "赤旗", angle: -45, flag: 0 },
     { label: "青旗", angle: 45, flag: 1 },
-    { label: "緑旗", angle: 180, flag: 2 },
+    { label: "緑旗", angle: -135, flag: 2 },
     { label: "無色旗", angle: 0, flag: "neutral" }
   ],
   4: [
@@ -62,7 +62,9 @@ export const FLAG_GESTURES: Readonly<Record<ColorCount, readonly FlagGesture[]>>
   ]
 };
 
-export function classifyFlagSwipe(dx: number, dy: number, colorCount: ColorCount): FlagColor {
+// nullは、その色数では割り当てのない方向。20pxでジェスチャー自体は固定するが、
+// 旗は立てずタップ開封にも戻さない。
+export function classifyFlagSwipe(dx: number, dy: number, colorCount: ColorCount): FlagColor | null {
   const horizontal = Math.abs(dx);
   const vertical = Math.abs(dy);
 
@@ -70,10 +72,10 @@ export function classifyFlagSwipe(dx: number, dy: number, colorCount: ColorCount
   if (dy < 0 && horizontal < vertical * 0.5) return "neutral";
 
   if (colorCount === 3) {
-    // 3色では下方向を緑専用にする。完全な真下だけでなく±45°まで許容し、
-    // 指の横ぶれで赤/青へ化けにくくする。ほぼ水平なら左右で赤/青を維持する。
-    if (dy > 0 && horizontal <= vertical) return 2;
-    return dx < 0 ? 0 : 1;
+    // 盤面内の数字位置との対応を保つため、赤=左上、青=右上、緑=左下。
+    // 黄が存在した右下は未使用方向として何も割り当てない。
+    if (dy <= 0) return dx < 0 ? 0 : 1;
+    return dx < 0 ? 2 : null;
   }
 
   // 4色は従来の4象限＋上中央の無色判定を維持する。
