@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "@fontsource/vt323/400.css";
 import App from "./App";
 import "./styles.css";
+import "./ui-board-first-overrides.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
