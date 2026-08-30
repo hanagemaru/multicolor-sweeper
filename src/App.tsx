@@ -22,6 +22,11 @@ import type { Board, ColorCount, FlagColor, MineCount } from "./game/types";
 import { createGeneratorClient, type GeneratorClient } from "./workers/generator-client";
 
 type Phase = "settings" | "awaiting-first" | "generating" | "playing" | "won" | "lost" | "error";
+type ResultPhase = Extract<Phase, "won" | "lost" | "error">;
+
+function isResultPhase(phase: Phase): phase is ResultPhase {
+  return phase === "won" || phase === "lost" || phase === "error";
+}
 
 function makeBaseSeed(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -42,9 +47,14 @@ export default function App(): React.JSX.Element {
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [showGenerating, setShowGenerating] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [resultOpen, setResultOpen] = useState(false);
   const clientRef = useRef<GeneratorClient | null>(null);
   const generationRequestRef = useRef(0);
-  const lockGameplayViewport = phase === "awaiting-first" || phase === "generating" || phase === "playing";
+  const resultDialogRef = useRef<HTMLDivElement | null>(null);
+  const resultButtonRef = useRef<HTMLButtonElement | null>(null);
+  const gameplayLayout = phase !== "settings";
+  const resultPhase = isResultPhase(phase) ? phase : null;
+  const showGestureGuide = phase === "awaiting-first" || phase === "generating" || phase === "playing";
 
   useEffect(() => {
     const client = createGeneratorClient();
@@ -56,13 +66,23 @@ export default function App(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("gameplay-locked", lockGameplayViewport);
-    document.body.classList.toggle("gameplay-locked", lockGameplayViewport);
+    document.documentElement.classList.add("app-viewport-locked");
+    document.body.classList.add("app-viewport-locked");
     return () => {
-      document.documentElement.classList.remove("gameplay-locked");
-      document.body.classList.remove("gameplay-locked");
+      document.documentElement.classList.remove("app-viewport-locked");
+      document.body.classList.remove("app-viewport-locked");
     };
-  }, [lockGameplayViewport]);
+  }, []);
+
+  useEffect(() => {
+    setResultOpen(resultPhase !== null);
+  }, [resultPhase]);
+
+  useEffect(() => {
+    if (!resultOpen || resultPhase === null) return;
+    const frame = window.requestAnimationFrame(() => resultDialogRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [resultOpen, resultPhase]);
 
   useEffect(() => {
     if (phase !== "playing" || startedAt === null) return;
@@ -86,6 +106,7 @@ export default function App(): React.JSX.Element {
     setElapsedMs(0);
     setStartedAt(null);
     setErrorMessage("");
+    setResultOpen(false);
     setPhase("awaiting-first");
   };
 
@@ -172,6 +193,13 @@ export default function App(): React.JSX.Element {
     setBoard(createEmptyBoard(colorCount, mineCount));
     setStartedAt(null);
     setElapsedMs(0);
+    setResultOpen(false);
+  };
+
+  const closeResult = (): void => {
+    if (resultPhase === "error") return;
+    setResultOpen(false);
+    window.requestAnimationFrame(() => resultButtonRef.current?.focus());
   };
 
   const statusText: Record<Phase, string> = {
@@ -189,7 +217,7 @@ export default function App(): React.JSX.Element {
     : `残り旗数 ${flagsRemaining}`;
 
   return (
-    <main className={`app-shell${lockGameplayViewport ? " app-shell-gameplay" : ""}`}>
+    <main className={`app-shell app-shell-${gameplayLayout ? "gameplay" : "settings"}`}>
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <div>
@@ -248,7 +276,7 @@ export default function App(): React.JSX.Element {
           <>
             <div className="game-meta">
               <span>{selectedDifficulty?.label} / {colorCount} COLORS</span>
-              <button type="button" onClick={resetToSettings}>MENU</button>
+              <button type="button" onClick={resetToSettings} disabled={resultOpen}>MENU</button>
             </div>
             <div className="board-wrap">
               <GameBoard
@@ -265,31 +293,67 @@ export default function App(): React.JSX.Element {
                   <strong>GENERATING</strong>
                 </div>
               ) : null}
+              {resultPhase !== null && resultOpen ? (
+                <div className="result-overlay">
+                  <div
+                    ref={resultDialogRef}
+                    className={`result-dialog result-dialog-${resultPhase}`}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="result-title"
+                    tabIndex={-1}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape" && resultPhase !== "error") closeResult();
+                    }}
+                  >
+                    <h2 id="result-title">
+                      {resultPhase === "won" ? "CLEAR!" : resultPhase === "lost" ? "GAME OVER" : "ERROR"}
+                    </h2>
+                    {resultPhase === "won" ? (
+                      <p className="result-time">TIME <strong>{formatTime(elapsedMs)}</strong></p>
+                    ) : null}
+                    {resultPhase === "error" ? <p className="result-error">{errorMessage}</p> : null}
+                    <div className="result-actions">
+                      <button type="button" onClick={enterBoard}>RETRY</button>
+                      <button type="button" onClick={resetToSettings}>MENU</button>
+                      {resultPhase !== "error" ? (
+                        <button className="review-button" type="button" onClick={closeResult}>盤面を見る</button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              {resultPhase !== null && !resultOpen ? (
+                <button
+                  ref={resultButtonRef}
+                  className="result-reopen"
+                  type="button"
+                  onClick={() => setResultOpen(true)}
+                >
+                  RESULT
+                </button>
+              ) : null}
             </div>
 
-            <p className={`status status-${phase}`} aria-live="polite">{statusText[phase]}</p>
+            <p
+              className={`status status-${phase}${resultOpen ? " status-result-open" : ""}`}
+              aria-live="polite"
+            >
+              {statusText[phase]}
+            </p>
 
-            {phase === "playing" || phase === "awaiting-first" || phase === "generating" ? (
-              <div className={`gesture-guide gesture-guide-${colorCount}`} aria-label="旗のスワイプ方向">
-                {FLAG_GESTURES[colorCount].map((gesture) => (
-                  <span key={gesture.label}>
-                    <GestureArrow angle={gesture.angle} color={flagColorHex(gesture.flag)} />
-                    {gesture.label}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-
-            {(phase === "won" || phase === "lost" || phase === "error") ? (
-              <div className="result-panel">
-                {phase === "won" || phase === "lost" ? (
-                  <p>TIME <strong>{formatTime(elapsedMs)}</strong></p>
-                ) : null}
-                {phase === "error" ? <p>{errorMessage}</p> : null}
-                <button type="button" onClick={enterBoard}>RETRY</button>
-                <button type="button" onClick={resetToSettings}>SETTINGS</button>
-              </div>
-            ) : null}
+            <div
+              className={`gesture-guide gesture-guide-${colorCount}${showGestureGuide ? "" : " gesture-guide-hidden"}`}
+              aria-label={showGestureGuide ? "旗のスワイプ方向" : undefined}
+              aria-hidden={!showGestureGuide}
+            >
+              {FLAG_GESTURES[colorCount].map((gesture) => (
+                <span key={gesture.label}>
+                  <GestureArrow angle={gesture.angle} color={flagColorHex(gesture.flag)} />
+                  {gesture.label}
+                </span>
+              ))}
+            </div>
           </>
         )}
       </section>
