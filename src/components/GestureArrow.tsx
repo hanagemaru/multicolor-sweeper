@@ -66,6 +66,7 @@ const PIXEL_ARROWS: Readonly<Record<number, readonly PixelRect[]>> = {
   0: UP,
   45: UP_RIGHT,
   135: mirrorY(UP_RIGHT),
+  180: mirrorY(UP),
   225: mirrorY(mirrorX(UP_RIGHT)),
   315: mirrorX(UP_RIGHT)
 };
