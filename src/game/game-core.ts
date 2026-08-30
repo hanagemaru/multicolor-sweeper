@@ -253,6 +253,10 @@ export function countFlags(board: Board): number {
   return board.cells.flat().filter((cell) => cell.flag !== null).length;
 }
 
+export function remainingFlagCount(mineCount: number, board: Board): number {
+  return mineCount - countFlags(board);
+}
+
 export function revealedSafeCount(board: Board): number {
   return board.cells.flat().filter((cell) => cell.mineColor === null && cell.state === "revealed").length;
 }
