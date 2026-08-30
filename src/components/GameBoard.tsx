@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
+import { classifyFlagSwipe, COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
 import { flagColorHex, reviewMark, totalAdjacent } from "../game/game-core";
 import { BombIcon, WrongMark } from "./BombIcon";
 import { spriteRects } from "./pixel-art";
@@ -22,12 +22,6 @@ interface GestureState {
   startX: number;
   startY: number;
   lockedFlag: FlagColor | null;
-}
-
-function classifySwipe(dx: number, dy: number): FlagColor {
-  if (dy < 0 && Math.abs(dx) < Math.abs(dy) * 0.5) return "neutral";
-  if (dy <= 0) return dx < 0 ? 0 : 1;
-  return dx < 0 ? 2 : 3;
 }
 
 function flagLabel(flag: FlagColor): string {
@@ -188,7 +182,7 @@ export function GameBoard({
     const dx = event.clientX - current.startX;
     const dy = event.clientY - current.startY;
     if (Math.hypot(dx, dy) < SWIPE_LOCK_DISTANCE_PX) return;
-    current.lockedFlag = classifySwipe(dx, dy);
+    current.lockedFlag = classifyFlagSwipe(dx, dy, board.colorCount);
     event.currentTarget.dataset.gesture = "locked";
   };
 
