@@ -47,7 +47,7 @@
 ## 検証結果
 
 - `npm run typecheck`: 成功
-- `npm test`: 30テスト成功
+- `npm test`: 37テスト成功
 - `npm run build`: 成功
 - PWA Service Worker、Web Worker、manifestをproduction buildで生成確認済み
 - ヘッドレスChromiumで320×480 / 320×568 / 390×844を実プレイ確認
@@ -55,7 +55,7 @@
   - 盤面サイズは320×480 / 320×568で296px、390×844で約332px
   - 結果画面ではスクロール固定が解除されることを確認
 - 3色/4色の方向判定、3色の未使用右下方向、色数外の不正旗拒否は自動テストで確認
-- PR #8 / #9 のGitHub Actions CIで typecheck / test / build 成功
+- PR #8 / #9 / #11 のGitHub Actions CIで typecheck / test / build 成功
 
 ## 確定事項
 
