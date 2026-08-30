@@ -111,32 +111,8 @@ button:focus-visible {
   border-bottom: 2px solid #343957;
 }
 
-.language-switch {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 3px;
-  padding: 3px;
-  border: 2px solid #414766;
-  border-radius: 5px;
-  background: #111426;
-}
-
-.language-switch button {
-  min-width: 32px;
-  padding: 5px 7px;
-  border: 0;
-  border-radius: 3px;
-  color: #9198bd;
-  background: transparent;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 17px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.language-switch button.selected {
-  color: #17151a;
-  background: #f1c85d;
+.game-header-gameplay {
+  justify-content: flex-end;
 }
 
 .eyebrow {
@@ -577,6 +553,17 @@ legend {
   line-height: 1;
 }
 
+.status-bilingual {
+  grid-template-rows: repeat(2, auto);
+  gap: 1px;
+}
+
+.status-translation {
+  color: #aeb4d5;
+  font-family: "MaruMonica", sans-serif;
+  font-size: 10px;
+}
+
 .status-won {
   color: #76e6ab;
   font-family: "VT323", "MaruMonica", monospace;
@@ -699,6 +686,17 @@ legend {
     margin: 4px 0 2px;
     font-size: 11px;
     line-height: 1.2;
+  }
+
+  .app-shell-gameplay .status-bilingual {
+    height: 20px;
+    min-height: 20px;
+    gap: 0;
+    line-height: 1;
+  }
+
+  .app-shell-gameplay .status-translation {
+    font-size: 7px;
   }
 
   .app-shell-gameplay .status-won,
