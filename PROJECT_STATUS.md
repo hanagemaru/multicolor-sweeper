@@ -68,11 +68,11 @@
 
 ## 検証
 
-PR #16〜#18反映後のmain基準は44 tests。PR #19ではランキング純粋ロジック4 testsと日英表記テストを追加する。
+PR #16〜#18反映後のmain基準は44 tests。PR #19ではランキング純粋ロジック4 testsと日英表記1 testを追加し、最終テスト構成は **49 tests**。
 
 最終確認:
 - `npm run typecheck`
-- `npm test`
+- `npm test`（49 tests）
 - `npm run build`
 
 主要viewport: 320×480 / 320×568 / 375×667 / 390×844。
