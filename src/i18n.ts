@@ -12,69 +12,37 @@ const COLOR_NAMES: Record<Language, readonly string[]> = {
 const COPY = {
   ja: {
     language: "言語",
-    japanese: "日本語",
+    japanese: "JP",
     english: "EN",
     japaneseName: "日本語",
-    englishName: "English",
-    timeAttack: "TIME ATTACK",
+    englishName: "英語",
+    timeAttack: "タイムアタック",
     gameInfo: "ゲーム情報",
-    time: "TIME",
-    flags: "残り旗",
+    time: "タイム",
+    flags: "旗",
     difficulty: "難易度",
     difficulties: {
-      easy: "EASY",
-      normal: "NORMAL",
-      hard: "HARD"
+      easy: "初級",
+      normal: "中級",
+      hard: "上級"
     },
     colors: "色数",
-    start: "START",
-    menu: "MENU",
+    start: "スタート",
+    menu: "メニュー",
     generating: "生成中",
-    result: "RESULT",
-    clear: "CLEAR!",
-    gameOver: "GAME OVER",
+    result: "結果",
+    clear: "クリア！",
+    gameOver: "ゲームオーバー",
     error: "エラー",
-    retry: "RETRY",
+    retry: "もう一度",
     viewBoard: "盤面を見る",
-    ranking: "RANKING",
-    player: "PLAYER",
-    notSet: "未登録",
-    setName: "名前登録",
-    changeName: "名前変更",
-    yourRank: "あなたの順位",
-    rank: "順位",
-    name: "名前",
-    colorColumn: "色数",
-    play: "PLAY",
-    back: "戻る",
-    backToResult: "RESULTへ戻る",
-    registerName: "名前登録",
-    nameOnlyForSubmit: "名前はタイム登録時のみ必要です。",
-    nameOptional: "名前を登録せずに遊べます。",
-    nameNeededForSubmit: "タイムを登録するには名前が必要です。",
-    playerNameLabel: "プレイヤー名",
-    playerNamePlaceholder: "名前",
-    saveName: "登録",
-    cancel: "CANCEL",
-    pause: "PAUSE",
-    paused: "PAUSE",
-    timerStopped: "タイマー停止中",
-    boardHiddenWhilePaused: "ポーズ中は盤面を非表示にしています。",
-    resume: "再開",
-    clearTime: "クリアタイム",
-    newBest: "NEW BEST!",
-    submitting: "送信中…",
-    submitted: "登録完了",
-    submitFailed: "送信失敗",
-    submitTime: "タイムを登録",
-    tryAgain: "再試行",
     status: {
       settings: "難易度と色数を選んでください",
       awaitingFirst: "好きなマスをタップしてください",
       generating: "盤面を生成中…",
       playing: "タップで開く・スワイプで旗を立てる",
-      won: "CLEAR!",
-      lost: "GAME OVER",
+      won: "クリア！",
+      lost: "ゲームオーバー",
       error: "生成エラー"
     },
     errors: {
@@ -85,7 +53,7 @@ const COPY = {
   },
   en: {
     language: "Language",
-    japanese: "日本語",
+    japanese: "JP",
     english: "EN",
     japaneseName: "Japanese",
     englishName: "English",
@@ -109,38 +77,6 @@ const COPY = {
     error: "ERROR",
     retry: "RETRY",
     viewBoard: "VIEW BOARD",
-    ranking: "RANKING",
-    player: "PLAYER",
-    notSet: "NOT SET",
-    setName: "SET NAME",
-    changeName: "CHANGE NAME",
-    yourRank: "YOUR RANK",
-    rank: "RANK",
-    name: "NAME",
-    colorColumn: "COLORS",
-    play: "PLAY",
-    back: "BACK",
-    backToResult: "BACK TO RESULT",
-    registerName: "REGISTER NAME",
-    nameOnlyForSubmit: "A name is only needed to submit a time.",
-    nameOptional: "You can play without registering a name.",
-    nameNeededForSubmit: "Enter a name to submit this time.",
-    playerNameLabel: "Player name",
-    playerNamePlaceholder: "PLAYER NAME",
-    saveName: "SAVE",
-    cancel: "CANCEL",
-    pause: "PAUSE",
-    paused: "PAUSED",
-    timerStopped: "TIME STOPPED",
-    boardHiddenWhilePaused: "The board is hidden while paused.",
-    resume: "RESUME",
-    clearTime: "CLEAR TIME",
-    newBest: "NEW BEST!",
-    submitting: "SUBMITTING...",
-    submitted: "SUBMITTED",
-    submitFailed: "SUBMIT FAILED",
-    submitTime: "SUBMIT TIME",
-    tryAgain: "TRY AGAIN",
     status: {
       settings: "Choose a difficulty and number of colors",
       awaitingFirst: "Tap any cell to start",
@@ -198,7 +134,7 @@ export function difficultyLabel(
 }
 
 export function bombCountLabel(language: Language, mineCount: MineCount): string {
-  return language === "ja" ? `爆弾 ${mineCount}個` : `${mineCount} BOMBS`;
+  return language === "ja" ? `${mineCount}爆弾` : `${mineCount} BOMBS`;
 }
 
 export function colorCountLabel(language: Language, colorCount: ColorCount): string {
@@ -210,7 +146,7 @@ export function colorName(language: Language, color: MineColor): string {
 }
 
 export function flagLabel(language: Language, flag: FlagColor): string {
-  if (flag === "neutral") return language === "ja" ? "無苲旗" : "neutral flag";
+  if (flag === "neutral") return language === "ja" ? "無色旗" : "neutral flag";
   return language === "ja"
     ? `${colorName(language, flag)}旗`
     : `${colorName(language, flag)} flag`;
