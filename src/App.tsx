@@ -45,6 +45,7 @@ export default function App(): React.JSX.Element {
   const [errorMessage, setErrorMessage] = useState("");
   const clientRef = useRef<GeneratorClient | null>(null);
   const generationRequestRef = useRef(0);
+  const lockGameplayViewport = phase === "awaiting-first" || phase === "generating" || phase === "playing";
 
   useEffect(() => {
     const client = createGeneratorClient();
@@ -54,6 +55,15 @@ export default function App(): React.JSX.Element {
       clientRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("gameplay-locked", lockGameplayViewport);
+    document.body.classList.toggle("gameplay-locked", lockGameplayViewport);
+    return () => {
+      document.documentElement.classList.remove("gameplay-locked");
+      document.body.classList.remove("gameplay-locked");
+    };
+  }, [lockGameplayViewport]);
 
   useEffect(() => {
     if (phase !== "playing" || startedAt === null) return;
@@ -177,7 +187,7 @@ export default function App(): React.JSX.Element {
   };
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell${lockGameplayViewport ? " app-shell-gameplay" : ""}`}>
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <div>
@@ -251,8 +261,8 @@ export default function App(): React.JSX.Element {
             <p className={`status status-${phase}`} aria-live="polite">{statusText[phase]}</p>
 
             {phase === "playing" || phase === "awaiting-first" ? (
-              <div className="gesture-guide" aria-label="旗のスワイプ方向">
-                {FLAG_GESTURES.map((gesture) => (
+              <div className={`gesture-guide gesture-guide-${colorCount}`} aria-label="旗のスワイプ方向">
+                {FLAG_GESTURES[colorCount].map((gesture) => (
                   <span key={gesture.label}>
                     <GestureArrow angle={gesture.angle} color={flagColorHex(gesture.flag)} />
                     {gesture.label}
