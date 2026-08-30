@@ -25,7 +25,7 @@ export default defineConfig({
         id: "/",
         name: "Multicolor Sweeper",
         short_name: "MCSweeper",
-        description: "3色・4色のNo-Guessマインスイーパー",
+        description: "3色・4色で遊ぶマインスイーパー系パズルゲーム",
         theme_color: "#15182b",
         background_color: "#15182b",
         display: "standalone",

@@ -124,7 +124,8 @@ export default function App(): React.JSX.Element {
       setPhase("playing");
     } catch (error) {
       if (generationRequestRef.current !== requestId) return;
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      console.error("Board generation failed", error);
+      setErrorMessage("盤面を生成できませんでした。もう一度お試しください。");
       setPhase("error");
     } finally {
       window.clearTimeout(indicatorTimer);
@@ -176,7 +177,7 @@ export default function App(): React.JSX.Element {
   const statusText: Record<Phase, string> = {
     settings: "難易度と色数を選んでください",
     "awaiting-first": "好きなマスをタップしてください",
-    generating: showGenerating ? "NO-GUESS盤面を生成中…" : "",
+    generating: showGenerating ? "盤面を生成中…" : "",
     playing: "タップで開く・スワイプで旗",
     won: "CLEAR!",
     lost: "GAME OVER",
@@ -192,7 +193,7 @@ export default function App(): React.JSX.Element {
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <div>
-            <p className="eyebrow">TIME ATTACK / CONDITION C</p>
+            <p className="eyebrow">TIME ATTACK</p>
             <h1 id="game-title">MULTICOLOR SWEEPER</h1>
           </div>
           <div className="metrics" aria-label="ゲーム情報">
@@ -247,7 +248,7 @@ export default function App(): React.JSX.Element {
           <>
             <div className="game-meta">
               <span>{selectedDifficulty?.label} / {colorCount} COLORS</span>
-              <button type="button" onClick={resetToSettings}>設定へ戻る</button>
+              <button type="button" onClick={resetToSettings}>MENU</button>
             </div>
             <div className="board-wrap">
               <GameBoard
@@ -262,7 +263,6 @@ export default function App(): React.JSX.Element {
                 <div className="generating-overlay" role="status">
                   <span className="spinner" />
                   <strong>GENERATING</strong>
-                  <small>NO-GUESS BOARD</small>
                 </div>
               ) : null}
             </div>
