@@ -21,6 +21,7 @@ interface GestureState {
   col: number;
   startX: number;
   startY: number;
+  locked: boolean;
   lockedFlag: FlagColor | null;
 }
 
@@ -172,17 +173,19 @@ export function GameBoard({
       col: cell.col,
       startX: event.clientX,
       startY: event.clientY,
+      locked: false,
       lockedFlag: null
     };
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>): void => {
     const current = gesture.current;
-    if (!current || current.pointerId !== event.pointerId || current.lockedFlag !== null || awaitingFirst) return;
+    if (!current || current.pointerId !== event.pointerId || current.locked || awaitingFirst) return;
     const dx = event.clientX - current.startX;
     const dy = event.clientY - current.startY;
     if (Math.hypot(dx, dy) < SWIPE_LOCK_DISTANCE_PX) return;
     current.lockedFlag = classifyFlagSwipe(dx, dy, board.colorCount);
+    current.locked = true;
     event.currentTarget.dataset.gesture = "locked";
   };
 
@@ -191,11 +194,13 @@ export function GameBoard({
     if (!current || current.pointerId !== event.pointerId) return;
     gesture.current = null;
     delete event.currentTarget.dataset.gesture;
-    if (current.lockedFlag !== null) {
-      onFlag(current.row, current.col, current.lockedFlag);
-    } else {
-      onOpen(current.row, current.col);
+    if (current.locked) {
+      if (current.lockedFlag !== null) {
+        onFlag(current.row, current.col, current.lockedFlag);
+      }
+      return;
     }
+    onOpen(current.row, current.col);
   };
 
   return (
