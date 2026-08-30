@@ -5,22 +5,28 @@ describe("FLAGS counter", () => {
   it.each([15, 20, 25] as const)("%i爆弾では残り旗数が爆弾数から始まる", (mineCount) => {
     const board = createEmptyBoard(3, mineCount);
     expect(countFlags(board)).toBe(0);
-    expect(remainingFlagCount(board)).toBe(mineCount);
+    expect(remainingFlagCount(mineCount, board)).toBe(mineCount);
+  });
+
+  it("設定画面では選択中の爆弾数へ追従する", () => {
+    const board = createEmptyBoard(3, 20);
+    expect(remainingFlagCount(15, board)).toBe(15);
+    expect(remainingFlagCount(25, board)).toBe(25);
   });
 
   it("旗の設置・色変更・取り外しで残り旗数が正しく変化する", () => {
     const board = createEmptyBoard(4, 15);
 
     setFlag(board, 0, 0, 0);
-    expect(remainingFlagCount(board)).toBe(14);
+    expect(remainingFlagCount(15, board)).toBe(14);
 
     setFlag(board, 0, 0, 1);
     expect(countFlags(board)).toBe(1);
-    expect(remainingFlagCount(board)).toBe(14);
+    expect(remainingFlagCount(15, board)).toBe(14);
 
     setFlag(board, 0, 0, 1);
     expect(countFlags(board)).toBe(0);
-    expect(remainingFlagCount(board)).toBe(15);
+    expect(remainingFlagCount(15, board)).toBe(15);
   });
 
   it.each([3, 4] as const)("%i色モードで爆弾数を超えて旗を置け、FLAGSが負数になる", (colorCount) => {
@@ -31,6 +37,6 @@ describe("FLAGS counter", () => {
     }
 
     expect(countFlags(board)).toBe(16);
-    expect(remainingFlagCount(board)).toBe(-1);
+    expect(remainingFlagCount(15, board)).toBe(-1);
   });
 });
