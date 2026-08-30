@@ -216,15 +216,9 @@ export function canChord(board: Board, row: number, col: number): boolean {
   const adjacent = getAdjacentCells(board, row, col);
   const flags = adjacent.map((item) => item.flag).filter((flag) => flag !== null);
   if (flags.length !== totalAdjacent(cell)) return false;
-
-  const coloredFlagCounts = Array<number>(board.colorCount).fill(0);
-  for (const flag of flags) {
-    if (flag !== "neutral") {
-      if (flag >= board.colorCount) return false;
-      coloredFlagCounts[flag] += 1;
-    }
-  }
-  return coloredFlagCounts.every((count, color) => count <= cell.adjacentCounts[color]);
+  return flags.every(
+    (flag) => flag === "neutral" || (flag >= 0 && flag < board.colorCount)
+  );
 }
 
 export function chordCell(board: Board, row: number, col: number): RevealResult {

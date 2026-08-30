@@ -75,7 +75,7 @@ describe("game core", () => {
     expect(checkWin(board)).toBe(true);
   });
 
-  it("混合Chordは色旗の上限と旗総数を満たすと動作する", () => {
+  it("Chordは旗の色にかかわらず旗総数がClue合計と一致すると動作する", () => {
     const board = createEmptyBoard(3, 2, "chord");
     board.generated = true;
     board.firstClick = { row: 4, col: 4 };
@@ -89,7 +89,7 @@ describe("game core", () => {
     expect(chordCell(board, 4, 4).type).toBe("reveal");
   });
 
-  it("色旗がClueを超える混合Chordは拒否する", () => {
+  it("色旗の内訳がClueと違っても旗総数が一致すればChordできる", () => {
     const board = createEmptyBoard(3, 2, "chord-invalid");
     board.generated = true;
     board.cells[3][3].mineColor = 0;
@@ -98,7 +98,21 @@ describe("game core", () => {
     board.cells[4][4].state = "revealed";
     setFlag(board, 3, 3, 0);
     setFlag(board, 3, 4, 0);
-    expect(canChord(board, 4, 4)).toBe(false);
+    expect(canChord(board, 4, 4)).toBe(true);
+    expect(chordCell(board, 4, 4).type).toBe("reveal");
+  });
+
+  it("旗総数が一致しても旗の位置が誤っていればChordで爆発する", () => {
+    const board = createEmptyBoard(3, 2, "chord-wrong-position");
+    board.generated = true;
+    board.cells[3][3].mineColor = 0;
+    board.cells[3][4].mineColor = 1;
+    recomputeAdjacentCounts(board);
+    board.cells[4][4].state = "revealed";
+    setFlag(board, 3, 3, 2);
+    setFlag(board, 4, 3, "neutral");
+    expect(canChord(board, 4, 4)).toBe(true);
+    expect(chordCell(board, 4, 4).type).toBe("mine");
   });
 
   it("3色盤面は黄旗を拒否しChord用の旗数へ混入させない", () => {
