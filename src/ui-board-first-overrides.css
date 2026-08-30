@@ -1,0 +1,52 @@
+:root {
+  font-family: "VT323", "MaruMonica", monospace;
+}
+
+.language-toggle {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: auto auto;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line-soft, #333955);
+  border-radius: 3px;
+  background: #121526;
+}
+
+.language-toggle button {
+  min-height: 32px;
+  padding: 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--muted, #a7aecf);
+  background: transparent;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.language-toggle button.selected {
+  border-color: #6c7396;
+  color: #fff6c7;
+  background: #2a2f4b;
+}
+
+.ranking-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Tall phones should not spend the extra vertical room between the live HUD and board.
+   Keep the board size unchanged and place unused height below the board instead. */
+.app-shell-gameplay .board-wrap {
+  place-items: start center;
+}
+
+@media (max-height: 600px) {
+  .language-toggle button {
+    min-height: 28px;
+    padding-inline: 5px;
+    font-size: 14px;
+  }
+}

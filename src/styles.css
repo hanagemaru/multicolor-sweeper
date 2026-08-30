@@ -7,20 +7,33 @@
 
 :root {
   color: #f4f5ff;
-  background: #111321;
-  font-family: "MaruMonica", system-ui, sans-serif;
+  background: #0f1120;
+  font-family: "VT323", monospace;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  --bg: #0f1120;
+  --panel: #191d31;
+  --panel-2: #20253d;
+  --line: #4e5576;
+  --line-soft: #333955;
+  --text: #f4f5ff;
+  --muted: #a7aecf;
+  --accent: #f1c85d;
+  --accent-ink: #17151a;
+  --success: #76e6ab;
+  --danger: #ff8894;
+  --covered: #353a59;
+  --covered-hi: #5b6288;
+  --covered-lo: #1b1f36;
+  --opened: #20243c;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
   min-width: 320px;
   min-height: 100%;
-  background: #111321;
+  background: var(--bg);
   overscroll-behavior: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -38,20 +51,29 @@ body.app-viewport-locked {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
-  overscroll-behavior: none;
 }
+
+button,
+input { font: inherit; }
 
 button {
-  font: inherit;
+  min-width: 0;
+  border: 0;
 }
 
-button:focus-visible {
+button:focus-visible,
+input:focus-visible {
   outline: 3px solid #fff2a8;
   outline-offset: 2px;
 }
 
+button:disabled {
+  opacity: 0.48;
+  cursor: default;
+}
+
 .app-shell {
-  --shell-pad: 14px;
+  --shell-pad: clamp(4px, 1.3dvh, 12px);
   display: grid;
   width: 100%;
   height: 100dvh;
@@ -64,209 +86,274 @@ button:focus-visible {
     max(var(--shell-pad), env(safe-area-inset-bottom))
     max(var(--shell-pad), env(safe-area-inset-left));
   background:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    #111321;
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    var(--bg);
   background-size: 24px 24px;
 }
 
-.app-shell-gameplay {
-  --shell-pad: clamp(4px, 1.5dvh, 14px);
-}
-
 .game-panel {
-  width: min(100%, 460px);
-  min-height: min(760px, calc(100dvh - 28px));
-  padding: 16px;
-  border: 3px solid #555b7c;
-  border-radius: 10px;
-  background: #1a1d32;
-  box-shadow: 0 10px 0 #090a12, inset 0 0 0 2px #2a2e4c;
-}
-
-.app-shell-gameplay .game-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
-  width: min(100%, 460px);
+  width: min(100%, 440px);
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  padding: clamp(6px, 1.6dvh, 16px);
+  padding: clamp(8px, 1.8dvh, 16px);
+  border: 2px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  box-shadow: 0 5px 0 #080910, inset 0 0 0 1px #2a2f4c;
 }
 
-.app-shell-settings .game-panel {
+.game-header,
+.ranking-header {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.game-header {
-  display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #343957;
-}
-
-.game-header-gameplay {
-  justify-content: flex-end;
+  gap: 10px;
+  padding-bottom: clamp(7px, 1.4dvh, 12px);
+  border-bottom: 2px solid var(--line-soft);
 }
 
 .eyebrow {
-  margin: 0 0 3px;
-  color: #a5abc9;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 16px;
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: clamp(14px, 2.2dvh, 17px);
   letter-spacing: 0.08em;
+  line-height: 1;
 }
 
 h1 {
-  max-width: 230px;
+  max-width: 280px;
   margin: 0;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: clamp(28px, 8vw, 38px);
+  font-size: clamp(27px, 7.8vw, 40px);
   font-weight: 400;
   line-height: 0.84;
 }
 
-.metrics {
-  display: flex;
-  gap: 10px;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 26px;
-  line-height: 1;
-}
-
-.metrics span {
-  min-width: 54px;
-  text-align: right;
-}
-
-.metrics small {
-  display: block;
-  margin-bottom: 2px;
-  color: #9198bd;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-}
-
 .settings {
   display: grid;
-  gap: 20px;
-  padding: 26px 0 10px;
-}
-
-.app-shell-settings .settings {
   flex: 1 1 auto;
   min-height: 0;
   align-content: center;
-  gap: clamp(10px, 3dvh, 20px);
-  padding: clamp(8px, 3dvh, 26px) 0 clamp(4px, 1.5dvh, 10px);
+  gap: clamp(7px, 1.7dvh, 14px);
+  padding-top: clamp(7px, 1.8dvh, 18px);
 }
 
 fieldset {
   min-width: 0;
   margin: 0;
-  padding: 14px 12px 12px;
-  border: 2px solid #414766;
+  padding: clamp(8px, 1.6dvh, 13px) 9px 9px;
+  border: 2px solid #414866;
 }
 
 legend {
-  padding: 0 8px;
-  color: #c7cbed;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 22px;
+  padding: 0 6px;
+  color: #cbd0ef;
+  font-size: clamp(18px, 3dvh, 22px);
 }
 
 .choice-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
+
+.colors-choice { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .choice-row button,
-.game-meta button,
-.result-dialog button,
+.ranking-tabs button,
+.compact-button,
+.player-setting button,
+.player-card button,
+.result-aux-actions button,
 .result-reopen {
-  padding: 9px 6px;
-  border: 2px solid #555b7c;
-  border-radius: 4px;
-  color: #d9dcf6;
-  background: #242844;
+  min-height: 44px;
+  padding: 6px;
+  border: 2px solid var(--line);
+  border-radius: 3px;
+  color: #e2e5fb;
+  background: #252a47;
   box-shadow: inset 0 -3px 0 #111426;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 21px;
+  font-size: clamp(18px, 3.2dvh, 22px);
   cursor: pointer;
 }
 
-.game-meta button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.choice-row button small {
+.choice-row button small,
+.ranking-tabs button small {
   display: block;
-  color: #8f96bc;
+  margin-top: -1px;
+  color: #9ca4c8;
   font-size: 12px;
+  line-height: 1;
 }
 
-.choice-row button.selected {
-  border-color: #f1c85d;
+.choice-row button.selected,
+.ranking-tabs button.selected {
+  border-color: var(--accent);
   color: #fff6c7;
-  background: #47402e;
+  background: #45402f;
 }
 
-.colors-choice {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.start-button {
-  min-height: 58px;
-  border: 3px solid #fff0ad;
-  border-radius: 5px;
-  color: #17151a;
-  background: #f1c85d;
-  box-shadow: inset 0 -5px 0 #b08028, 0 4px 0 #080910;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 34px;
-  cursor: pointer;
-}
-
-.game-meta {
+.player-setting,
+.player-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin: 12px 0 8px;
-  color: #c7cbed;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 19px;
+  gap: 8px;
+  min-height: 48px;
+  padding: 5px 7px 5px 10px;
+  border: 2px solid var(--line-soft);
+  background: #15182a;
 }
 
-.game-meta button {
-  padding: 4px 8px;
-  font-family: "MaruMonica", sans-serif;
+.player-setting span,
+.player-card span {
+  min-width: 0;
+  color: #e8eaff;
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-setting span { flex: 1; }
+
+.player-setting small,
+.player-card small {
+  display: block;
+  color: var(--muted);
   font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.player-setting button,
+.player-card button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding-inline: 9px;
+  font-size: 17px;
+}
+
+.settings-actions,
+.ranking-actions {
+  display: grid;
+  gap: 7px;
+}
+
+.start-button,
+.primary-button,
+.secondary-button,
+.ranking-button {
+  min-height: 46px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.start-button,
+.primary-button {
+  border: 2px solid #fff0ad;
+  color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: inset 0 -4px 0 #b08028, 0 3px 0 #080910;
+  font-size: 29px;
+}
+
+.ranking-button,
+.secondary-button {
+  border: 2px solid #727b9f;
+  color: #edf0ff;
+  background: #292f4e;
+  box-shadow: inset 0 -3px 0 #111426;
+  font-size: 23px;
+}
+
+.hud-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr) minmax(76px, 0.72fr);
+  align-items: stretch;
+  gap: 6px;
+  min-height: 47px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--line-soft);
+}
+
+.hud-metric {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+  padding: 2px 6px;
+  border-left: 2px solid #343a59;
+  background: #15182a;
+}
+
+.hud-metric small {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.hud-metric strong {
+  overflow: hidden;
+  color: #fff6c7;
+  font-size: clamp(23px, 4dvh, 31px);
+  font-weight: 400;
+  line-height: 0.92;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.hud-flags strong { color: #f4f5ff; }
+.hud-flags[data-over="true"] strong { color: var(--danger); }
+
+.hud-action {
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 2px solid #727b9f;
+  border-radius: 3px;
+  color: #edf0ff;
+  background: #292f4e;
+  box-shadow: inset 0 -3px 0 #111426;
+  font-size: clamp(19px, 3.3dvh, 23px);
+  cursor: pointer;
+}
+
+.condition-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 20px;
+  color: #aeb5d6;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+.condition-line span + span::before {
+  content: "·";
+  margin-right: 9px;
+  color: #5f6688;
 }
 
 .board-wrap {
   position: relative;
-}
-
-.app-shell-gameplay .board-wrap {
   container-type: size;
   display: grid;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
-  place-items: center;
+  place-items: start center;
+  padding-top: 4px;
 }
 
 .board {
   display: grid;
-  width: 100%;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+  max-width: 100%;
+  max-height: 100%;
   aspect-ratio: 1;
   border: 3px solid #080a13;
   background: #080a13;
@@ -274,13 +361,6 @@ legend {
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
-}
-
-.app-shell-gameplay .board {
-  width: min(100cqw, 100cqh);
-  height: min(100cqw, 100cqh);
-  max-width: 100%;
-  max-height: 100%;
 }
 
 .cell {
@@ -293,8 +373,8 @@ legend {
   border: 0;
   border-radius: 0;
   color: #fff;
-  background: #353a59;
-  box-shadow: inset 2px 2px 0 #5b6288, inset -2px -2px 0 #1b1f36;
+  background: var(--covered);
+  box-shadow: inset 2px 2px 0 var(--covered-hi), inset -2px -2px 0 var(--covered-lo);
   cursor: pointer;
   touch-action: none;
 }
@@ -305,116 +385,32 @@ legend {
   filter: brightness(1.12);
 }
 
-.cell:disabled {
-  opacity: 1;
-  cursor: default;
-}
+.cell:disabled { opacity: 1; cursor: default; }
+.cell-revealed { background: var(--opened); box-shadow: inset 0 0 0 1px #343957; }
+.cell-exploded { background: #542532; box-shadow: inset 0 0 0 2px #ef5f6d; }
+.cell-masked { background: #303650; box-shadow: inset 2px 2px 0 #515977, inset -2px -2px 0 #181c31; }
+.board-masked { filter: saturate(0.55) brightness(0.7); }
 
-.cell-revealed {
-  background: #20243c;
-  box-shadow: inset 0 0 0 1px #343957;
-}
-
-.cell-exploded {
-  background: #542532;
-  box-shadow: inset 0 0 0 2px #ef5f6d;
-}
-
-/* 行を明示しないと、0で空になったマス目の高さが0になり、余りの分配で
-   上段だけ・下段だけ・両方のときに数字の位置がずれる。 */
 .clue {
-  /* マスはグリッドの項目なので、割合の高さがautoに落ちて2行ぶんの行送りが
-     そのまま高さになり、下段の数字がマスの外へこぼれていた。
-     .cellはposition:relativeなので、inset指定で高さを確定させる。 */
   position: absolute;
   inset: 6%;
   display: grid;
-  /* minmaxで最小を0にする。1frの最小は既定でautoなので、文字が行より高いと
-     行が広がってしまい、下段だけが押し下げられる。 */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   place-items: center;
-  font-family: "VT323", "MaruMonica", monospace;
   font-size: clamp(15px, 5vw, 26px);
   line-height: 1;
-  /* 全周に輪郭を付けて実効的な線幅を上げる。細い線は色の弁別が落ちる。 */
-  text-shadow:
-    1px 0 0 #05060b,
-    -1px 0 0 #05060b,
-    0 1px 0 #05060b,
-    0 -1px 0 #05060b,
-    1px 1px 0 #05060b;
+  text-shadow: 1px 0 #05060b, -1px 0 #05060b, 0 1px #05060b, 0 -1px #05060b, 1px 1px #05060b;
 }
-
-/* 3色は数字が3つしかないので、そのぶん大きく取れる。 */
-.clue-3 {
-  font-size: clamp(17px, 5.6vw, 30px);
-}
-
-/* 爆弾と同じで、ドット絵が10x17の縦長。widthをautoにするとSVGが内在サイズで
-   広がってグリッドの行を押し広げるので、幅と高さの両方を割合で与える。 */
-.flag {
-  display: block;
-  width: 100%;
-  height: 46%;
-}
-
-/* ドット絵が11x17の縦長。widthをautoにするとSVGが内在サイズで広がり、
-   マスの高さが確定していない場面でグリッドの行を押し広げてしまう。
-   幅と高さの両方を割合で与え、11:17の比はpreserveAspectRatioに任せる。 */
-.bomb {
-  display: block;
-  width: 100%;
-  height: 70%;
-}
-
-/* 答え合わせの重ね描き用。
-   width/height:100%だと、マスがグリッドの項目なので割合が解決されず
-   auto扱いになり、中のSVGが内在サイズ(11:17)で膨らんでマスをはみ出す。
-   .cellはposition:relativeなので、inset:0で確実にマスいっぱいにする。 */
+.clue-3 { font-size: clamp(17px, 5.6vw, 30px); }
+.flag { display: block; width: 100%; height: 46%; }
+.bomb { display: block; width: 100%; height: 70%; }
 .flag-wrong,
-.mine-wrong {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-
-/* 旗を隠すと「どの色を間違えたか」が分からなくなるので、
-   ×は右下に小さく重ねる。 */
-.wrong-mark {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 54%;
-  height: 54%;
-}
-
-/* 爆弾はあったが色を外したマス。爆弾を主役にし、立てていた旗は隅に小さく置く。
-   ドット絵は導火線と炎が左上に伸びているので、旗は右上に寄せる。 */
-.mine-wrong-flag {
-  position: absolute;
-  right: 0;
-  top: 0;
-  display: block;
-  width: 34%;
-  height: 34%;
-}
-
-.mine-wrong-flag .flag {
-  width: 100%;
-  height: 100%;
-}
-
-/* 色まで当てられていた旗。 */
-/* box-shadowは先に書いたものが手前に描かれる。枠を後ろに置くと
-   ベベルの影に隠れてしまうので、緑の枠を先頭に置く。 */
-.cell-correct {
-  box-shadow:
-    inset 0 0 0 2px #57e0a2,
-    inset 2px 2px 0 #5b6288,
-    inset -2px -2px 0 #1b1f36;
-}
+.mine-wrong { position: absolute; inset: 0; display: grid; place-items: center; }
+.wrong-mark { position: absolute; right: 0; bottom: 0; width: 54%; height: 54%; }
+.mine-wrong-flag { position: absolute; right: 0; top: 0; display: block; width: 34%; height: 34%; }
+.mine-wrong-flag .flag { width: 100%; height: 100%; }
+.cell-correct { box-shadow: inset 0 0 0 2px #57e0a2, inset 2px 2px 0 var(--covered-hi), inset -2px -2px 0 var(--covered-lo); }
 
 .generating-overlay {
   position: absolute;
@@ -422,314 +418,323 @@ legend {
   display: grid;
   place-content: center;
   place-items: center;
-  background: rgba(12, 14, 26, 0.88);
+  background: rgba(10, 12, 24, 0.93);
   color: #fff3b5;
-  font-family: "VT323", "MaruMonica", monospace;
   letter-spacing: 0.08em;
 }
-
-.result-overlay {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  display: grid;
-  padding: clamp(10px, 5%, 24px);
-  place-items: center;
-  background: rgba(8, 10, 19, 0.82);
-}
-
-.result-dialog {
-  display: grid;
-  width: min(100%, 300px);
-  gap: 12px;
-  padding: clamp(14px, 5cqw, 22px);
-  border: 3px solid #555b7c;
-  border-radius: 7px;
-  background: #1a1d32;
-  box-shadow: 0 7px 0 #080910, inset 0 0 0 2px #2a2e4c;
-  text-align: center;
-}
-
-.result-dialog:focus {
-  outline: 3px solid #fff2a8;
-  outline-offset: 3px;
-}
-
-.result-dialog h2 {
-  margin: 0;
-  color: #76e6ab;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: clamp(32px, 11cqw, 48px);
-  font-weight: 400;
-  line-height: 0.9;
-}
-
-.result-dialog-lost h2,
-.result-dialog-error h2 {
-  color: #ff8894;
-}
-
-.result-time,
-.result-error {
-  margin: 0;
-}
-
-.result-time {
-  color: #c7cbed;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 20px;
-}
-
-.result-time strong {
-  display: block;
-  color: #fff6c7;
-  font-size: 34px;
-  font-weight: 400;
-}
-
-.result-error {
-  color: #d9dcf6;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.result-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.result-actions .review-button {
-  grid-column: 1 / -1;
-  font-family: "MaruMonica", sans-serif;
-  font-size: 13px;
-}
-
-.result-reopen {
-  position: absolute;
-  z-index: 2;
-  top: 8px;
-  right: 8px;
-  padding: 5px 9px;
-  border-color: #f1c85d;
-  color: #fff6c7;
-  background: #47402e;
-  font-size: 17px;
-}
-
-.generating-overlay strong {
-  margin-top: 12px;
-  font-size: 32px;
-  font-weight: 400;
-}
-
-.generating-overlay small {
-  color: #aeb4d5;
-  font-size: 16px;
-}
-
+.generating-overlay strong { margin-top: 10px; font-size: 29px; font-weight: 400; }
 .spinner {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: 4px solid #4d526f;
-  border-top-color: #f1c85d;
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s steps(8) infinite;
 }
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .status {
   display: grid;
-  height: 28px;
-  min-height: 22px;
-  margin: 10px 0 7px;
+  flex: 0 0 auto;
+  height: 36px;
+  min-height: 36px;
+  margin: 5px 0 3px;
   overflow: hidden;
   place-items: center;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
 }
-
-.status-bilingual {
-  grid-template-rows: repeat(2, auto);
-  gap: 1px;
-}
-
+.status-bilingual { grid-template-rows: repeat(2, auto); gap: 1px; }
 .status-translation {
-  color: #aeb4d5;
-  font-family: "MaruMonica", sans-serif;
-  font-size: 10px;
+  color: #c2c7e2;
+  font-family: "MaruMonica", system-ui, sans-serif;
+  font-size: 11px;
+  line-height: 1.15;
 }
-
-.status-won {
-  color: #76e6ab;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 27px;
-}
-
+.status-won { color: var(--success); font-size: 23px; }
 .status-lost,
-.status-error {
-  color: #ff8894;
-  font-family: "VT323", "MaruMonica", monospace;
-  font-size: 27px;
-}
-
-.status-result-open {
-  visibility: hidden;
-}
+.status-error { color: var(--danger); font-size: 23px; }
+.status-result-open { visibility: hidden; }
 
 .gesture-guide {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 3px;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  min-height: 34px;
 }
-
-.gesture-guide-3 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
+.gesture-guide-3 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .gesture-guide span {
   display: grid;
+  min-width: 0;
   place-items: center;
-  color: #8f96bc;
-  font-size: 9px;
+  color: #aeb5d6;
+  font-size: 11px;
+  line-height: 1;
+}
+.gesture-guide-hidden { visibility: hidden; }
+.gesture-arrow { display: block; width: 18px; height: 18px; overflow: visible; }
+
+.post-result-bar {
+  display: grid;
+  flex: 0 0 auto;
+  min-height: 46px;
+  margin-top: 4px;
+  place-items: center;
+}
+.result-reopen {
+  min-width: 118px;
+  border-color: var(--accent);
+  color: #fff6c7;
+  background: #45402f;
+  font-size: 21px;
 }
 
-.gesture-guide-hidden {
-  visibility: hidden;
+.modal-layer {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  padding: clamp(8px, 3vw, 18px);
+  place-items: center;
+  background: rgba(7, 9, 18, 0.88);
 }
+.modal-layer-solid { z-index: 30; background: rgba(7, 9, 18, 0.96); }
+.pause-layer { background: rgba(8, 10, 20, 0.94); }
 
-/* 色はTS側から渡す（COLORSが唯一の定義）。 */
-.gesture-arrow {
-  display: block;
-  overflow: visible;
-}
-
-.seed-line {
-  overflow: hidden;
-  margin: 10px 0 0;
-  color: #777e9f;
-  font-family: "VT323", monospace;
-  font-size: 13px;
+.result-dialog,
+.pause-dialog,
+.name-dialog {
+  display: grid;
+  width: min(100%, 306px);
+  gap: 9px;
+  padding: clamp(13px, 3dvh, 20px);
+  border: 3px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel);
+  box-shadow: 0 6px 0 #080910, inset 0 0 0 1px #2a2e4c;
   text-align: center;
+}
+
+.result-dialog:focus { outline: 3px solid #fff2a8; outline-offset: 3px; }
+
+.result-dialog h2,
+.pause-dialog h2,
+.name-dialog h2 {
+  margin: 0;
+  color: var(--success);
+  font-size: clamp(32px, 8dvh, 45px);
+  font-weight: 400;
+  line-height: 0.88;
+}
+.result-dialog-lost h2,
+.result-dialog-error h2 { color: var(--danger); }
+.pause-dialog h2,
+.name-dialog h2 { color: #fff6c7; }
+.pause-dialog p,
+.name-dialog p { margin: 0; color: #c5cae6; font-size: 16px; line-height: 1.15; }
+
+.result-time { margin: 0; }
+.result-time small { display: block; color: var(--muted); font-size: 13px; letter-spacing: 0.08em; }
+.result-time strong { display: block; color: #fff6c7; font-size: clamp(36px, 8dvh, 48px); font-weight: 400; line-height: 0.9; }
+.result-error { margin: 0; color: #d9dcf6; font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; line-height: 1.45; }
+.best-badge,
+.submit-status { margin: 0; min-height: 19px; color: var(--accent); font-size: 21px; line-height: 1; }
+.submit-status.success { color: var(--success); }
+.submit-status.error { color: var(--danger); }
+
+.result-actions,
+.dialog-actions {
+  display: grid;
+  gap: 7px;
+}
+.result-actions .primary-button,
+.result-actions .secondary-button,
+.dialog-actions .primary-button,
+.dialog-actions .secondary-button { min-height: 44px; font-size: 23px; }
+
+.result-aux-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.result-aux-actions button { min-height: 44px; font-size: 18px; }
+
+.name-dialog input {
+  width: 100%;
+  min-height: 46px;
+  padding: 7px 10px;
+  border: 2px solid #727b9f;
+  border-radius: 2px;
+  color: #fff;
+  background: #0e1120;
+  font-size: 24px;
+  text-transform: none;
+}
+.name-dialog input::placeholder { color: #777f9f; }
+
+.ranking-screen { gap: 9px; }
+.ranking-header .compact-button { min-width: 76px; font-size: 18px; }
+.ranking-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.ranking-tabs button { min-height: 48px; font-size: 22px; }
+.player-card { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(72px, 0.7fr) auto; }
+.player-card span { font-size: 19px; }
+.ranking-table-wrap {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  border: 2px solid #363c59;
+  background: #121526;
+}
+.ranking-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: clamp(17px, 2.8dvh, 21px);
+}
+.ranking-table th,
+.ranking-table td {
+  height: 35px;
+  padding: 4px 5px;
+  border-bottom: 1px solid #343a56;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.ranking-table th { position: sticky; top: 0; z-index: 1; color: #b9c0df; background: #1d2239; font-size: 14px; letter-spacing: 0.04em; }
+.ranking-table th:nth-child(1), .ranking-table td:nth-child(1) { width: 18%; text-align: center; }
+.ranking-table th:nth-child(2), .ranking-table td:nth-child(2) { width: 38%; text-align: left; }
+.ranking-table th:nth-child(3), .ranking-table td:nth-child(3) { width: 18%; text-align: center; }
+.ranking-table th:nth-child(4), .ranking-table td:nth-child(4) { width: 26%; text-align: right; }
+.ranking-table tr.is-player td { color: #fff6c7; background: #393728; }
+.ranking-actions { grid-template-columns: 1fr 1fr; }
+.ranking-actions button { min-height: 44px; font-size: 20px; }
 
-@media (max-width: 380px) {
-  .game-panel { padding: 11px; }
-  .game-header { gap: 8px; }
-  .metrics { gap: 5px; font-size: 23px; }
-  .metrics span { min-width: 48px; }
+@media (max-width: 350px) {
+  .game-panel { padding-inline: 7px; }
+  .hud-strip { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.7fr) 76px; gap: 4px; }
+  .hud-metric { padding-inline: 4px; }
+  .hud-metric strong { font-size: 22px; }
   .choice-row button { font-size: 18px; }
+  .player-card { grid-template-columns: 1fr 70px; }
+  .player-card button { grid-column: 1 / -1; min-height: 34px; }
+  .ranking-table { font-size: 17px; }
 }
 
 @media (max-height: 600px) {
-  .app-shell-gameplay,
-  .app-shell-settings {
-    --shell-pad: 4px;
-  }
-
-  .app-shell-gameplay .game-panel,
-  .app-shell-settings .game-panel {
+  .app-shell { --shell-pad: 4px; }
+  .game-panel {
     padding: 6px;
-    border-width: 2px;
-    border-radius: 6px;
-    box-shadow: 0 4px 0 #090a12, inset 0 0 0 1px #2a2e4c;
+    border-radius: 5px;
+    box-shadow: 0 3px 0 #080910, inset 0 0 0 1px #2a2e4c;
   }
 
-  .app-shell-gameplay .game-header {
-    gap: 6px;
-    padding-bottom: 5px;
-  }
+  .game-header,
+  .ranking-header { padding-bottom: 5px; }
+  .eyebrow { font-size: 13px; }
+  h1 { font-size: clamp(25px, 7.4vw, 30px); }
 
-  .app-shell-gameplay .eyebrow {
-    margin-bottom: 1px;
-    font-size: 12px;
-  }
+  .settings { gap: 6px; padding-top: 5px; }
+  fieldset { padding: 6px 7px 7px; }
+  legend { font-size: 18px; }
+  .choice-row { gap: 4px; }
+  .choice-row button { min-height: 38px; padding: 3px; font-size: 18px; }
+  .choice-row button small { font-size: 10px; }
+  .player-setting { min-height: 40px; padding-block: 3px; }
+  .player-setting span { font-size: 17px; }
+  .player-setting small { font-size: 10px; }
+  .player-setting button { min-height: 34px; font-size: 15px; }
+  .settings-actions { gap: 5px; }
+  .start-button { min-height: 44px; font-size: 26px; }
+  .ranking-button { min-height: 40px; font-size: 20px; }
 
-  .app-shell-gameplay h1 {
-    max-width: 180px;
-    font-size: clamp(24px, 8vw, 28px);
-  }
+  .hud-strip { min-height: 43px; padding-bottom: 4px; }
+  .hud-metric small { font-size: 10px; }
+  .hud-metric strong { font-size: 22px; }
+  .hud-action { min-height: 40px; font-size: 19px; }
+  .condition-line { min-height: 17px; font-size: 13px; }
+  .status { height: 32px; min-height: 32px; margin: 3px 0 1px; font-size: 15px; }
+  .status-translation { font-size: 10px; }
+  .status-won,
+  .status-lost,
+  .status-error { font-size: 20px; }
+  .gesture-guide { min-height: 30px; }
+  .gesture-guide span { font-size: 10px; }
+  .gesture-arrow { width: 15px; height: 15px; }
+  .post-result-bar { min-height: 42px; }
+  .result-reopen { min-height: 40px; }
 
-  .app-shell-gameplay .metrics {
-    gap: 4px;
-    font-size: 21px;
-  }
+  .modal-layer { padding: 6px; }
+  .result-dialog,
+  .pause-dialog,
+  .name-dialog { width: min(100%, 292px); gap: 6px; padding: 10px; }
+  .result-dialog h2,
+  .pause-dialog h2,
+  .name-dialog h2 { font-size: 33px; }
+  .result-time strong { font-size: 36px; }
+  .best-badge,
+  .submit-status { font-size: 18px; }
+  .result-actions,
+  .dialog-actions { gap: 5px; }
+  .result-actions .primary-button,
+  .result-actions .secondary-button,
+  .dialog-actions .primary-button,
+  .dialog-actions .secondary-button { min-height: 40px; font-size: 20px; }
+  .result-aux-actions button { min-height: 39px; font-size: 17px; }
+  .name-dialog input { min-height: 42px; font-size: 21px; }
 
-  .app-shell-gameplay .metrics span {
-    min-width: 44px;
-  }
-
-  .app-shell-gameplay .metrics small {
-    margin-bottom: 0;
-    font-size: 10px;
-  }
-
-  .app-shell-gameplay .game-meta {
-    margin: 5px 0 4px;
-    font-size: 16px;
-  }
-
-  .app-shell-gameplay .game-meta button {
-    padding: 2px 6px;
-    font-size: 10px;
-  }
-
-  .app-shell-gameplay .status {
-    /* 初手待ち・生成中・プレイ中で高さを変えず、盤面の再配置を防ぐ。 */
-    height: 20px;
-    min-height: 20px;
-    margin: 4px 0 2px;
-    font-size: 11px;
-    line-height: 1.2;
-  }
-
-  .app-shell-gameplay .status-bilingual {
-    gap: 0;
-    line-height: 1;
-  }
-
-  .app-shell-gameplay .status-translation {
-    font-size: 7px;
-  }
-
-  .app-shell-gameplay .status-won,
-  .app-shell-gameplay .status-lost,
-  .app-shell-gameplay .status-error {
-    font-size: 18px;
-  }
-
-  .app-shell-gameplay .gesture-guide {
-    gap: 1px;
-  }
-
-  .app-shell-gameplay .gesture-guide span {
-    font-size: 8px;
-    line-height: 1;
-  }
-
-  .app-shell-gameplay .seed-line {
-    margin: 3px 0 0;
-    font-size: 10px;
-    line-height: 1;
-  }
-}
-
-@media (max-height: 479px), (orientation: landscape) and (max-height: 600px) {
-  .app-shell-settings .game-panel {
-    overflow-y: auto;
-  }
-
-  .app-shell-settings .settings {
-    flex: none;
-  }
+  .ranking-screen { gap: 5px; }
+  .ranking-tabs { gap: 4px; }
+  .ranking-tabs button { min-height: 40px; font-size: 19px; }
+  .player-card { min-height: 40px; padding: 3px 5px; }
+  .player-card span { font-size: 16px; }
+  .player-card small { font-size: 9px; }
+  .player-card button { min-height: 32px; font-size: 14px; }
+  .ranking-table { font-size: 16px; }
+  .ranking-table th { font-size: 12px; }
+  .ranking-table th,
+  .ranking-table td { height: 28px; padding: 2px 4px; }
+  .ranking-actions { gap: 5px; }
+  .ranking-actions button { min-height: 40px; font-size: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation: none; }
+}
+
+
+.language-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  color: #68708f;
+  white-space: nowrap;
+}
+.language-toggle button { min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; cursor: pointer; }
+.language-toggle button:first-child { font-family: "MaruMonica", system-ui, sans-serif; font-size: 11px; }
+.language-toggle button.selected { color: var(--accent); }
+.language-ja { font-family: "MaruMonica", system-ui, sans-serif; }
+.language-ja h1,
+.language-ja .eyebrow,
+.language-ja .hud-strip,
+.language-ja .ranking-tabs,
+.language-ja .ranking-table td,
+.language-ja .start-button,
+.language-ja .ranking-button,
+.language-ja .result-reopen,
+.language-ja .best-badge,
+.language-ja .result-time,
+.language-ja .choice-row button,
+.language-ja .result-dialog h2 { font-family: "VT323", monospace; }
+.language-ja .choice-row button small { font-family: "MaruMonica", system-ui, sans-serif; }
+@media (max-height: 600px) {
+  .language-toggle button { min-height: 26px; font-size: 15px; }
+  .language-toggle button:first-child { font-size: 10px; }
+  .board-wrap { padding-top: 2px; }
 }

@@ -18,9 +18,9 @@ interface GameBoardProps {
   board: Board;
   language: Language;
   interactive: boolean;
-  // 決着後、伏せたままのマスに答えを描く。
   review: boolean;
   awaitingFirst: boolean;
+  masked?: boolean;
   onOpen: (row: number, col: number) => void;
   onFlag: (row: number, col: number, flag: FlagColor) => void;
 }
@@ -35,8 +35,6 @@ interface GestureState {
   lockedFlag: FlagColor | null;
 }
 
-// buttonにaria-labelを付けると子孫要素の文言は読み上げられなくなるので、
-// マスの状態までを1つの読み上げ名にまとめる。
 function cellLabel(cell: Cell, review: boolean, language: Language): string {
   const at = cellPosition(language, cell.row + 1, cell.col + 1);
   if (cell.state === "exploded") {
@@ -67,11 +65,6 @@ function cellLabel(cell: Cell, review: boolean, language: Language): string {
     : `${at} ${flagLabel(language, cell.flag)}`;
 }
 
-// 10x17のドット絵。1文字が1ドット。 . 透明 / p 竿 / c 布
-// 元絵(docs/art/flag.png)のピクセルをそのまま写している。色だけ差し替えていて、
-// 元絵の赤#ed1c24はCOLORSの赤へ置き換える。竿は元絵の灰のまま。白より暗い灰に
-// しておかないと、無色旗のときに竿と布が同じ白になって区別が付かなくなる。
-// 布は5色ぶん要るが、形は共通なので図案は1つだけ持つ。
 const FLAG_SPRITE = [
   "pccc......",
   "pcccccc...",
@@ -94,7 +87,6 @@ const FLAG_SPRITE = [
 
 const FLAG_WIDTH = 10;
 const FLAG_HEIGHT = 17;
-
 const FLAG_POLE = "#c3c3c3";
 
 function Flag({ flag, language }: { flag: FlagColor; language: Language }): React.JSX.Element {
@@ -111,15 +103,7 @@ function Flag({ flag, language }: { flag: FlagColor; language: Language }): Reac
   );
 }
 
-function Clue({
-  cell,
-  colorCount,
-  language
-}: {
-  cell: Cell;
-  colorCount: 3 | 4;
-  language: Language;
-}): React.JSX.Element | null {
+function Clue({ cell, colorCount, language }: { cell: Cell; colorCount: 3 | 4; language: Language }): React.JSX.Element | null {
   if (totalAdjacent(cell) === 0) return null;
   return (
     <span className={`clue clue-${colorCount}`} aria-label={adjacentBombsLabel(language, cell.adjacentCounts)}>
@@ -130,17 +114,7 @@ function Clue({
   );
 }
 
-function CellFace({
-  cell,
-  colorCount,
-  review,
-  language
-}: {
-  cell: Cell;
-  colorCount: 3 | 4;
-  review: boolean;
-  language: Language;
-}): React.JSX.Element | null {
+function CellFace({ cell, colorCount, review, language }: { cell: Cell; colorCount: 3 | 4; review: boolean; language: Language }): React.JSX.Element | null {
   if (cell.state === "exploded") return <BombIcon color={cell.mineColor ?? 0} language={language} />;
   if (cell.state === "revealed") return <Clue cell={cell} colorCount={colorCount} language={language} />;
 
@@ -148,13 +122,10 @@ function CellFace({
     const mark = reviewMark(cell);
     if (mark === "mine") return <BombIcon color={cell.mineColor ?? 0} language={language} />;
     if (mark === "mine-wrong-color" && cell.mineColor !== null && cell.flag !== null) {
-      // 正解の爆弾を主役にしつつ、立てていた旗を隅に小さく残す。
       return (
         <span className="mine-wrong">
           <BombIcon color={cell.mineColor} language={language} />
-          <span className="mine-wrong-flag">
-            <Flag flag={cell.flag} language={language} />
-          </span>
+          <span className="mine-wrong-flag"><Flag flag={cell.flag} language={language} /></span>
         </span>
       );
     }
@@ -178,13 +149,14 @@ export function GameBoard({
   interactive,
   review,
   awaitingFirst,
+  masked = false,
   onOpen,
   onFlag
 }: GameBoardProps): React.JSX.Element {
   const gesture = useRef<GestureState | null>(null);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, cell: Cell): void => {
-    if (!interactive) return;
+    if (!interactive || masked) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     gesture.current = {
       pointerId: event.pointerId,
@@ -199,7 +171,7 @@ export function GameBoard({
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>): void => {
     const current = gesture.current;
-    if (!current || current.pointerId !== event.pointerId || current.locked || awaitingFirst) return;
+    if (!current || current.pointerId !== event.pointerId || current.locked || awaitingFirst || masked) return;
     const dx = event.clientX - current.startX;
     const dy = event.clientY - current.startY;
     if (Math.hypot(dx, dy) < SWIPE_LOCK_DISTANCE_PX) return;
@@ -210,13 +182,11 @@ export function GameBoard({
 
   const finishGesture = (event: React.PointerEvent<HTMLButtonElement>): void => {
     const current = gesture.current;
-    if (!current || current.pointerId !== event.pointerId) return;
+    if (!current || current.pointerId !== event.pointerId || masked) return;
     gesture.current = null;
     delete event.currentTarget.dataset.gesture;
     if (current.locked) {
-      if (current.lockedFlag !== null) {
-        onFlag(current.row, current.col, current.lockedFlag);
-      }
+      if (current.lockedFlag !== null) onFlag(current.row, current.col, current.lockedFlag);
       return;
     }
     onOpen(current.row, current.col);
@@ -224,12 +194,11 @@ export function GameBoard({
 
   return (
     <div
-      className="board"
+      className={`board${masked ? " board-masked" : ""}`}
       role="grid"
-      aria-label={boardLabel(language, GRID_SIZE)}
+      aria-label={masked ? "Board hidden while paused" : boardLabel(language, GRID_SIZE)}
+      aria-hidden={masked || undefined}
       style={{
-        // minmax(0, 1fr)にしないと、マスの中身が大きいときに行や列が
-        // 押し広げられて正方形が崩れる。
         gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`
       }}
@@ -239,11 +208,12 @@ export function GameBoard({
           key={`${cell.row}-${cell.col}`}
           type="button"
           role="gridcell"
-          className={`cell cell-${cell.state}${
-            review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
+          className={`cell ${masked ? "cell-masked" : `cell-${cell.state}`}${
+            !masked && review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
           }`}
-          disabled={!interactive}
-          aria-label={cellLabel(cell, review, language)}
+          disabled={!interactive || masked}
+          tabIndex={masked ? -1 : undefined}
+          aria-label={masked ? undefined : cellLabel(cell, review, language)}
           onPointerDown={(event) => handlePointerDown(event, cell)}
           onPointerMove={handlePointerMove}
           onPointerUp={finishGesture}
@@ -253,7 +223,7 @@ export function GameBoard({
           }}
           onContextMenu={(event) => event.preventDefault()}
         >
-          <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />
+          {masked ? null : <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />}
         </button>
       ))}
     </div>
