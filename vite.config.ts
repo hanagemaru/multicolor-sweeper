@@ -25,14 +25,14 @@ export default defineConfig({
         id: "/",
         name: "Multicolor Sweeper",
         short_name: "MCSweeper",
-        description: "3色・4色で遊ぶマインスイーパー系パズルゲーム",
+        description: "A multicolor Minesweeper puzzle with three- and four-color modes.",
         theme_color: "#15182b",
         background_color: "#15182b",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
         scope: "/",
-        lang: "ja",
+        lang: "en",
         icons: [
           {
             src: "/icons/icon-192.png",

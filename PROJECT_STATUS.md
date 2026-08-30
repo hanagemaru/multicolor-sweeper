@@ -19,6 +19,8 @@
 - `CONDITION C` / `NO-GUESS` など生成方式の内部用語を通常UI・生成エラー・公開metadataから外し、タイトル上部を `TIME ATTACK` のみに整理（PR #13、main反映済み）
 - プレイ中に開始画面へ戻るボタンを `MENU` に整理（PR #13、main反映済み）
 - 開始画面を含む全フェーズを100dvhに固定し、CLEAR / GAME OVER / 生成エラーを盤面上の結果オーバーレイへ移した（PR #14、main反映済み）
+- 開始画面右上の `JP` / `EN` で日本語・英語を切り替え、画面文言・ARIAラベル・操作ガイド・生成エラーを一括して切り替える仕組みを実装（P1-C、PR作成前）
+- 初回言語は端末の優先言語から決定し、選択後は端末内へ保存する。実行中のHTML `lang` も選択言語へ追従する
 - MaruMonica、VT323とライセンス表記を収録済み
 - Seed再現性、条件C、Solver soundness、Worker非同期境界を自動テスト済み
 - PWAアイコン一式（192/512、maskable、apple-touch-icon 180）を `scripts/generate-icons.mjs` から生成済み
@@ -52,7 +54,7 @@
 ## 検証結果
 
 - `npm run typecheck`: 成功
-- `npm test`: 37テスト成功
+- `npm test`: 43テスト成功
 - `npm run build`: 成功
 - PWA Service Worker、Web Worker、manifestをproduction buildで生成確認済み
 - P0時点のヘッドレスChromium確認では320×480 / 320×568 / 390×844で実プレイ確認
@@ -62,6 +64,7 @@
 - P1-B差分は `npm run typecheck` / `npm test` / `npm run build` 成功
 - 3色/4色の方向判定、3色の未使用右下方向、色数外の不正旗拒否は自動テストで確認
 - PR #8 / #9 / #11 / #13 / #14 のGitHub Actions CIで typecheck / test / build 成功
+- P1-C差分は `npm run typecheck` / `npm test`（43件）/ `npm run build` 成功
 
 ## 確定事項
 
@@ -78,7 +81,9 @@
 - タイトル上部のモード表記は `TIME ATTACK` のみとする
 - プレイ中と結果表示から開始画面へ戻るボタンは `MENU` とする
 - CLEAR / GAME OVER / 生成エラーは盤面上のオーバーレイへ表示し、決着後の答え合わせは「盤面を見る」から確認できる
-- 日本語 / 英語切替は独立PRで、画面文言・ARIAラベル・操作ガイド・エラー文を一括して対応する
+- 日本語 / 英語切替は開始画面右上の `JP` / `EN` で行い、画面文言・ARIAラベル・操作ガイド・エラー文を一括して切り替える
+- 初回は端末の優先言語が日本語なら日本語、それ以外は英語とし、選択内容は端末内へ保存する
+- HTML / PWAの静的metadataは英語を基準とし、実行中のHTML `lang` は選択言語へ追従する
 - 配信先は Cloudflare Workers（Static Assets）
 - 公開URLは `https://mcsweeper.hanage.app/` を予定。カスタムドメインは未割り当てで、現在は `*.workers.dev` の既定URLで配信している
 - ハブサイトには紹介ページのみを置き、ゲーム本体は独立サブドメインで配信する
@@ -91,7 +96,6 @@
 - `hanage.app` ゾーンのCloudflare移管と、`mcsweeper.hanage.app` のカスタムドメイン割り当て（手順は `DEPLOY.md` の初回セットアップ 3 と 5）
 - hanage-hub側に `/games/multicolor-sweeper/` 紹介ページと `src/lib/site.ts` のエントリを追加（別Repo）
 - iPhone実機で25爆弾の生成時間、120ms表示、スワイプ方向固定を確認
-- 日本語 / 英語切替の設計・実装
 - 完成デザインと画面遷移を設計・実装
 - 6部門ランキングのバックエンド、認証、不正対策を決定
 - アクセシビリティと端末別タッチ操作の追加QA
@@ -99,7 +103,7 @@
 
 ## 次セッション候補
 
-1. P1-C 日本語 / 英語切替
+1. P1-C 日本語 / 英語切替のレビュー・main反映
 2. P1-D 旗操作・爆発・クリアの視覚フィードバック
 3. P1-E 効果音とミュート
 4. P1-F 端末・アクセシビリティ最終QA

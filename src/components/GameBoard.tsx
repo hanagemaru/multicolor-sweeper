@@ -4,9 +4,19 @@ import { flagColorHex, reviewMark, totalAdjacent } from "../game/game-core";
 import { BombIcon, WrongMark } from "./BombIcon";
 import { spriteRects } from "./pixel-art";
 import type { Board, Cell, FlagColor } from "../game/types";
+import {
+  adjacentBombsLabel,
+  boardLabel,
+  bombLabel,
+  cellPosition,
+  cellStateLabel,
+  flagLabel,
+  type Language
+} from "../i18n";
 
 interface GameBoardProps {
   board: Board;
+  language: Language;
   interactive: boolean;
   // 決着後、伏せたままのマスに答えを描く。
   review: boolean;
@@ -25,38 +35,36 @@ interface GestureState {
   lockedFlag: FlagColor | null;
 }
 
-function flagLabel(flag: FlagColor): string {
-  return flag === "neutral" ? "無色旗" : `${COLORS[flag].label}旗`;
-}
-
 // buttonにaria-labelを付けると子孫要素の文言は読み上げられなくなるので、
 // マスの状態までを1つの読み上げ名にまとめる。
-function cellLabel(cell: Cell, review: boolean): string {
-  const at = `${cell.row + 1}行${cell.col + 1}列`;
+function cellLabel(cell: Cell, review: boolean, language: Language): string {
+  const at = cellPosition(language, cell.row + 1, cell.col + 1);
   if (cell.state === "exploded") {
-    return `${at} ${COLORS[cell.mineColor ?? 0].label}の爆弾 爆発`;
+    return `${at} ${bombLabel(language, cell.mineColor ?? 0)} ${cellStateLabel(language, "exploded")}`;
   }
   if (cell.state === "revealed") {
     return totalAdjacent(cell) === 0
-      ? `${at} 空き`
-      : `${at} 周囲の爆弾 ${cell.adjacentCounts.join(",")}`;
+      ? `${at} ${cellStateLabel(language, "empty")}`
+      : `${at} ${adjacentBombsLabel(language, cell.adjacentCounts)}`;
   }
   if (review) {
-    const mineLabel = cell.mineColor === null ? "" : `${COLORS[cell.mineColor].label}の爆弾`;
+    const mine = cell.mineColor === null ? "" : bombLabel(language, cell.mineColor);
     switch (reviewMark(cell)) {
       case "correct-flag":
-        return `${at} ${mineLabel} 正解`;
+        return `${at} ${mine} ${cellStateLabel(language, "correct")}`;
       case "mine-wrong-color":
-        return `${at} ${mineLabel} ${flagLabel(cell.flag as FlagColor)}で誤答`;
+        return `${at} ${mine} ${flagLabel(language, cell.flag as FlagColor)} ${cellStateLabel(language, "wrong-answer")}`;
       case "mine":
-        return `${at} ${mineLabel} 旗なし`;
+        return `${at} ${mine} ${cellStateLabel(language, "no-flag")}`;
       case "wrong-flag":
-        return `${at} ${flagLabel(cell.flag as FlagColor)} 爆弾なし`;
+        return `${at} ${flagLabel(language, cell.flag as FlagColor)} ${cellStateLabel(language, "no-bomb")}`;
       default:
-        return `${at} 空き`;
+        return `${at} ${cellStateLabel(language, "empty")}`;
     }
   }
-  return cell.flag === null ? `${at} 未開放` : `${at} ${flagLabel(cell.flag)}`;
+  return cell.flag === null
+    ? `${at} ${cellStateLabel(language, "unrevealed")}`
+    : `${at} ${flagLabel(language, cell.flag)}`;
 }
 
 // 10x17のドット絵。1文字が1ドット。 . 透明 / p 竿 / c 布
@@ -89,13 +97,13 @@ const FLAG_HEIGHT = 17;
 
 const FLAG_POLE = "#c3c3c3";
 
-function Flag({ flag }: { flag: FlagColor }): React.JSX.Element {
+function Flag({ flag, language }: { flag: FlagColor; language: Language }): React.JSX.Element {
   return (
     <svg
       className="flag"
       viewBox={`0 0 ${FLAG_WIDTH} ${FLAG_HEIGHT}`}
       shapeRendering="crispEdges"
-      aria-label={flagLabel(flag)}
+      aria-label={flagLabel(language, flag)}
       role="img"
     >
       {spriteRects(FLAG_SPRITE, { p: FLAG_POLE, c: flagColorHex(flag) })}
@@ -103,10 +111,18 @@ function Flag({ flag }: { flag: FlagColor }): React.JSX.Element {
   );
 }
 
-function Clue({ cell, colorCount }: { cell: Cell; colorCount: 3 | 4 }): React.JSX.Element | null {
+function Clue({
+  cell,
+  colorCount,
+  language
+}: {
+  cell: Cell;
+  colorCount: 3 | 4;
+  language: Language;
+}): React.JSX.Element | null {
   if (totalAdjacent(cell) === 0) return null;
   return (
-    <span className={`clue clue-${colorCount}`} aria-label={`周囲の爆弾 ${cell.adjacentCounts.join(",")}`}>
+    <span className={`clue clue-${colorCount}`} aria-label={adjacentBombsLabel(language, cell.adjacentCounts)}>
       {cell.adjacentCounts.map((count, color) => (
         <span key={color} style={{ color: COLORS[color].hex }}>{count === 0 ? "" : count}</span>
       ))}
@@ -117,25 +133,27 @@ function Clue({ cell, colorCount }: { cell: Cell; colorCount: 3 | 4 }): React.JS
 function CellFace({
   cell,
   colorCount,
-  review
+  review,
+  language
 }: {
   cell: Cell;
   colorCount: 3 | 4;
   review: boolean;
+  language: Language;
 }): React.JSX.Element | null {
-  if (cell.state === "exploded") return <BombIcon color={cell.mineColor ?? 0} />;
-  if (cell.state === "revealed") return <Clue cell={cell} colorCount={colorCount} />;
+  if (cell.state === "exploded") return <BombIcon color={cell.mineColor ?? 0} language={language} />;
+  if (cell.state === "revealed") return <Clue cell={cell} colorCount={colorCount} language={language} />;
 
   if (review) {
     const mark = reviewMark(cell);
-    if (mark === "mine") return <BombIcon color={cell.mineColor ?? 0} />;
+    if (mark === "mine") return <BombIcon color={cell.mineColor ?? 0} language={language} />;
     if (mark === "mine-wrong-color" && cell.mineColor !== null && cell.flag !== null) {
       // 正解の爆弾を主役にしつつ、立てていた旗を隅に小さく残す。
       return (
         <span className="mine-wrong">
-          <BombIcon color={cell.mineColor} />
+          <BombIcon color={cell.mineColor} language={language} />
           <span className="mine-wrong-flag">
-            <Flag flag={cell.flag} />
+            <Flag flag={cell.flag} language={language} />
           </span>
         </span>
       );
@@ -143,19 +161,20 @@ function CellFace({
     if (mark === "wrong-flag") {
       return (
         <span className="flag-wrong">
-          <Flag flag={cell.flag ?? "neutral"} />
-          <WrongMark />
+          <Flag flag={cell.flag ?? "neutral"} language={language} />
+          <WrongMark language={language} />
         </span>
       );
     }
   }
 
-  if (cell.flag !== null) return <Flag flag={cell.flag} />;
+  if (cell.flag !== null) return <Flag flag={cell.flag} language={language} />;
   return null;
 }
 
 export function GameBoard({
   board,
+  language,
   interactive,
   review,
   awaitingFirst,
@@ -207,7 +226,7 @@ export function GameBoard({
     <div
       className="board"
       role="grid"
-      aria-label={`${GRID_SIZE}×${GRID_SIZE} マインスイーパー盤面`}
+      aria-label={boardLabel(language, GRID_SIZE)}
       style={{
         // minmax(0, 1fr)にしないと、マスの中身が大きいときに行や列が
         // 押し広げられて正方形が崩れる。
@@ -224,7 +243,7 @@ export function GameBoard({
             review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
           }`}
           disabled={!interactive}
-          aria-label={cellLabel(cell, review)}
+          aria-label={cellLabel(cell, review, language)}
           onPointerDown={(event) => handlePointerDown(event, cell)}
           onPointerMove={handlePointerMove}
           onPointerUp={finishGesture}
@@ -234,7 +253,7 @@ export function GameBoard({
           }}
           onContextMenu={(event) => event.preventDefault()}
         >
-          <CellFace cell={cell} colorCount={board.colorCount} review={review} />
+          <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />
         </button>
       ))}
     </div>

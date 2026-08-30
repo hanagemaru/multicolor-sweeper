@@ -38,7 +38,6 @@ export const COLORS: ReadonlyArray<{
 export const NEUTRAL_FLAG_HEX = "#e9eef4";
 
 export interface FlagGesture {
-  label: string;
   angle: number;
   flag: FlagColor;
 }
@@ -48,17 +47,17 @@ export interface FlagGesture {
 // ピクセルアートにする。文字フォントや回転SVGのアンチエイリアスには依存しない。
 export const FLAG_GESTURES: Readonly<Record<ColorCount, readonly FlagGesture[]>> = {
   3: [
-    { label: "赤旗", angle: -45, flag: 0 },
-    { label: "青旗", angle: 45, flag: 1 },
-    { label: "緑旗", angle: -135, flag: 2 },
-    { label: "無色旗", angle: 0, flag: "neutral" }
+    { angle: -45, flag: 0 },
+    { angle: 45, flag: 1 },
+    { angle: -135, flag: 2 },
+    { angle: 0, flag: "neutral" }
   ],
   4: [
-    { label: "赤旗", angle: -45, flag: 0 },
-    { label: "青旗", angle: 45, flag: 1 },
-    { label: "緑旗", angle: -135, flag: 2 },
-    { label: "黄旗", angle: 135, flag: 3 },
-    { label: "無色旗", angle: 0, flag: "neutral" }
+    { angle: -45, flag: 0 },
+    { angle: 45, flag: 1 },
+    { angle: -135, flag: 2 },
+    { angle: 135, flag: 3 },
+    { angle: 0, flag: "neutral" }
   ]
 };
 

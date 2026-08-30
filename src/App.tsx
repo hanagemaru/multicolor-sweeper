@@ -19,6 +19,17 @@ import {
   PRODUCT_FILTER
 } from "./game/rules";
 import type { Board, ColorCount, FlagColor, MineCount } from "./game/types";
+import {
+  bombCountLabel,
+  colorCountLabel,
+  difficultyLabel,
+  flagLabel,
+  flagsRemainingLabel,
+  getCopy,
+  persistLanguage,
+  readInitialLanguage,
+  type Language
+} from "./i18n";
 import { createGeneratorClient, type GeneratorClient } from "./workers/generator-client";
 
 type Phase = "settings" | "awaiting-first" | "generating" | "playing" | "won" | "lost" | "error";
@@ -38,6 +49,7 @@ function formatTime(milliseconds: number): string {
 }
 
 export default function App(): React.JSX.Element {
+  const [language, setLanguage] = useState<Language>(readInitialLanguage);
   const [mineCount, setMineCount] = useState<MineCount>(20);
   const [colorCount, setColorCount] = useState<ColorCount>(3);
   const [phase, setPhase] = useState<Phase>("settings");
@@ -55,6 +67,7 @@ export default function App(): React.JSX.Element {
   const gameplayLayout = phase !== "settings";
   const resultPhase = isResultPhase(phase) ? phase : null;
   const showGestureGuide = phase === "awaiting-first" || phase === "generating" || phase === "playing";
+  const copy = getCopy(language);
 
   useEffect(() => {
     const client = createGeneratorClient();
@@ -73,6 +86,11 @@ export default function App(): React.JSX.Element {
       document.body.classList.remove("app-viewport-locked");
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    persistLanguage(language);
+  }, [language]);
 
   useEffect(() => {
     setResultOpen(resultPhase !== null);
@@ -113,7 +131,7 @@ export default function App(): React.JSX.Element {
   const generateFromFirstClick = async (row: number, col: number): Promise<void> => {
     const client = clientRef.current;
     if (!client) {
-      setErrorMessage("盤面生成の準備ができませんでした。再読み込みしてください。");
+      setErrorMessage(copy.errors.clientUnavailable);
       setPhase("error");
       return;
     }
@@ -146,7 +164,7 @@ export default function App(): React.JSX.Element {
     } catch (error) {
       if (generationRequestRef.current !== requestId) return;
       console.error("Board generation failed", error);
-      setErrorMessage("盤面を生成できませんでした。もう一度お試しください。");
+      setErrorMessage(copy.errors.generationFailed);
       setPhase("error");
     } finally {
       window.clearTimeout(indicatorTimer);
@@ -203,45 +221,66 @@ export default function App(): React.JSX.Element {
   };
 
   const statusText: Record<Phase, string> = {
-    settings: "難易度と色数を選んでください",
-    "awaiting-first": "好きなマスをタップしてください",
-    generating: showGenerating ? "盤面を生成中…" : "",
-    playing: "タップで開く・スワイプで旗",
-    won: "CLEAR!",
-    lost: "GAME OVER",
-    error: "生成エラー"
+    settings: copy.status.settings,
+    "awaiting-first": copy.status.awaitingFirst,
+    generating: showGenerating ? copy.status.generating : "",
+    playing: copy.status.playing,
+    won: copy.status.won,
+    lost: copy.status.lost,
+    error: copy.status.error
   };
 
-  const flagsLabel = flagsRemaining < 0
-    ? `残り旗数 ${flagsRemaining}。旗が${Math.abs(flagsRemaining)}本多いです`
-    : `残り旗数 ${flagsRemaining}`;
+  const flagsLabel = flagsRemainingLabel(language, flagsRemaining);
 
   return (
     <main className={`app-shell app-shell-${gameplayLayout ? "gameplay" : "settings"}`}>
       <section className="game-panel" aria-labelledby="game-title">
         <header className="game-header">
           <div>
-            <p className="eyebrow">TIME ATTACK</p>
+            <p className="eyebrow">{copy.timeAttack}</p>
             <h1 id="game-title">MULTICOLOR SWEEPER</h1>
           </div>
-          <div className="metrics" aria-label="ゲーム情報">
-            <span><small>TIME</small>{formatTime(elapsedMs)}</span>
-            <span
-              aria-label={flagsLabel}
-              style={flagsRemaining < 0 ? {
-                color: "#ff8894",
-                textShadow: "0 0 6px rgba(255, 136, 148, 0.45)"
-              } : undefined}
-            >
-              <small>FLAGS</small>{flagsRemaining.toString().padStart(2, "0")}
-            </span>
-          </div>
+          {phase === "settings" ? (
+            <div className="language-switch" role="group" aria-label={copy.language}>
+              <button
+                type="button"
+                className={language === "ja" ? "selected" : ""}
+                aria-pressed={language === "ja"}
+                aria-label={copy.japaneseName}
+                onClick={() => setLanguage("ja")}
+              >
+                {copy.japanese}
+              </button>
+              <button
+                type="button"
+                className={language === "en" ? "selected" : ""}
+                aria-pressed={language === "en"}
+                aria-label={copy.englishName}
+                onClick={() => setLanguage("en")}
+              >
+                {copy.english}
+              </button>
+            </div>
+          ) : (
+            <div className="metrics" aria-label={copy.gameInfo}>
+              <span><small>{copy.time}</small>{formatTime(elapsedMs)}</span>
+              <span
+                aria-label={flagsLabel}
+                style={flagsRemaining < 0 ? {
+                  color: "#ff8894",
+                  textShadow: "0 0 6px rgba(255, 136, 148, 0.45)"
+                } : undefined}
+              >
+                <small>{copy.flags}</small>{flagsRemaining.toString().padStart(2, "0")}
+              </span>
+            </div>
+          )}
         </header>
 
         {phase === "settings" ? (
           <div className="settings">
             <fieldset>
-              <legend>DIFFICULTY</legend>
+              <legend>{copy.difficulty}</legend>
               <div className="choice-row">
                 {DIFFICULTIES.map((difficulty) => (
                   <button
@@ -250,13 +289,14 @@ export default function App(): React.JSX.Element {
                     className={mineCount === difficulty.mineCount ? "selected" : ""}
                     onClick={() => setMineCount(difficulty.mineCount)}
                   >
-                    {difficulty.label}<small>{difficulty.mineCount} BOMBS</small>
+                    {difficultyLabel(language, difficulty.id)}
+                    <small>{bombCountLabel(language, difficulty.mineCount)}</small>
                   </button>
                 ))}
               </div>
             </fieldset>
             <fieldset>
-              <legend>COLORS</legend>
+              <legend>{copy.colors}</legend>
               <div className="choice-row colors-choice">
                 {[3, 4].map((count) => (
                   <button
@@ -265,22 +305,26 @@ export default function App(): React.JSX.Element {
                     className={colorCount === count ? "selected" : ""}
                     onClick={() => setColorCount(count as ColorCount)}
                   >
-                    {count} COLORS
+                    {colorCountLabel(language, count as ColorCount)}
                   </button>
                 ))}
               </div>
             </fieldset>
-            <button className="start-button" type="button" onClick={enterBoard}>START</button>
+            <button className="start-button" type="button" onClick={enterBoard}>{copy.start}</button>
           </div>
         ) : (
           <>
             <div className="game-meta">
-              <span>{selectedDifficulty?.label} / {colorCount} COLORS</span>
-              <button type="button" onClick={resetToSettings} disabled={resultOpen}>MENU</button>
+              <span>
+                {selectedDifficulty ? difficultyLabel(language, selectedDifficulty.id) : ""}
+                {" / "}{colorCountLabel(language, colorCount)}
+              </span>
+              <button type="button" onClick={resetToSettings} disabled={resultOpen}>{copy.menu}</button>
             </div>
             <div className="board-wrap">
               <GameBoard
                 board={board}
+                language={language}
                 interactive={phase === "awaiting-first" || phase === "playing"}
                 review={phase === "won" || phase === "lost"}
                 awaitingFirst={phase === "awaiting-first"}
@@ -290,7 +334,7 @@ export default function App(): React.JSX.Element {
               {phase === "generating" && showGenerating ? (
                 <div className="generating-overlay" role="status">
                   <span className="spinner" />
-                  <strong>GENERATING</strong>
+                  <strong>{copy.generating}</strong>
                 </div>
               ) : null}
               {resultPhase !== null && resultOpen ? (
@@ -307,17 +351,17 @@ export default function App(): React.JSX.Element {
                     }}
                   >
                     <h2 id="result-title">
-                      {resultPhase === "won" ? "CLEAR!" : resultPhase === "lost" ? "GAME OVER" : "ERROR"}
+                      {resultPhase === "won" ? copy.clear : resultPhase === "lost" ? copy.gameOver : copy.error}
                     </h2>
                     {resultPhase === "won" ? (
-                      <p className="result-time">TIME <strong>{formatTime(elapsedMs)}</strong></p>
+                      <p className="result-time">{copy.time} <strong>{formatTime(elapsedMs)}</strong></p>
                     ) : null}
                     {resultPhase === "error" ? <p className="result-error">{errorMessage}</p> : null}
                     <div className="result-actions">
-                      <button type="button" onClick={enterBoard}>RETRY</button>
-                      <button type="button" onClick={resetToSettings}>MENU</button>
+                      <button type="button" onClick={enterBoard}>{copy.retry}</button>
+                      <button type="button" onClick={resetToSettings}>{copy.menu}</button>
                       {resultPhase !== "error" ? (
-                        <button className="review-button" type="button" onClick={closeResult}>盤面を見る</button>
+                        <button className="review-button" type="button" onClick={closeResult}>{copy.viewBoard}</button>
                       ) : null}
                     </div>
                   </div>
@@ -330,7 +374,7 @@ export default function App(): React.JSX.Element {
                   type="button"
                   onClick={() => setResultOpen(true)}
                 >
-                  RESULT
+                  {copy.result}
                 </button>
               ) : null}
             </div>
@@ -344,13 +388,13 @@ export default function App(): React.JSX.Element {
 
             <div
               className={`gesture-guide gesture-guide-${colorCount}${showGestureGuide ? "" : " gesture-guide-hidden"}`}
-              aria-label={showGestureGuide ? "旗のスワイプ方向" : undefined}
+              aria-label={showGestureGuide ? copy.flagDirections : undefined}
               aria-hidden={!showGestureGuide}
             >
               {FLAG_GESTURES[colorCount].map((gesture) => (
-                <span key={gesture.label}>
+                <span key={String(gesture.flag)}>
                   <GestureArrow angle={gesture.angle} color={flagColorHex(gesture.flag)} />
-                  {gesture.label}
+                  {flagLabel(language, gesture.flag)}
                 </span>
               ))}
             </div>
