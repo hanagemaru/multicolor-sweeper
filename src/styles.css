@@ -344,7 +344,8 @@ legend {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
-  place-items: center;
+  place-items: start center;
+  padding-top: 4px;
 }
 
 .board {
@@ -704,4 +705,36 @@ legend {
 
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation: none; }
+}
+
+
+.language-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  color: #68708f;
+  white-space: nowrap;
+}
+.language-toggle button { min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; cursor: pointer; }
+.language-toggle button:first-child { font-family: "MaruMonica", system-ui, sans-serif; font-size: 11px; }
+.language-toggle button.selected { color: var(--accent); }
+.language-ja { font-family: "MaruMonica", system-ui, sans-serif; }
+.language-ja h1,
+.language-ja .eyebrow,
+.language-ja .hud-strip,
+.language-ja .ranking-tabs,
+.language-ja .ranking-table td,
+.language-ja .start-button,
+.language-ja .ranking-button,
+.language-ja .result-reopen,
+.language-ja .best-badge,
+.language-ja .result-time,
+.language-ja .choice-row button,
+.language-ja .result-dialog h2 { font-family: "VT323", monospace; }
+.language-ja .choice-row button small { font-family: "MaruMonica", system-ui, sans-serif; }
+@media (max-height: 600px) {
+  .language-toggle button { min-height: 26px; font-size: 15px; }
+  .language-toggle button:first-child { font-size: 10px; }
+  .board-wrap { padding-top: 2px; }
 }

@@ -26,6 +26,8 @@ import {
   flagLabel,
   flagsRemainingLabel,
   getCopy,
+  persistLanguage,
+  readInitialLanguage,
   type Language
 } from "./i18n";
 import {
@@ -48,7 +50,6 @@ interface LocalRecord {
   colorCount: ColorCount;
 }
 
-const ACTIVE_LANGUAGE: Language = "en";
 const SUBMITTED_RECORD_STORAGE_PREFIX = "multicolor-sweeper-submitted";
 
 function isResultPhase(phase: Phase): phase is ResultPhase {
@@ -85,6 +86,7 @@ function persistRecord(key: string, record: LocalRecord): void {
 }
 
 export default function App(): React.JSX.Element {
+  const [language, setLanguage] = useState<Language>(() => readInitialLanguage());
   const [mineCount, setMineCount] = useState<MineCount>(20);
   const [colorCount, setColorCount] = useState<ColorCount>(3);
   const [phase, setPhase] = useState<Phase>("settings");
@@ -118,9 +120,7 @@ export default function App(): React.JSX.Element {
   const gameplayLayout = phase !== "settings";
   const resultPhase = isResultPhase(phase) ? phase : null;
   const showGestureGuide = phase === "awaiting-first" || phase === "generating" || phase === "playing";
-  const language = ACTIVE_LANGUAGE;
   const copy = getCopy(language);
-  const japaneseCopy = getCopy("ja");
 
   useEffect(() => {
     const client = createGeneratorClient();
@@ -139,6 +139,15 @@ export default function App(): React.JSX.Element {
       document.body.classList.remove("app-viewport-locked");
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    persistLanguage(language);
+  }, [language]);
+
+  const selectLanguage = (nextLanguage: Language): void => {
+    setLanguage(nextLanguage);
+  };
 
   useEffect(() => {
     try {
@@ -405,29 +414,25 @@ export default function App(): React.JSX.Element {
     settings: copy.status.settings,
     "awaiting-first": copy.status.awaitingFirst,
     generating: showGenerating ? copy.status.generating : "",
-    playing: paused ? "PAUSED" : copy.status.playing,
+    playing: paused ? copy.paused : copy.status.playing,
     won: copy.status.won,
     lost: copy.status.lost,
     error: copy.status.error
   };
-  const statusTranslation = phase === "awaiting-first"
-    ? japaneseCopy.status.awaitingFirst
-    : phase === "playing" && !paused
-      ? japaneseCopy.status.playing
-      : null;
 
   const flagsLabel = flagsRemainingLabel(language, flagsRemaining);
 
   if (rankingOpen) {
     return (
       <main className="app-shell app-shell-ranking">
-        <section className="game-panel ranking-screen" aria-labelledby="ranking-title">
+        <section className={`game-panel ranking-screen language-${language}`} lang={language} aria-labelledby="ranking-title">
           <header className="ranking-header">
-            <div>
-              <p className="eyebrow">TIME ATTACK</p>
-              <h1 id="ranking-title">RANKING</h1>
+            <h1 id="ranking-title">{copy.ranking}</h1>
+            <div className="language-toggle" aria-label={copy.language}>
+              <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{copy.japanese}</button>
+              <span aria-hidden="true">|</span>
+              <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>EN</button>
             </div>
-            <button className="compact-button" type="button" onClick={() => setRankingOpen(false)}>BACK</button>
           </header>
 
           <div className="ranking-tabs" aria-label="Ranking category">
@@ -444,14 +449,14 @@ export default function App(): React.JSX.Element {
           </div>
 
           <div className="player-card">
-            <span><small>PLAYER</small>{playerName || "NOT SET"}</span>
-            <span><small>YOUR RANK</small>{yourRank === null ? "--" : `#${yourRank}`}</span>
-            <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? "CHANGE" : "SET NAME"}</button>
+            <span><small>{copy.player}</small>{playerName || copy.notSet}</span>
+            <span><small>{copy.yourRank}</small>{yourRank === null ? "--" : `#${yourRank}`}</span>
+            <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? copy.changeName : copy.setName}</button>
           </div>
 
           <div className="ranking-table-wrap">
             <table className="ranking-table">
-              <thead><tr><th>RANK</th><th>NAME</th><th>COLOR</th><th>TIME</th></tr></thead>
+              <thead><tr><th>{copy.rank}</th><th>{copy.name}</th><th>{copy.tableColors}</th><th>{copy.time}</th></tr></thead>
               <tbody>
                 {rankingEntries.slice(0, 10).map((entry) => (
                   <tr key={`${entry.rank}-${entry.name}-${entry.colorCount}`} className={entry.isPlayer ? "is-player" : ""}>
@@ -468,30 +473,30 @@ export default function App(): React.JSX.Element {
               type="button"
               onClick={() => enterBoard(rankingMineCount, colorCount)}
             >
-              PLAY {rankingMineCount}
+              {copy.play} {rankingMineCount}
             </button>
             <button className="secondary-button" type="button" onClick={() => setRankingOpen(false)}>
-              {rankingOrigin === "result" ? "BACK TO RESULT" : "BACK"}
+              {rankingOrigin === "result" ? copy.backToResult : copy.back}
             </button>
           </div>
 
           {nameEditorOpen ? (
             <div className="modal-layer modal-layer-solid">
               <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
-                <h2 id="name-title">{playerName ? "CHANGE NAME" : "REGISTER NAME"}</h2>
-                <p>Name is only needed when saving a record.</p>
+                <h2 id="name-title">{playerName ? copy.changeName : copy.registerName}</h2>
+                <p>{copy.nameOnlyForRecord}</p>
                 <input
                   autoFocus
                   value={nameDraft}
                   maxLength={16}
-                  aria-label="Player name"
+                  aria-label={copy.name}
                   onChange={(event) => setNameDraft(event.target.value)}
                   onKeyDown={(event) => { if (event.key === "Enter") confirmName(); }}
-                  placeholder="PLAYER NAME"
+                  placeholder={copy.playerNamePlaceholder}
                 />
                 <div className="dialog-actions">
-                  <button className="primary-button" type="button" disabled={!nameDraft.trim()} onClick={confirmName}>SAVE</button>
-                  <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>CANCEL</button>
+                  <button className="primary-button" type="button" disabled={!nameDraft.trim()} onClick={confirmName}>{copy.save}</button>
+                  <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>{copy.cancel}</button>
                 </div>
               </div>
             </div>
@@ -504,7 +509,8 @@ export default function App(): React.JSX.Element {
   return (
     <main className={`app-shell app-shell-${gameplayLayout ? "gameplay" : "settings"}`}>
       <section
-        className="game-panel"
+        className={`game-panel language-${language}`}
+        lang={language}
         aria-labelledby={phase === "settings" ? "game-title" : undefined}
         aria-label={phase === "settings" ? undefined : "Multicolor Sweeper game"}
       >
@@ -514,6 +520,11 @@ export default function App(): React.JSX.Element {
               <div>
                 <p className="eyebrow">{copy.timeAttack}</p>
                 <h1 id="game-title">MULTICOLOR SWEEPER</h1>
+              </div>
+              <div className="language-toggle" aria-label={copy.language}>
+                <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{copy.japanese}</button>
+                <span aria-hidden="true">|</span>
+                <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>EN</button>
               </div>
             </header>
             <div className="settings">
@@ -550,13 +561,13 @@ export default function App(): React.JSX.Element {
               </fieldset>
 
               <div className="player-setting">
-                <span><small>PLAYER</small>{playerName || "NOT SET"}</span>
-                <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? "CHANGE" : "SET NAME"}</button>
+                <span><small>{copy.player}</small>{playerName || copy.notSet}</span>
+                <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? copy.changeName : copy.setName}</button>
               </div>
 
               <div className="settings-actions">
                 <button className="start-button" type="button" onClick={() => enterBoard()}>{copy.start}</button>
-                <button className="ranking-button" type="button" onClick={() => openRanking("settings")}>RANKING</button>
+                <button className="ranking-button" type="button" onClick={() => openRanking("settings")}>{copy.ranking}</button>
               </div>
             </div>
           </>
@@ -572,9 +583,9 @@ export default function App(): React.JSX.Element {
                 <small>{copy.flags}</small><strong>{flagsRemaining.toString().padStart(2, "0")}</strong>
               </span>
               {phase === "playing" ? (
-                <button className="hud-action" type="button" onClick={pauseGame}>PAUSE</button>
+                <button className="hud-action" type="button" onClick={pauseGame}>{copy.pause}</button>
               ) : (
-                <button className="hud-action" type="button" onClick={resetToSettings} disabled={phase === "generating"}>MENU</button>
+                <button className="hud-action" type="button" onClick={resetToSettings} disabled={phase === "generating"}>{copy.menu}</button>
               )}
             </header>
 
@@ -609,11 +620,10 @@ export default function App(): React.JSX.Element {
             ) : null}
 
             <p
-              className={`status status-${phase}${statusTranslation ? " status-bilingual" : ""}${resultOpen ? " status-result-open" : ""}`}
+              className={`status status-${phase}${resultOpen ? " status-result-open" : ""}`}
               aria-live="polite"
             >
               <span>{statusText[phase]}</span>
-              {statusTranslation ? <span className="status-translation" lang="ja">{statusTranslation}</span> : null}
             </p>
 
             <div
@@ -634,12 +644,12 @@ export default function App(): React.JSX.Element {
         {paused ? (
           <div className="modal-layer pause-layer">
             <div className="pause-dialog" role="dialog" aria-modal="true" aria-labelledby="pause-title">
-              <p className="eyebrow">TIME STOPPED</p>
-              <h2 id="pause-title">PAUSED</h2>
-              <p>The board is hidden while paused.</p>
+              <p className="eyebrow">{copy.timeStopped}</p>
+              <h2 id="pause-title">{copy.paused}</h2>
+              <p>{copy.pauseDescription}</p>
               <div className="dialog-actions">
-                <button className="primary-button" type="button" onClick={resumeGame}>RESUME</button>
-                <button className="secondary-button" type="button" onClick={resetToSettings}>MENU</button>
+                <button className="primary-button" type="button" onClick={resumeGame}>{copy.resume}</button>
+                <button className="secondary-button" type="button" onClick={resetToSettings}>{copy.menu}</button>
               </div>
             </div>
           </div>
@@ -663,11 +673,11 @@ export default function App(): React.JSX.Element {
               </h2>
               {resultPhase === "won" ? (
                 <>
-                  <p className="result-time"><small>CLEAR TIME</small><strong>{formatTime(elapsedMs)}</strong></p>
-                  {newBest ? <p className="best-badge">NEW BEST!</p> : null}
-                  {submitState === "sending" ? <p className="submit-status">SENDING...</p> : null}
-                  {submitState === "success" ? <p className="submit-status success">SAVED · #{submittedRank ?? "--"}</p> : null}
-                  {submitState === "error" ? <p className="submit-status error">SAVE FAILED</p> : null}
+                  <p className="result-time"><small>{copy.clearTime}</small><strong>{formatTime(elapsedMs)}</strong></p>
+                  {newBest ? <p className="best-badge">{copy.newBest}</p> : null}
+                  {submitState === "sending" ? <p className="submit-status">{copy.submitting}</p> : null}
+                  {submitState === "success" ? <p className="submit-status success">{copy.submitted} · #{submittedRank ?? "--"}</p> : null}
+                  {submitState === "error" ? <p className="submit-status error">{copy.submitFailed}</p> : null}
                 </>
               ) : null}
               {resultPhase === "error" ? <p className="result-error">{errorMessage}</p> : null}
@@ -676,7 +686,7 @@ export default function App(): React.JSX.Element {
                 <button className="primary-button" type="button" onClick={() => enterBoard()}>{copy.retry}</button>
                 {resultPhase === "won" ? (
                   submitState === "success" ? (
-                    <button className="secondary-button" type="button" onClick={() => openRanking("result")}>VIEW RANKING</button>
+                    <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{copy.ranking}</button>
                   ) : (
                     <button
                       className="secondary-button"
@@ -684,7 +694,7 @@ export default function App(): React.JSX.Element {
                       disabled={submitState === "sending"}
                       onClick={() => submitScore()}
                     >
-                      {submitState === "error" ? "TRY SAVE AGAIN" : "SAVE SCORE"}
+                      {submitState === "error" ? copy.retrySubmit : copy.submitTime}
                     </button>
                   )
                 ) : null}
@@ -704,22 +714,22 @@ export default function App(): React.JSX.Element {
         {nameEditorOpen ? (
           <div className="modal-layer modal-layer-solid">
             <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
-              <h2 id="name-title">{playerName ? "CHANGE NAME" : "REGISTER NAME"}</h2>
-              <p>{namePurpose === "submit" ? "Register a name to save this record." : "You can play without registering a name."}</p>
+              <h2 id="name-title">{playerName ? copy.changeName : copy.registerName}</h2>
+              <p>{namePurpose === "submit" ? copy.nameRequiredForSubmit : copy.nameOptional}</p>
               <input
                 autoFocus
                 value={nameDraft}
                 maxLength={16}
-                aria-label="Player name"
+                aria-label={copy.name}
                 onChange={(event) => setNameDraft(event.target.value)}
                 onKeyDown={(event) => { if (event.key === "Enter") confirmName(); }}
-                placeholder="PLAYER NAME"
+                placeholder={copy.playerNamePlaceholder}
               />
               <div className="dialog-actions">
                 <button className="primary-button" type="button" disabled={!nameDraft.trim()} onClick={confirmName}>
-                  {namePurpose === "submit" ? "SAVE SCORE" : "SAVE"}
+                  {namePurpose === "submit" ? copy.submitTime : copy.save}
                 </button>
-                <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>CANCEL</button>
+                <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>{copy.cancel}</button>
               </div>
             </div>
           </div>

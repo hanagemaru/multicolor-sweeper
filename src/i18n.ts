@@ -12,37 +12,62 @@ const COLOR_NAMES: Record<Language, readonly string[]> = {
 const COPY = {
   ja: {
     language: "言語",
-    japanese: "JP",
+    japanese: "日本語",
     english: "EN",
-    japaneseName: "日本語",
-    englishName: "英語",
-    timeAttack: "タイムアタック",
+    timeAttack: "TIME ATTACK",
     gameInfo: "ゲーム情報",
-    time: "タイム",
-    flags: "旗",
+    time: "TIME",
+    flags: "FLAGS",
     difficulty: "難易度",
-    difficulties: {
-      easy: "初級",
-      normal: "中級",
-      hard: "上級"
-    },
+    difficulties: { easy: "EASY", normal: "NORMAL", hard: "HARD" },
     colors: "色数",
-    start: "スタート",
-    menu: "メニュー",
-    generating: "生成中",
-    result: "結果",
-    clear: "クリア！",
-    gameOver: "ゲームオーバー",
+    start: "START",
+    menu: "MENU",
+    pause: "PAUSE",
+    paused: "PAUSE",
+    timeStopped: "タイマー停止中",
+    pauseDescription: "ポーズ中は盤面を隠しています。",
+    resume: "再開",
+    generating: "生成中…",
+    result: "RESULT",
+    clear: "CLEAR!",
+    clearTime: "CLEAR TIME",
+    gameOver: "GAME OVER",
     error: "エラー",
-    retry: "もう一度",
+    retry: "RETRY",
     viewBoard: "盤面を見る",
+    ranking: "RANKING",
+    back: "戻る",
+    backToResult: "RESULTへ戻る",
+    player: "PLAYER",
+    notSet: "未登録",
+    setName: "名前登録",
+    changeName: "名前変更",
+    yourRank: "あなたの順位",
+    rank: "順位",
+    name: "名前",
+    tableColors: "色数",
+    play: "PLAY",
+    registerName: "名前登録",
+    nameOnlyForRecord: "名前はタイムを登録するときだけ必要です。",
+    nameRequiredForSubmit: "タイムを登録するため、名前を登録してください。",
+    nameOptional: "名前を登録しなくてもプレイできます。",
+    playerNamePlaceholder: "プレイヤー名",
+    save: "保存",
+    cancel: "CANCEL",
+    submitTime: "タイムを登録",
+    submitting: "送信中…",
+    submitted: "登録完了",
+    submitFailed: "送信失敗",
+    retrySubmit: "再試行",
+    newBest: "NEW BEST!",
     status: {
       settings: "難易度と色数を選んでください",
       awaitingFirst: "好きなマスをタップしてください",
       generating: "盤面を生成中…",
       playing: "タップで開く・スワイプで旗を立てる",
-      won: "クリア！",
-      lost: "ゲームオーバー",
+      won: "CLEAR!",
+      lost: "GAME OVER",
       error: "生成エラー"
     },
     errors: {
@@ -53,30 +78,55 @@ const COPY = {
   },
   en: {
     language: "Language",
-    japanese: "JP",
+    japanese: "日本語",
     english: "EN",
-    japaneseName: "Japanese",
-    englishName: "English",
     timeAttack: "TIME ATTACK",
     gameInfo: "Game information",
     time: "TIME",
     flags: "FLAGS",
     difficulty: "DIFFICULTY",
-    difficulties: {
-      easy: "EASY",
-      normal: "NORMAL",
-      hard: "HARD"
-    },
+    difficulties: { easy: "EASY", normal: "NORMAL", hard: "HARD" },
     colors: "COLORS",
     start: "START",
     menu: "MENU",
+    pause: "PAUSE",
+    paused: "PAUSED",
+    timeStopped: "TIME STOPPED",
+    pauseDescription: "The board is hidden while paused.",
+    resume: "RESUME",
     generating: "GENERATING",
     result: "RESULT",
     clear: "CLEAR!",
+    clearTime: "CLEAR TIME",
     gameOver: "GAME OVER",
     error: "ERROR",
     retry: "RETRY",
     viewBoard: "VIEW BOARD",
+    ranking: "RANKING",
+    back: "BACK",
+    backToResult: "BACK TO RESULT",
+    player: "PLAYER",
+    notSet: "NOT SET",
+    setName: "SET NAME",
+    changeName: "CHANGE NAME",
+    yourRank: "YOUR RANK",
+    rank: "RANK",
+    name: "NAME",
+    tableColors: "COLORS",
+    play: "PLAY",
+    registerName: "REGISTER NAME",
+    nameOnlyForRecord: "Name is only needed when submitting a time.",
+    nameRequiredForSubmit: "Register a name to submit this time.",
+    nameOptional: "You can play without registering a name.",
+    playerNamePlaceholder: "PLAYER NAME",
+    save: "SAVE",
+    cancel: "CANCEL",
+    submitTime: "SUBMIT TIME",
+    submitting: "SUBMITTING...",
+    submitted: "SUBMITTED",
+    submitFailed: "SUBMIT FAILED",
+    retrySubmit: "TRY AGAIN",
+    newBest: "NEW BEST!",
     status: {
       settings: "Choose a difficulty and number of colors",
       awaitingFirst: "Tap any cell to start",
@@ -94,10 +144,7 @@ const COPY = {
   }
 } as const;
 
-export function resolveInitialLanguage(
-  storedLanguage: string | null,
-  browserLanguages: readonly string[]
-): Language {
+export function resolveInitialLanguage(storedLanguage: string | null, browserLanguages: readonly string[]): Language {
   if (storedLanguage === "ja" || storedLanguage === "en") return storedLanguage;
   return browserLanguages.some((language) => language.toLowerCase().startsWith("ja")) ? "ja" : "en";
 }
@@ -105,68 +152,45 @@ export function resolveInitialLanguage(
 export function readInitialLanguage(): Language {
   if (typeof window === "undefined") return "en";
   let storedLanguage: string | null = null;
-  try {
-    storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  } catch {
-    // Storage can be unavailable in private or restricted browsing contexts.
-  }
+  try { storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY); } catch {}
   const browserLanguages = navigator.languages.length > 0 ? navigator.languages : [navigator.language];
   return resolveInitialLanguage(storedLanguage, browserLanguages);
 }
 
 export function persistLanguage(language: Language): void {
-  try {
-    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-  } catch {
-    // The language still applies for the current session when storage is unavailable.
-  }
+  try { window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language); } catch {}
 }
 
-export function getCopy(language: Language) {
-  return COPY[language];
-}
+export function getCopy(language: Language) { return COPY[language]; }
 
-export function difficultyLabel(
-  language: Language,
-  difficulty: "easy" | "normal" | "hard"
-): string {
+export function difficultyLabel(language: Language, difficulty: "easy" | "normal" | "hard"): string {
   return COPY[language].difficulties[difficulty];
 }
 
 export function bombCountLabel(language: Language, mineCount: MineCount): string {
-  return language === "ja" ? `${mineCount}爆弾` : `${mineCount} BOMBS`;
+  return language === "ja" ? `爆弾 ${mineCount}個` : `${mineCount} BOMBS`;
 }
 
 export function colorCountLabel(language: Language, colorCount: ColorCount): string {
   return language === "ja" ? `${colorCount}色` : `${colorCount} COLORS`;
 }
 
-export function colorName(language: Language, color: MineColor): string {
-  return COLOR_NAMES[language][color];
-}
+export function colorName(language: Language, color: MineColor): string { return COLOR_NAMES[language][color]; }
 
 export function flagLabel(language: Language, flag: FlagColor): string {
   if (flag === "neutral") return language === "ja" ? "無色旗" : "neutral flag";
-  return language === "ja"
-    ? `${colorName(language, flag)}旗`
-    : `${colorName(language, flag)} flag`;
+  return language === "ja" ? `${colorName(language, flag)}旗` : `${colorName(language, flag)} flag`;
 }
 
 export function flagsRemainingLabel(language: Language, remaining: number): string {
   if (language === "ja") {
-    return remaining < 0
-      ? `残り旗数 ${remaining}。旗が${Math.abs(remaining)}本多いです`
-      : `残り旗数 ${remaining}`;
+    return remaining < 0 ? `残り旗数 ${remaining}。旗が${Math.abs(remaining)}本多いです` : `残り旗数 ${remaining}`;
   }
-  return remaining < 0
-    ? `${remaining} flags remaining. ${Math.abs(remaining)} too many flags placed.`
-    : `${remaining} flags remaining`;
+  return remaining < 0 ? `${remaining} flags remaining. ${Math.abs(remaining)} too many flags placed.` : `${remaining} flags remaining`;
 }
 
 export function boardLabel(language: Language, gridSize: number): string {
-  return language === "ja"
-    ? `${gridSize}×${gridSize} マインスイーパー盤面`
-    : `${gridSize} by ${gridSize} Minesweeper board`;
+  return language === "ja" ? `${gridSize}×${gridSize} マインスイーパー盤面` : `${gridSize} by ${gridSize} Minesweeper board`;
 }
 
 export function cellPosition(language: Language, row: number, col: number): string {
@@ -174,34 +198,13 @@ export function cellPosition(language: Language, row: number, col: number): stri
 }
 
 export function bombLabel(language: Language, color: MineColor): string {
-  return language === "ja"
-    ? `${colorName(language, color)}の爆弾`
-    : `${colorName(language, color)} bomb`;
+  return language === "ja" ? `${colorName(language, color)}の爆弾` : `${colorName(language, color)} bomb`;
 }
 
-export function cellStateLabel(
-  language: Language,
-  state: "exploded" | "empty" | "correct" | "wrong-answer" | "no-flag" | "no-bomb" | "unrevealed"
-): string {
+export function cellStateLabel(language: Language, state: "exploded" | "empty" | "correct" | "wrong-answer" | "no-flag" | "no-bomb" | "unrevealed"): string {
   const labels = {
-    ja: {
-      exploded: "爆発",
-      empty: "空き",
-      correct: "正解",
-      "wrong-answer": "で誤答",
-      "no-flag": "旗なし",
-      "no-bomb": "爆弾なし",
-      unrevealed: "未開放"
-    },
-    en: {
-      exploded: "exploded",
-      empty: "empty",
-      correct: "correct",
-      "wrong-answer": "wrong answer",
-      "no-flag": "no flag",
-      "no-bomb": "no bomb",
-      unrevealed: "unrevealed"
-    }
+    ja: { exploded: "爆発", empty: "空き", correct: "正解", "wrong-answer": "で誤答", "no-flag": "旗なし", "no-bomb": "爆弾なし", unrevealed: "未開放" },
+    en: { exploded: "exploded", empty: "empty", correct: "correct", "wrong-answer": "wrong answer", "no-flag": "no flag", "no-bomb": "no bomb", unrevealed: "unrevealed" }
   } as const;
   return labels[language][state];
 }
@@ -211,6 +214,4 @@ export function adjacentBombsLabel(language: Language, counts: readonly number[]
   return language === "ja" ? `周囲の爆弾 ${values}` : `Adjacent bombs ${values}`;
 }
 
-export function wrongFlagLabel(language: Language): string {
-  return language === "ja" ? "誤った旗" : "Wrong flag";
-}
+export function wrongFlagLabel(language: Language): string { return language === "ja" ? "誤った旗" : "Wrong flag"; }
