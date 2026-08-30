@@ -26,14 +26,13 @@ import {
   flagLabel,
   flagsRemainingLabel,
   getCopy,
-  persistLanguage,
-  readInitialLanguage,
   type Language
 } from "./i18n";
 import { createGeneratorClient, type GeneratorClient } from "./workers/generator-client";
 
 type Phase = "settings" | "awaiting-first" | "generating" | "playing" | "won" | "lost" | "error";
 type ResultPhase = Extract<Phase, "won" | "lost" | "error">;
+const ACTIVE_LANGUAGE: Language = "en";
 
 function isResultPhase(phase: Phase): phase is ResultPhase {
   return phase === "won" || phase === "lost" || phase === "error";
@@ -49,7 +48,6 @@ function formatTime(milliseconds: number): string {
 }
 
 export default function App(): React.JSX.Element {
-  const [language, setLanguage] = useState<Language>(readInitialLanguage);
   const [mineCount, setMineCount] = useState<MineCount>(20);
   const [colorCount, setColorCount] = useState<ColorCount>(3);
   const [phase, setPhase] = useState<Phase>("settings");
@@ -67,7 +65,9 @@ export default function App(): React.JSX.Element {
   const gameplayLayout = phase !== "settings";
   const resultPhase = isResultPhase(phase) ? phase : null;
   const showGestureGuide = phase === "awaiting-first" || phase === "generating" || phase === "playing";
+  const language = ACTIVE_LANGUAGE;
   const copy = getCopy(language);
+  const japaneseCopy = getCopy("ja");
 
   useEffect(() => {
     const client = createGeneratorClient();
@@ -86,11 +86,6 @@ export default function App(): React.JSX.Element {
       document.body.classList.remove("app-viewport-locked");
     };
   }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = language;
-    persistLanguage(language);
-  }, [language]);
 
   useEffect(() => {
     setResultOpen(resultPhase !== null);
@@ -229,37 +224,26 @@ export default function App(): React.JSX.Element {
     lost: copy.status.lost,
     error: copy.status.error
   };
+  const statusTranslation = phase === "awaiting-first"
+    ? japaneseCopy.status.awaitingFirst
+    : phase === "playing"
+      ? japaneseCopy.status.playing
+      : null;
 
   const flagsLabel = flagsRemainingLabel(language, flagsRemaining);
 
   return (
     <main className={`app-shell app-shell-${gameplayLayout ? "gameplay" : "settings"}`}>
-      <section className="game-panel" aria-labelledby="game-title">
-        <header className="game-header">
-          <div>
-            <p className="eyebrow">{copy.timeAttack}</p>
-            <h1 id="game-title">MULTICOLOR SWEEPER</h1>
-          </div>
+      <section
+        className="game-panel"
+        aria-labelledby={phase === "settings" ? "game-title" : undefined}
+        aria-label={phase === "settings" ? undefined : "Multicolor Sweeper game"}
+      >
+        <header className={`game-header game-header-${gameplayLayout ? "gameplay" : "settings"}`}>
           {phase === "settings" ? (
-            <div className="language-switch" role="group" aria-label={copy.language}>
-              <button
-                type="button"
-                className={language === "ja" ? "selected" : ""}
-                aria-pressed={language === "ja"}
-                aria-label={copy.japaneseName}
-                onClick={() => setLanguage("ja")}
-              >
-                {copy.japanese}
-              </button>
-              <button
-                type="button"
-                className={language === "en" ? "selected" : ""}
-                aria-pressed={language === "en"}
-                aria-label={copy.englishName}
-                onClick={() => setLanguage("en")}
-              >
-                {copy.english}
-              </button>
+            <div>
+              <p className="eyebrow">{copy.timeAttack}</p>
+              <h1 id="game-title">MULTICOLOR SWEEPER</h1>
             </div>
           ) : (
             <div className="metrics" aria-label={copy.gameInfo}>
@@ -380,10 +364,11 @@ export default function App(): React.JSX.Element {
             </div>
 
             <p
-              className={`status status-${phase}${resultOpen ? " status-result-open" : ""}`}
+              className={`status status-${phase}${statusTranslation ? " status-bilingual" : ""}${resultOpen ? " status-result-open" : ""}`}
               aria-live="polite"
             >
-              {statusText[phase]}
+              <span>{statusText[phase]}</span>
+              {statusTranslation ? <span className="status-translation" lang="ja">{statusTranslation}</span> : null}
             </p>
 
             <div
