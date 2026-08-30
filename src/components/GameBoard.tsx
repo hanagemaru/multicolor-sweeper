@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
+import { classifyFlagSwipe, COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
 import { flagColorHex, reviewMark, totalAdjacent } from "../game/game-core";
 import { BombIcon, WrongMark } from "./BombIcon";
 import { spriteRects } from "./pixel-art";
@@ -21,13 +21,8 @@ interface GestureState {
   col: number;
   startX: number;
   startY: number;
+  locked: boolean;
   lockedFlag: FlagColor | null;
-}
-
-function classifySwipe(dx: number, dy: number): FlagColor {
-  if (dy < 0 && Math.abs(dx) < Math.abs(dy) * 0.5) return "neutral";
-  if (dy <= 0) return dx < 0 ? 0 : 1;
-  return dx < 0 ? 2 : 3;
 }
 
 function flagLabel(flag: FlagColor): string {
@@ -178,17 +173,19 @@ export function GameBoard({
       col: cell.col,
       startX: event.clientX,
       startY: event.clientY,
+      locked: false,
       lockedFlag: null
     };
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLButtonElement>): void => {
     const current = gesture.current;
-    if (!current || current.pointerId !== event.pointerId || current.lockedFlag !== null || awaitingFirst) return;
+    if (!current || current.pointerId !== event.pointerId || current.locked || awaitingFirst) return;
     const dx = event.clientX - current.startX;
     const dy = event.clientY - current.startY;
     if (Math.hypot(dx, dy) < SWIPE_LOCK_DISTANCE_PX) return;
-    current.lockedFlag = classifySwipe(dx, dy);
+    current.lockedFlag = classifyFlagSwipe(dx, dy, board.colorCount);
+    current.locked = true;
     event.currentTarget.dataset.gesture = "locked";
   };
 
@@ -197,11 +194,13 @@ export function GameBoard({
     if (!current || current.pointerId !== event.pointerId) return;
     gesture.current = null;
     delete event.currentTarget.dataset.gesture;
-    if (current.lockedFlag !== null) {
-      onFlag(current.row, current.col, current.lockedFlag);
-    } else {
-      onOpen(current.row, current.col);
+    if (current.locked) {
+      if (current.lockedFlag !== null) {
+        onFlag(current.row, current.col, current.lockedFlag);
+      }
+      return;
     }
+    onOpen(current.row, current.col);
   };
 
   return (

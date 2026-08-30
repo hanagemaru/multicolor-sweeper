@@ -33,6 +33,14 @@ body {
   overscroll-behavior: none;
 }
 
+html.gameplay-locked,
+body.gameplay-locked {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 button {
   font: inherit;
 }
@@ -54,6 +62,14 @@ button:focus-visible {
   background-size: 24px 24px;
 }
 
+.app-shell-gameplay {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(4px, 1.5dvh, 14px);
+}
+
 .game-panel {
   width: min(100%, 460px);
   min-height: min(760px, calc(100dvh - 28px));
@@ -62,6 +78,16 @@ button:focus-visible {
   border-radius: 10px;
   background: #1a1d32;
   box-shadow: 0 10px 0 #090a12, inset 0 0 0 2px #2a2e4c;
+}
+
+.app-shell-gameplay .game-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 460px);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(6px, 1.6dvh, 16px);
 }
 
 .game-header {
@@ -199,6 +225,15 @@ legend {
   position: relative;
 }
 
+.app-shell-gameplay .board-wrap {
+  container-type: size;
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+}
+
 .board {
   display: grid;
   width: 100%;
@@ -209,6 +244,13 @@ legend {
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+}
+
+.app-shell-gameplay .board {
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .cell {
@@ -406,6 +448,10 @@ legend {
   gap: 3px;
 }
 
+.gesture-guide-3 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .gesture-guide span {
   display: grid;
   place-items: center;
@@ -455,6 +501,80 @@ legend {
   .metrics { gap: 5px; font-size: 23px; }
   .metrics span { min-width: 48px; }
   .choice-row button { font-size: 18px; }
+}
+
+@media (max-height: 600px) {
+  .app-shell-gameplay {
+    padding: 4px;
+  }
+
+  .app-shell-gameplay .game-panel {
+    padding: 6px;
+    border-width: 2px;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 #090a12, inset 0 0 0 1px #2a2e4c;
+  }
+
+  .app-shell-gameplay .game-header {
+    gap: 6px;
+    padding-bottom: 5px;
+  }
+
+  .app-shell-gameplay .eyebrow {
+    margin-bottom: 1px;
+    font-size: 12px;
+  }
+
+  .app-shell-gameplay h1 {
+    max-width: 180px;
+    font-size: clamp(24px, 8vw, 28px);
+  }
+
+  .app-shell-gameplay .metrics {
+    gap: 4px;
+    font-size: 21px;
+  }
+
+  .app-shell-gameplay .metrics span {
+    min-width: 44px;
+  }
+
+  .app-shell-gameplay .metrics small {
+    margin-bottom: 0;
+    font-size: 10px;
+  }
+
+  .app-shell-gameplay .game-meta {
+    margin: 5px 0 4px;
+    font-size: 16px;
+  }
+
+  .app-shell-gameplay .game-meta button {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .app-shell-gameplay .status {
+    min-height: 16px;
+    margin: 4px 0 2px;
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .app-shell-gameplay .gesture-guide {
+    gap: 1px;
+  }
+
+  .app-shell-gameplay .gesture-guide span {
+    font-size: 8px;
+    line-height: 1;
+  }
+
+  .app-shell-gameplay .seed-line {
+    margin: 3px 0 0;
+    font-size: 10px;
+    line-height: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

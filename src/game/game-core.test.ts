@@ -100,6 +100,27 @@ describe("game core", () => {
     setFlag(board, 3, 4, 0);
     expect(canChord(board, 4, 4)).toBe(false);
   });
+
+  it("3色盤面は黄旗を拒否しChord用の旗数へ混入させない", () => {
+    const board = createEmptyBoard(3, 1, "invalid-yellow");
+    board.generated = true;
+    board.cells[3][3].mineColor = 0;
+    recomputeAdjacentCounts(board);
+    board.cells[4][4].state = "revealed";
+
+    setFlag(board, 3, 3, 3);
+    expect(board.cells[3][3].flag).toBeNull();
+    expect(countFlags(board)).toBe(0);
+
+    setFlag(board, 3, 3, "neutral");
+    expect(canChord(board, 4, 4)).toBe(true);
+  });
+
+  it("4色盤面では黄旗を受け付ける", () => {
+    const board = createEmptyBoard(4, 1, "yellow-valid");
+    setFlag(board, 0, 0, 3);
+    expect(board.cells[0][0].flag).toBe(3);
+  });
 });
 
 describe("答え合わせの判定", () => {

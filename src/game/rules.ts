@@ -37,20 +37,51 @@ export const COLORS: ReadonlyArray<{
 
 export const NEUTRAL_FLAG_HEX = "#e9eef4";
 
-// angleは上向きを0度とした時計回りの角度。
-// GestureArrow側で各方向を整数座標の矩形だけで描き、斜め方向は階段状の
-// ピクセルアートにする。文字フォントや回転SVGのアンチエイリアスには依存しない。
-export const FLAG_GESTURES: ReadonlyArray<{
+export interface FlagGesture {
   label: string;
   angle: number;
   flag: FlagColor;
-}> = [
-  { label: "赤旗", angle: -45, flag: 0 },
-  { label: "青旗", angle: 45, flag: 1 },
-  { label: "緑旗", angle: -135, flag: 2 },
-  { label: "黄旗", angle: 135, flag: 3 },
-  { label: "無色旗", angle: 0, flag: "neutral" }
-];
+}
+
+// angleは上向きを0度とした時計回りの角度。
+// GestureArrow側で各方向を整数座標の矩形だけで描き、斜め方向は階段状の
+// ピクセルアートにする。文字フォントや回転SVGのアンチエイリアスには依存しない。
+export const FLAG_GESTURES: Readonly<Record<ColorCount, readonly FlagGesture[]>> = {
+  3: [
+    { label: "赤旗", angle: -45, flag: 0 },
+    { label: "青旗", angle: 45, flag: 1 },
+    { label: "緑旗", angle: -135, flag: 2 },
+    { label: "無色旗", angle: 0, flag: "neutral" }
+  ],
+  4: [
+    { label: "赤旗", angle: -45, flag: 0 },
+    { label: "青旗", angle: 45, flag: 1 },
+    { label: "緑旗", angle: -135, flag: 2 },
+    { label: "黄旗", angle: 135, flag: 3 },
+    { label: "無色旗", angle: 0, flag: "neutral" }
+  ]
+};
+
+// nullは、その色数では割り当てのない方向。20pxでジェスチャー自体は固定するが、
+// 旗は立てずタップ開封にも戻さない。
+export function classifyFlagSwipe(dx: number, dy: number, colorCount: ColorCount): FlagColor | null {
+  const horizontal = Math.abs(dx);
+  const vertical = Math.abs(dy);
+
+  // 既存どおり、上方向の中央寄りは無色旗にする。
+  if (dy < 0 && horizontal < vertical * 0.5) return "neutral";
+
+  if (colorCount === 3) {
+    // 盤面内の数字位置との対応を保つため、赤=左上、青=右上、緑=左下。
+    // 黄が存在した右下は未使用方向として何も割り当てない。
+    if (dy <= 0) return dx < 0 ? 0 : 1;
+    return dx < 0 ? 2 : null;
+  }
+
+  // 4色は従来の4象限＋上中央の無色判定を維持する。
+  if (dy <= 0) return dx < 0 ? 0 : 1;
+  return dx < 0 ? 2 : 3;
+}
 
 export function isColorCount(value: number): value is ColorCount {
   return PRODUCT_COLOR_COUNTS.includes(value as ColorCount);
