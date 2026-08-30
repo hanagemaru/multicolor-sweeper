@@ -6,9 +6,9 @@ import {
   checkWin,
   chordCell,
   cloneBoard,
-  countFlags,
   createEmptyBoard,
   flagColorHex,
+  remainingFlagCount,
   revealCell,
   setFlag
 } from "./game/game-core";
@@ -72,7 +72,7 @@ export default function App(): React.JSX.Element {
     return () => window.clearInterval(interval);
   }, [phase, startedAt]);
 
-  const flagsRemaining = Math.max(0, mineCount - countFlags(board));
+  const flagsRemaining = remainingFlagCount(board);
   const selectedDifficulty = useMemo(
     () => DIFFICULTIES.find((difficulty) => difficulty.mineCount === mineCount),
     [mineCount]
@@ -183,6 +183,10 @@ export default function App(): React.JSX.Element {
     error: "生成エラー"
   };
 
+  const flagsLabel = flagsRemaining < 0
+    ? `残り旗数 ${flagsRemaining}。旗が${Math.abs(flagsRemaining)}本多いです`
+    : `残り旗数 ${flagsRemaining}`;
+
   return (
     <main className={`app-shell${lockGameplayViewport ? " app-shell-gameplay" : ""}`}>
       <section className="game-panel" aria-labelledby="game-title">
@@ -193,7 +197,15 @@ export default function App(): React.JSX.Element {
           </div>
           <div className="metrics" aria-label="ゲーム情報">
             <span><small>TIME</small>{formatTime(elapsedMs)}</span>
-            <span><small>MINES</small>{flagsRemaining.toString().padStart(2, "0")}</span>
+            <span
+              aria-label={flagsLabel}
+              style={flagsRemaining < 0 ? {
+                color: "#ff8894",
+                textShadow: "0 0 6px rgba(255, 136, 148, 0.45)"
+              } : undefined}
+            >
+              <small>FLAGS</small>{flagsRemaining.toString().padStart(2, "0")}
+            </span>
           </div>
         </header>
 
