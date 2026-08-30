@@ -41,7 +41,6 @@ export default function App(): React.JSX.Element {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [showGenerating, setShowGenerating] = useState(false);
-  const [generationStats, setGenerationStats] = useState<{ elapsedMs: number; attempts: number } | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const clientRef = useRef<GeneratorClient | null>(null);
   const generationRequestRef = useRef(0);
@@ -86,7 +85,6 @@ export default function App(): React.JSX.Element {
     setBoard(createEmptyBoard(colorCount, mineCount, seed));
     setElapsedMs(0);
     setStartedAt(null);
-    setGenerationStats(null);
     setErrorMessage("");
     setPhase("awaiting-first");
   };
@@ -120,7 +118,6 @@ export default function App(): React.JSX.Element {
       if (!generated) throw new Error("4色盤面が生成されませんでした");
       revealCell(generated, row, col);
       setBoard(generated);
-      setGenerationStats({ elapsedMs: result.elapsedMs, attempts: result.attempts });
       const timerStart = performance.now();
       setElapsedMs(0);
       setStartedAt(timerStart);
@@ -280,12 +277,6 @@ export default function App(): React.JSX.Element {
                 <button type="button" onClick={enterBoard}>RETRY</button>
                 <button type="button" onClick={resetToSettings}>SETTINGS</button>
               </div>
-            ) : null}
-
-            {generationStats ? (
-              <p className="seed-line">
-                SEED {baseSeed.slice(0, 8)}… / {generationStats.attempts} attempts / {Math.round(generationStats.elapsedMs)}ms
-              </p>
             ) : null}
           </>
         )}
