@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { classifyFlagSwipe, COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
 import { flagColorHex, reviewMark, totalAdjacent } from "../game/game-core";
 import { BombIcon, WrongMark } from "./BombIcon";
@@ -154,6 +154,20 @@ export function GameBoard({
   onFlag
 }: GameBoardProps): React.JSX.Element {
   const gesture = useRef<GestureState | null>(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const element = boardRef.current;
+    if (!element) return;
+
+    const preventBrowserNavigation = (event: TouchEvent): void => {
+      if (!interactive || masked) return;
+      event.preventDefault();
+    };
+
+    element.addEventListener("touchstart", preventBrowserNavigation, { passive: false });
+    return () => element.removeEventListener("touchstart", preventBrowserNavigation);
+  }, [interactive, masked]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, cell: Cell): void => {
     if (!interactive || masked) return;
@@ -194,6 +208,7 @@ export function GameBoard({
 
   return (
     <div
+      ref={boardRef}
       className={`board${masked ? " board-masked" : ""}`}
       role="grid"
       aria-label={masked ? "Board hidden while paused" : boardLabel(language, GRID_SIZE)}
