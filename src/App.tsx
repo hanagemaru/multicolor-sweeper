@@ -484,7 +484,6 @@ export default function App(): React.JSX.Element {
             <div className="modal-layer modal-layer-solid">
               <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
                 <h2 id="name-title">{playerName ? copy.changeName : copy.registerName}</h2>
-                <p>{copy.nameOnlyForRecord}</p>
                 <input
                   autoFocus
                   value={nameDraft}
@@ -644,9 +643,7 @@ export default function App(): React.JSX.Element {
         {paused ? (
           <div className="modal-layer pause-layer">
             <div className="pause-dialog" role="dialog" aria-modal="true" aria-labelledby="pause-title">
-              <p className="eyebrow">{copy.timeStopped}</p>
               <h2 id="pause-title">{copy.paused}</h2>
-              <p>{copy.pauseDescription}</p>
               <div className="dialog-actions">
                 <button className="primary-button" type="button" onClick={resumeGame}>{copy.resume}</button>
                 <button className="secondary-button" type="button" onClick={resetToSettings}>{copy.menu}</button>
@@ -715,7 +712,7 @@ export default function App(): React.JSX.Element {
           <div className="modal-layer modal-layer-solid">
             <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
               <h2 id="name-title">{playerName ? copy.changeName : copy.registerName}</h2>
-              <p>{namePurpose === "submit" ? copy.nameRequiredForSubmit : copy.nameOptional}</p>
+              {namePurpose === "submit" ? <p>{copy.nameRequiredForSubmit}</p> : null}
               <input
                 autoFocus
                 value={nameDraft}

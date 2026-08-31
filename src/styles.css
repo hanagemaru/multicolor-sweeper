@@ -361,6 +361,8 @@ legend {
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
 }
 
 .cell {
@@ -711,12 +713,18 @@ legend {
 .language-toggle {
   display: inline-flex;
   flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: flex-end;
+  width: max-content;
+  max-width: 100%;
   gap: 4px;
   color: #68708f;
   white-space: nowrap;
 }
-.language-toggle button { min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; cursor: pointer; }
+.language-toggle button { flex: 0 0 auto; min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; white-space: nowrap; cursor: pointer; }
+.language-toggle > span { flex: 0 0 auto; }
 .language-toggle button:first-child { font-family: "MaruMonica", system-ui, sans-serif; font-size: 11px; }
 .language-toggle button.selected { color: var(--accent); }
 .language-ja { font-family: "MaruMonica", system-ui, sans-serif; }
