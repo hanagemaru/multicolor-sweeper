@@ -2,8 +2,8 @@ import type { Coordinate } from "../game/types";
 
 export const EFFECT_TIMING = {
   cellOpenMs: 130,
-  cascadeStepMs: 24,
-  cascadeMaxDelayMs: 288,
+  cascadeStepMs: 21,
+  cascadeMaxDelayMs: 168,
   explosionResultDelayMs: 460,
   clearBoardHoldMs: 170,
   clearWaveStepMs: 18,
