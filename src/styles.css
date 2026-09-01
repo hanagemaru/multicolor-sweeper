@@ -455,9 +455,9 @@ legend {
 .status-bilingual { grid-template-rows: repeat(2, auto); gap: 1px; }
 .status-translation {
   color: #c2c7e2;
-  font-family: "MaruMonica", system-ui, sans-serif;
+  font-family: "VT323", "MaruMonica", monospace;
   font-size: 12px;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 .status-won { color: var(--success); font-size: 23px; }
 .status-lost,
@@ -530,7 +530,7 @@ legend {
 .result-time { margin: 0; }
 .result-time small { display: block; color: var(--muted); font-size: 14px; letter-spacing: 0.08em; }
 .result-time strong { display: block; color: #fff6c7; font-size: clamp(36px, 8dvh, 48px); font-weight: 400; line-height: 0.9; }
-.result-error { margin: 0; color: #d9dcf6; font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; line-height: 1.45; }
+.result-error { margin: 0; color: #d9dcf6; font-family: "VT323", "MaruMonica", monospace; font-size: 12px; line-height: 1.45; }
 .best-badge,
 .submit-status { margin: 0; min-height: 19px; color: var(--accent); font-size: 21px; line-height: 1; }
 .submit-status.success { color: var(--success); }
@@ -712,21 +712,17 @@ legend {
 }
 .language-toggle button { flex: 0 0 auto; min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; white-space: nowrap; cursor: pointer; }
 .language-toggle > span { flex: 0 0 auto; }
-.language-toggle button:first-child { font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; }
+.language-toggle button:first-child { font-family: "VT323", "MaruMonica", monospace; font-size: 12px; }
 .language-toggle button.selected { color: var(--accent); }
-.language-ja { font-family: "MaruMonica", system-ui, sans-serif; }
-.language-ja h1,
-.language-ja .eyebrow,
-.language-ja .hud-strip,
-.language-ja .ranking-tabs,
-.language-ja .ranking-table td,
-.language-ja .start-button,
-.language-ja .ranking-button,
-.language-ja .best-badge,
-.language-ja .result-time,
-.language-ja .choice-row button,
-.language-ja .result-dialog h2 { font-family: "VT323", monospace; }
-.language-ja .choice-row button small { font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; }
+.language-ja { font-family: "VT323", "MaruMonica", monospace; }
+.language-ja .mixed-latin-run {
+  font-family: "VT323", monospace;
+  font-size: 1.25em;
+  line-height: 0;
+  vertical-align: -0.05em;
+}
+.language-ja .choice-row button small { font-size: 12px; line-height: 1.15; }
+.language-ja .condition-line { line-height: 1.15; }
 .language-ja .gesture-guide span { font-size: 12px; }
 @media (max-height: 600px) {
   .language-toggle button { min-height: 26px; font-size: 15px; }
