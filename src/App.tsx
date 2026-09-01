@@ -65,6 +65,15 @@ function formatTime(milliseconds: number): string {
   return (milliseconds / 1000).toFixed(2).padStart(5, "0");
 }
 
+function mixedUiText(text: string): React.ReactNode {
+  if (!/[\u3040-\u30ff\u3400-\u9fff]/u.test(text)) return text;
+  return text.split(/([A-Za-z0-9#./:+-]+)/gu).map((part, index) => (
+    /[A-Za-z0-9]/u.test(part)
+      ? <span className="mixed-latin-run" key={`${part}-${index}`}>{part}</span>
+      : part
+  ));
+}
+
 function submittedRecordStorageKey(mineCount: MineCount): string {
   return `${SUBMITTED_RECORD_STORAGE_PREFIX}-${mineCount}`;
 }
@@ -452,7 +461,7 @@ export default function App(): React.JSX.Element {
           </div>
 
           <div className="player-card">
-            <span><small>{copy.player}</small>{playerName || copy.notSet}</span>
+            <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
             <span><small>{copy.yourRank}</small>{yourRank === null ? "--" : `#${yourRank}`}</span>
             <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? copy.changeName : copy.setName}</button>
           </div>
@@ -463,7 +472,7 @@ export default function App(): React.JSX.Element {
               <tbody>
                 {rankingEntries.slice(0, 10).map((entry) => (
                   <tr key={`${entry.rank}-${entry.name}-${entry.colorCount}`} className={entry.isPlayer ? "is-player" : ""}>
-                    <td>#{entry.rank}</td><td>{entry.name}</td><td>{entry.colorCount}</td><td>{formatTime(entry.timeMs)}</td>
+                    <td>#{entry.rank}</td><td>{mixedUiText(entry.name)}</td><td>{entry.colorCount}</td><td>{formatTime(entry.timeMs)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -541,7 +550,7 @@ export default function App(): React.JSX.Element {
                       onClick={() => setMineCount(difficulty.mineCount)}
                     >
                       {difficultyLabel(language, difficulty.id)}
-                      <small>{bombCountLabel(language, difficulty.mineCount)}</small>
+                      <small>{mixedUiText(bombCountLabel(language, difficulty.mineCount))}</small>
                     </button>
                   ))}
                 </div>
@@ -556,14 +565,14 @@ export default function App(): React.JSX.Element {
                       className={colorCount === count ? "selected" : ""}
                       onClick={() => setColorCount(count as ColorCount)}
                     >
-                      {colorCountLabel(language, count as ColorCount)}
+                      {mixedUiText(colorCountLabel(language, count as ColorCount))}
                     </button>
                   ))}
                 </div>
               </fieldset>
 
               <div className="player-setting">
-                <span><small>{copy.player}</small>{playerName || copy.notSet}</span>
+                <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
                 <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? copy.changeName : copy.setName}</button>
               </div>
 
@@ -595,7 +604,7 @@ export default function App(): React.JSX.Element {
 
             <div className="condition-line">
               <span>{selectedDifficulty ? difficultyLabel(language, selectedDifficulty.id) : ""}</span>
-              <span>{colorCountLabel(language, colorCount)}</span>
+              <span>{mixedUiText(colorCountLabel(language, colorCount))}</span>
             </div>
 
             <div className="board-wrap">
@@ -621,7 +630,7 @@ export default function App(): React.JSX.Element {
               className={`status status-${phase}${resultOpen ? " status-result-open" : ""}`}
               aria-live="polite"
             >
-              <span>{statusText[phase]}</span>
+              <span>{mixedUiText(statusText[phase])}</span>
             </p>
 
             <div
@@ -672,11 +681,11 @@ export default function App(): React.JSX.Element {
                   <p className="result-time"><small>{copy.clearTime}</small><strong>{formatTime(elapsedMs)}</strong></p>
                   {newBest ? <p className="best-badge">{copy.newBest}</p> : null}
                   {submitState === "sending" ? <p className="submit-status">{copy.submitting}</p> : null}
-                  {submitState === "success" ? <p className="submit-status success">{copy.submitted} · #{submittedRank ?? "--"}</p> : null}
+                  {submitState === "success" ? <p className="submit-status success">{mixedUiText(`${copy.submitted} · #${submittedRank ?? "--"}`)}</p> : null}
                   {submitState === "error" ? <p className="submit-status error">{copy.submitFailed}</p> : null}
                 </>
               ) : null}
-              {resultPhase === "error" ? <p className="result-error">{errorMessage}</p> : null}
+              {resultPhase === "error" ? <p className="result-error">{mixedUiText(errorMessage)}</p> : null}
 
               <div className="result-actions">
                 <button className="primary-button" type="button" onClick={() => enterBoard()}>{copy.retry}</button>
