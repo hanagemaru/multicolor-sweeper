@@ -3,7 +3,6 @@ import { GameBoard } from "./components/GameBoard";
 import { GestureArrow } from "./components/GestureArrow";
 import {
   canChord,
-  checkWin,
   chordCell,
   cloneBoard,
   createEmptyBoard,
@@ -12,6 +11,7 @@ import {
   revealCell,
   setFlag
 } from "./game/game-core";
+import { resolveMoveOutcome } from "./game/move-outcome";
 import {
   DIFFICULTIES,
   FLAG_GESTURES,
@@ -275,14 +275,17 @@ export default function App(): React.JSX.Element {
   };
 
   const finishAfterMove = (next: Board, hitMine: boolean): void => {
+    const outcome = resolveMoveOutcome(next, hitMine);
+    setBoard(next);
+    if (outcome === null) return;
+
     const finalElapsed = currentElapsed();
     elapsedBeforeSegmentRef.current = finalElapsed;
     setElapsedMs(finalElapsed);
     setStartedAt(null);
-    setBoard(next);
-    if (hitMine) {
+    if (outcome === "lost") {
       setPhase("lost");
-    } else if (checkWin(next)) {
+    } else {
       recordLocalBest(finalElapsed);
       setPhase("won");
     }
@@ -581,7 +584,9 @@ export default function App(): React.JSX.Element {
               >
                 <small>{copy.flags}</small><strong>{flagsRemaining.toString().padStart(2, "0")}</strong>
               </span>
-              {phase === "playing" ? (
+              {resultPhase !== null && !resultOpen ? (
+                <button ref={resultButtonRef} className="hud-action hud-action-result" type="button" onClick={() => setResultOpen(true)}>{copy.result}</button>
+              ) : phase === "playing" ? (
                 <button className="hud-action" type="button" onClick={pauseGame}>{copy.pause}</button>
               ) : (
                 <button className="hud-action" type="button" onClick={resetToSettings} disabled={phase === "generating"}>{copy.menu}</button>
@@ -611,12 +616,6 @@ export default function App(): React.JSX.Element {
                 </div>
               ) : null}
             </div>
-
-            {resultPhase !== null && !resultOpen ? (
-              <div className="post-result-bar">
-                <button ref={resultButtonRef} className="result-reopen" type="button" onClick={() => setResultOpen(true)}>{copy.result}</button>
-              </div>
-            ) : null}
 
             <p
               className={`status status-${phase}${resultOpen ? " status-result-open" : ""}`}
