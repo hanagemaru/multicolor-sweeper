@@ -168,8 +168,7 @@ legend {
 .compact-button,
 .player-setting button,
 .player-card button,
-.result-aux-actions button,
-.result-reopen {
+.result-aux-actions button {
   min-height: 44px;
   padding: 6px;
   border: 2px solid var(--line);
@@ -186,7 +185,7 @@ legend {
   display: block;
   margin-top: -1px;
   color: #9ca4c8;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1;
 }
 
@@ -290,7 +289,7 @@ legend {
 
 .hud-metric small {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.08em;
   line-height: 1;
 }
@@ -318,6 +317,12 @@ legend {
   box-shadow: inset 0 -3px 0 #111426;
   font-size: clamp(19px, 3.3dvh, 23px);
   cursor: pointer;
+}
+
+.hud-action-result {
+  border-color: var(--accent);
+  color: #fff6c7;
+  background: #45402f;
 }
 
 .condition-line {
@@ -451,7 +456,7 @@ legend {
 .status-translation {
   color: #c2c7e2;
   font-family: "MaruMonica", system-ui, sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.15;
 }
 .status-won { color: var(--success); font-size: 23px; }
@@ -472,26 +477,11 @@ legend {
   min-width: 0;
   place-items: center;
   color: #aeb5d6;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1;
 }
 .gesture-guide-hidden { visibility: hidden; }
 .gesture-arrow { display: block; width: 18px; height: 18px; overflow: visible; }
-
-.post-result-bar {
-  display: grid;
-  flex: 0 0 auto;
-  min-height: 46px;
-  margin-top: 4px;
-  place-items: center;
-}
-.result-reopen {
-  min-width: 118px;
-  border-color: var(--accent);
-  color: #fff6c7;
-  background: #45402f;
-  font-size: 21px;
-}
 
 .modal-layer {
   position: absolute;
@@ -538,7 +528,7 @@ legend {
 .name-dialog p { margin: 0; color: #c5cae6; font-size: 16px; line-height: 1.15; }
 
 .result-time { margin: 0; }
-.result-time small { display: block; color: var(--muted); font-size: 13px; letter-spacing: 0.08em; }
+.result-time small { display: block; color: var(--muted); font-size: 14px; letter-spacing: 0.08em; }
 .result-time strong { display: block; color: #fff6c7; font-size: clamp(36px, 8dvh, 48px); font-weight: 400; line-height: 0.9; }
 .result-error { margin: 0; color: #d9dcf6; font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; line-height: 1.45; }
 .best-badge,
@@ -638,7 +628,7 @@ legend {
 
   .game-header,
   .ranking-header { padding-bottom: 5px; }
-  .eyebrow { font-size: 13px; }
+  .eyebrow { font-size: 14px; }
   h1 { font-size: clamp(25px, 7.4vw, 30px); }
 
   .settings { gap: 6px; padding-top: 5px; }
@@ -646,31 +636,28 @@ legend {
   legend { font-size: 18px; }
   .choice-row { gap: 4px; }
   .choice-row button { min-height: 38px; padding: 3px; font-size: 18px; }
-  .choice-row button small { font-size: 10px; }
+  .choice-row button small { font-size: 14px; }
   .player-setting { min-height: 40px; padding-block: 3px; }
   .player-setting span { font-size: 17px; }
-  .player-setting small { font-size: 10px; }
-  .player-setting button { min-height: 34px; font-size: 15px; }
+  .player-setting small { font-size: 12px; }
+  .player-setting button { min-height: 34px; font-size: 17px; }
   .settings-actions { gap: 5px; }
   .start-button { min-height: 44px; font-size: 26px; }
   .ranking-button { min-height: 40px; font-size: 20px; }
 
   .hud-strip { min-height: 43px; padding-bottom: 4px; }
-  .hud-metric small { font-size: 10px; }
+  .hud-metric small { font-size: 14px; }
   .hud-metric strong { font-size: 22px; }
   .hud-action { min-height: 40px; font-size: 19px; }
-  .condition-line { min-height: 17px; font-size: 13px; }
-  .status { height: 32px; min-height: 32px; margin: 3px 0 1px; font-size: 15px; }
-  .status-translation { font-size: 10px; }
+  .condition-line { min-height: 17px; font-size: 14px; }
+  .status { height: 32px; min-height: 32px; margin: 3px 0 1px; font-size: 16px; }
+  .status-translation { font-size: 12px; }
   .status-won,
   .status-lost,
   .status-error { font-size: 20px; }
   .gesture-guide { min-height: 30px; }
-  .gesture-guide span { font-size: 10px; }
+  .gesture-guide span { font-size: 13px; }
   .gesture-arrow { width: 15px; height: 15px; }
-  .post-result-bar { min-height: 42px; }
-  .result-reopen { min-height: 40px; }
-
   .modal-layer { padding: 6px; }
   .result-dialog,
   .pause-dialog,
@@ -695,10 +682,10 @@ legend {
   .ranking-tabs button { min-height: 40px; font-size: 19px; }
   .player-card { min-height: 40px; padding: 3px 5px; }
   .player-card span { font-size: 16px; }
-  .player-card small { font-size: 9px; }
-  .player-card button { min-height: 32px; font-size: 14px; }
+  .player-card small { font-size: 12px; }
+  .player-card button { min-height: 32px; font-size: 17px; }
   .ranking-table { font-size: 16px; }
-  .ranking-table th { font-size: 12px; }
+  .ranking-table th { font-size: 14px; }
   .ranking-table th,
   .ranking-table td { height: 28px; padding: 2px 4px; }
   .ranking-actions { gap: 5px; }
@@ -725,7 +712,7 @@ legend {
 }
 .language-toggle button { flex: 0 0 auto; min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; white-space: nowrap; cursor: pointer; }
 .language-toggle > span { flex: 0 0 auto; }
-.language-toggle button:first-child { font-family: "MaruMonica", system-ui, sans-serif; font-size: 11px; }
+.language-toggle button:first-child { font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; }
 .language-toggle button.selected { color: var(--accent); }
 .language-ja { font-family: "MaruMonica", system-ui, sans-serif; }
 .language-ja h1,
@@ -735,14 +722,14 @@ legend {
 .language-ja .ranking-table td,
 .language-ja .start-button,
 .language-ja .ranking-button,
-.language-ja .result-reopen,
 .language-ja .best-badge,
 .language-ja .result-time,
 .language-ja .choice-row button,
 .language-ja .result-dialog h2 { font-family: "VT323", monospace; }
-.language-ja .choice-row button small { font-family: "MaruMonica", system-ui, sans-serif; }
+.language-ja .choice-row button small { font-family: "MaruMonica", system-ui, sans-serif; font-size: 12px; }
+.language-ja .gesture-guide span { font-size: 12px; }
 @media (max-height: 600px) {
   .language-toggle button { min-height: 26px; font-size: 15px; }
-  .language-toggle button:first-child { font-size: 10px; }
+  .language-toggle button:first-child { font-size: 12px; }
   .board-wrap { padding-top: 2px; }
 }
