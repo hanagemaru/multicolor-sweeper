@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { buttonUiText } from "./button-typography";
 import { GameBoard } from "./components/GameBoard";
 import { GestureArrow } from "./components/GestureArrow";
 import {
@@ -441,9 +442,9 @@ export default function App(): React.JSX.Element {
           <header className="ranking-header">
             <h1 id="ranking-title">{copy.ranking}</h1>
             <div className="language-toggle" aria-label={copy.language}>
-              <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{copy.japanese}</button>
+              <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{buttonUiText(copy.japanese)}</button>
               <span aria-hidden="true">|</span>
-              <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>EN</button>
+              <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
             </div>
           </header>
 
@@ -455,7 +456,7 @@ export default function App(): React.JSX.Element {
                 className={rankingMineCount === count ? "selected" : ""}
                 onClick={() => setRankingMineCount(count)}
               >
-                {count}<small>BOMBS</small>
+                {buttonUiText(count)}<small>{buttonUiText("BOMBS")}</small>
               </button>
             ))}
           </div>
@@ -463,7 +464,7 @@ export default function App(): React.JSX.Element {
           <div className="player-card">
             <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
             <span><small>{copy.yourRank}</small>{yourRank === null ? "--" : `#${yourRank}`}</span>
-            <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? copy.changeName : copy.setName}</button>
+            <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
           </div>
 
           <div className="ranking-table-wrap">
@@ -485,10 +486,10 @@ export default function App(): React.JSX.Element {
               type="button"
               onClick={() => enterBoard(rankingMineCount, colorCount)}
             >
-              {copy.play} {rankingMineCount}
+              {buttonUiText(`${copy.play} ${rankingMineCount}`)}
             </button>
             <button className="secondary-button" type="button" onClick={() => setRankingOpen(false)}>
-              {rankingOrigin === "result" ? copy.backToResult : copy.back}
+              {buttonUiText(rankingOrigin === "result" ? copy.backToResult : copy.back)}
             </button>
           </div>
 
@@ -506,8 +507,8 @@ export default function App(): React.JSX.Element {
                   placeholder={copy.playerNamePlaceholder}
                 />
                 <div className="dialog-actions">
-                  <button className="primary-button" type="button" disabled={!nameDraft.trim()} onClick={confirmName}>{copy.save}</button>
-                  <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>{copy.cancel}</button>
+                  <button className="primary-button" type="button" disabled={!nameDraft.trim()} onClick={confirmName}>{buttonUiText(copy.save)}</button>
+                  <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>{buttonUiText(copy.cancel)}</button>
                 </div>
               </div>
             </div>
@@ -533,9 +534,9 @@ export default function App(): React.JSX.Element {
                 <h1 id="game-title">MULTICOLOR SWEEPER</h1>
               </div>
               <div className="language-toggle" aria-label={copy.language}>
-                <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{copy.japanese}</button>
+                <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{buttonUiText(copy.japanese)}</button>
                 <span aria-hidden="true">|</span>
-                <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>EN</button>
+                <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
               </div>
             </header>
             <div className="settings">
@@ -549,8 +550,8 @@ export default function App(): React.JSX.Element {
                       className={mineCount === difficulty.mineCount ? "selected" : ""}
                       onClick={() => setMineCount(difficulty.mineCount)}
                     >
-                      {difficultyLabel(language, difficulty.id)}
-                      <small>{mixedUiText(bombCountLabel(language, difficulty.mineCount))}</small>
+                      {buttonUiText(difficultyLabel(language, difficulty.id))}
+                      <small>{buttonUiText(bombCountLabel(language, difficulty.mineCount))}</small>
                     </button>
                   ))}
                 </div>
@@ -565,7 +566,7 @@ export default function App(): React.JSX.Element {
                       className={colorCount === count ? "selected" : ""}
                       onClick={() => setColorCount(count as ColorCount)}
                     >
-                      {mixedUiText(colorCountLabel(language, count as ColorCount))}
+                      {buttonUiText(colorCountLabel(language, count as ColorCount))}
                     </button>
                   ))}
                 </div>
@@ -573,12 +574,12 @@ export default function App(): React.JSX.Element {
 
               <div className="player-setting">
                 <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
-                <button type="button" onClick={() => openNameEditor("profile")}>{playerName ? copy.changeName : copy.setName}</button>
+                <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
               </div>
 
               <div className="settings-actions">
-                <button className="start-button" type="button" onClick={() => enterBoard()}>{copy.start}</button>
-                <button className="ranking-button" type="button" onClick={() => openRanking("settings")}>{copy.ranking}</button>
+                <button className="start-button" type="button" onClick={() => enterBoard()}>{buttonUiText(copy.start)}</button>
+                <button className="ranking-button" type="button" onClick={() => openRanking("settings")}>{buttonUiText(copy.ranking)}</button>
               </div>
             </div>
           </>
@@ -594,11 +595,11 @@ export default function App(): React.JSX.Element {
                 <small>{copy.flags}</small><strong>{flagsRemaining.toString().padStart(2, "0")}</strong>
               </span>
               {resultPhase !== null && !resultOpen ? (
-                <button ref={resultButtonRef} className="hud-action hud-action-result" type="button" onClick={() => setResultOpen(true)}>{copy.result}</button>
+                <button ref={resultButtonRef} className="hud-action hud-action-result" type="button" onClick={() => setResultOpen(true)}>{buttonUiText(copy.result)}</button>
               ) : phase === "playing" ? (
-                <button className="hud-action" type="button" onClick={pauseGame}>{copy.pause}</button>
+                <button className="hud-action" type="button" onClick={pauseGame}>{buttonUiText(copy.pause)}</button>
               ) : (
-                <button className="hud-action" type="button" onClick={resetToSettings} disabled={phase === "generating"}>{copy.menu}</button>
+                <button className="hud-action" type="button" onClick={resetToSettings} disabled={phase === "generating"}>{buttonUiText(copy.menu)}</button>
               )}
             </header>
 
@@ -653,8 +654,8 @@ export default function App(): React.JSX.Element {
             <div className="pause-dialog" role="dialog" aria-modal="true" aria-labelledby="pause-title">
               <h2 id="pause-title">{copy.paused}</h2>
               <div className="dialog-actions">
-                <button className="primary-button" type="button" onClick={resumeGame}>{copy.resume}</button>
-                <button className="secondary-button" type="button" onClick={resetToSettings}>{copy.menu}</button>
+                <button className="primary-button" type="button" onClick={resumeGame}>{buttonUiText(copy.resume)}</button>
+                <button className="secondary-button" type="button" onClick={resetToSettings}>{buttonUiText(copy.menu)}</button>
               </div>
             </div>
           </div>
@@ -688,10 +689,10 @@ export default function App(): React.JSX.Element {
               {resultPhase === "error" ? <p className="result-error">{mixedUiText(errorMessage)}</p> : null}
 
               <div className="result-actions">
-                <button className="primary-button" type="button" onClick={() => enterBoard()}>{copy.retry}</button>
+                <button className="primary-button" type="button" onClick={() => enterBoard()}>{buttonUiText(copy.retry)}</button>
                 {resultPhase === "won" ? (
                   submitState === "success" ? (
-                    <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{copy.ranking}</button>
+                    <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{buttonUiText(copy.ranking)}</button>
                   ) : (
                     <button
                       className="secondary-button"
@@ -699,17 +700,17 @@ export default function App(): React.JSX.Element {
                       disabled={submitState === "sending"}
                       onClick={() => submitScore()}
                     >
-                      {submitState === "error" ? copy.retrySubmit : copy.submitTime}
+                      {buttonUiText(submitState === "error" ? copy.retrySubmit : copy.submitTime)}
                     </button>
                   )
                 ) : null}
                 {resultPhase !== "error" ? (
                   <div className="result-aux-actions">
-                    <button type="button" onClick={closeResult}>{copy.viewBoard}</button>
-                    <button type="button" onClick={resetToSettings}>{copy.menu}</button>
+                    <button type="button" onClick={closeResult}>{buttonUiText(copy.viewBoard)}</button>
+                    <button type="button" onClick={resetToSettings}>{buttonUiText(copy.menu)}</button>
                   </div>
                 ) : (
-                  <button className="secondary-button" type="button" onClick={resetToSettings}>{copy.menu}</button>
+                  <button className="secondary-button" type="button" onClick={resetToSettings}>{buttonUiText(copy.menu)}</button>
                 )}
               </div>
             </div>
@@ -732,9 +733,9 @@ export default function App(): React.JSX.Element {
               />
               <div className="dialog-actions">
                 <button className="primary-button" type="button" disabled={!nameDraft.trim()} onClick={confirmName}>
-                  {namePurpose === "submit" ? copy.submitTime : copy.save}
+                  {buttonUiText(namePurpose === "submit" ? copy.submitTime : copy.save)}
                 </button>
-                <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>{copy.cancel}</button>
+                <button className="secondary-button" type="button" onClick={() => setNameEditorOpen(false)}>{buttonUiText(copy.cancel)}</button>
               </div>
             </div>
           </div>

@@ -26,6 +26,12 @@
   --covered-hi: #5b6288;
   --covered-lo: #1b1f36;
   --opened: #20243c;
+  --button-font-standard: 23px;
+  --button-font-choice: 22px;
+  --button-font-compact: 17px;
+  --button-font-utility: 16px;
+  --button-font-subtitle: 14px;
+  --button-ja-scale: 0.65em;
 }
 
 * { box-sizing: border-box; }
@@ -59,6 +65,22 @@ input { font: inherit; }
 button {
   min-width: 0;
   border: 0;
+}
+
+.button-script-run {
+  display: inline-block;
+  line-height: 1;
+}
+
+.button-latin-run {
+  font-family: "VT323", monospace;
+  font-size: 1em;
+}
+
+.button-ja-run {
+  font-family: "MaruMonica", monospace;
+  font-size: var(--button-ja-scale);
+  vertical-align: 0.05em;
 }
 
 button:focus-visible,
@@ -176,7 +198,7 @@ legend {
   color: #e2e5fb;
   background: #252a47;
   box-shadow: inset 0 -3px 0 #111426;
-  font-size: clamp(18px, 3.2dvh, 22px);
+  font-size: var(--button-font-choice);
   cursor: pointer;
 }
 
@@ -185,7 +207,7 @@ legend {
   display: block;
   margin-top: -1px;
   color: #9ca4c8;
-  font-size: 14px;
+  font-size: var(--button-font-subtitle);
   line-height: 1;
 }
 
@@ -232,7 +254,7 @@ legend {
   flex: 0 0 auto;
   min-height: 38px;
   padding-inline: 9px;
-  font-size: 17px;
+  font-size: var(--button-font-compact);
 }
 
 .settings-actions,
@@ -256,7 +278,7 @@ legend {
   color: var(--accent-ink);
   background: var(--accent);
   box-shadow: inset 0 -4px 0 #b08028, 0 3px 0 #080910;
-  font-size: 29px;
+  font-size: var(--button-font-standard);
 }
 
 .ranking-button,
@@ -265,7 +287,7 @@ legend {
   color: #edf0ff;
   background: #292f4e;
   box-shadow: inset 0 -3px 0 #111426;
-  font-size: 23px;
+  font-size: var(--button-font-standard);
 }
 
 .hud-strip {
@@ -315,7 +337,7 @@ legend {
   color: #edf0ff;
   background: #292f4e;
   box-shadow: inset 0 -3px 0 #111426;
-  font-size: clamp(19px, 3.3dvh, 23px);
+  font-size: var(--button-font-standard);
   cursor: pointer;
 }
 
@@ -544,14 +566,14 @@ legend {
 .result-actions .primary-button,
 .result-actions .secondary-button,
 .dialog-actions .primary-button,
-.dialog-actions .secondary-button { min-height: 44px; font-size: 23px; }
+.dialog-actions .secondary-button { min-height: 44px; font-size: var(--button-font-standard); }
 
 .result-aux-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
 }
-.result-aux-actions button { min-height: 44px; font-size: 18px; }
+.result-aux-actions button { min-height: 44px; font-size: var(--button-font-standard); }
 
 .name-dialog input {
   width: 100%;
@@ -573,7 +595,7 @@ legend {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
-.ranking-tabs button { min-height: 48px; font-size: 22px; }
+.ranking-tabs button { min-height: 48px; font-size: var(--button-font-choice); }
 .player-card { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(72px, 0.7fr) auto; }
 .player-card span { font-size: 19px; }
 .ranking-table-wrap {
@@ -605,20 +627,25 @@ legend {
 .ranking-table th:nth-child(4), .ranking-table td:nth-child(4) { width: 26%; text-align: right; }
 .ranking-table tr.is-player td { color: #fff6c7; background: #393728; }
 .ranking-actions { grid-template-columns: 1fr 1fr; }
-.ranking-actions button { min-height: 44px; font-size: 20px; }
+.ranking-actions button { min-height: 44px; font-size: var(--button-font-standard); }
 
 @media (max-width: 350px) {
+  :root { --button-font-choice: 18px; }
   .game-panel { padding-inline: 7px; }
   .hud-strip { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.7fr) 76px; gap: 4px; }
   .hud-metric { padding-inline: 4px; }
   .hud-metric strong { font-size: 22px; }
-  .choice-row button { font-size: 18px; }
   .player-card { grid-template-columns: 1fr 70px; }
   .player-card button { grid-column: 1 / -1; min-height: 34px; }
   .ranking-table { font-size: 17px; }
 }
 
 @media (max-height: 600px) {
+  :root {
+    --button-font-standard: 20px;
+    --button-font-choice: 19px;
+    --button-font-utility: 14px;
+  }
   .app-shell { --shell-pad: 4px; }
   .game-panel {
     padding: 6px;
@@ -635,20 +662,20 @@ legend {
   fieldset { padding: 6px 7px 7px; }
   legend { font-size: 18px; }
   .choice-row { gap: 4px; }
-  .choice-row button { min-height: 38px; padding: 3px; font-size: 18px; }
-  .choice-row button small { font-size: 14px; }
+  .choice-row button { min-height: 38px; padding: 3px; }
+  .choice-row button small { font-size: var(--button-font-subtitle); }
   .player-setting { min-height: 40px; padding-block: 3px; }
   .player-setting span { font-size: 17px; }
   .player-setting small { font-size: 12px; }
-  .player-setting button { min-height: 34px; font-size: 17px; }
+  .player-setting button { min-height: 34px; font-size: var(--button-font-compact); }
   .settings-actions { gap: 5px; }
-  .start-button { min-height: 44px; font-size: 26px; }
-  .ranking-button { min-height: 40px; font-size: 20px; }
+  .start-button,
+  .ranking-button { min-height: 40px; font-size: var(--button-font-standard); }
 
   .hud-strip { min-height: 43px; padding-bottom: 4px; }
   .hud-metric small { font-size: 14px; }
   .hud-metric strong { font-size: 22px; }
-  .hud-action { min-height: 40px; font-size: 19px; }
+  .hud-action { min-height: 40px; font-size: var(--button-font-standard); }
   .condition-line { min-height: 17px; font-size: 14px; }
   .status { height: 32px; min-height: 32px; margin: 3px 0 1px; font-size: 16px; }
   .status-translation { font-size: 12px; }
@@ -673,23 +700,27 @@ legend {
   .result-actions .primary-button,
   .result-actions .secondary-button,
   .dialog-actions .primary-button,
-  .dialog-actions .secondary-button { min-height: 40px; font-size: 20px; }
-  .result-aux-actions button { min-height: 39px; font-size: 17px; }
+  .dialog-actions .secondary-button { min-height: 40px; font-size: var(--button-font-standard); }
+  .result-aux-actions button { min-height: 39px; font-size: var(--button-font-standard); }
   .name-dialog input { min-height: 42px; font-size: 21px; }
 
   .ranking-screen { gap: 5px; }
   .ranking-tabs { gap: 4px; }
-  .ranking-tabs button { min-height: 40px; font-size: 19px; }
+  .ranking-tabs button { min-height: 40px; font-size: var(--button-font-choice); }
   .player-card { min-height: 40px; padding: 3px 5px; }
   .player-card span { font-size: 16px; }
   .player-card small { font-size: 12px; }
-  .player-card button { min-height: 32px; font-size: 17px; }
+  .player-card button { min-height: 32px; font-size: var(--button-font-compact); }
   .ranking-table { font-size: 16px; }
   .ranking-table th { font-size: 14px; }
   .ranking-table th,
   .ranking-table td { height: 28px; padding: 2px 4px; }
   .ranking-actions { gap: 5px; }
-  .ranking-actions button { min-height: 40px; font-size: 18px; }
+  .ranking-actions button { min-height: 40px; font-size: var(--button-font-standard); }
+}
+
+@media (max-width: 350px) and (max-height: 600px) {
+  :root { --button-font-choice: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -710,9 +741,8 @@ legend {
   color: #68708f;
   white-space: nowrap;
 }
-.language-toggle button { flex: 0 0 auto; min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: 17px; white-space: nowrap; cursor: pointer; }
+.language-toggle button { flex: 0 0 auto; min-height: 30px; padding: 2px 4px; color: #9ea6c6; background: transparent; font-family: "VT323", monospace; font-size: var(--button-font-utility); white-space: nowrap; cursor: pointer; }
 .language-toggle > span { flex: 0 0 auto; }
-.language-toggle button:first-child { font-family: "VT323", "MaruMonica", monospace; font-size: 12px; }
 .language-toggle button.selected { color: var(--accent); }
 .language-ja { font-family: "VT323", "MaruMonica", monospace; }
 .language-ja .mixed-latin-run {
@@ -721,11 +751,10 @@ legend {
   line-height: 0;
   vertical-align: -0.05em;
 }
-.language-ja .choice-row button small { font-size: 12px; line-height: 1.15; }
+.language-ja .choice-row button small { line-height: 1.15; }
 .language-ja .condition-line { line-height: 1.15; }
 .language-ja .gesture-guide span { font-size: 12px; }
 @media (max-height: 600px) {
-  .language-toggle button { min-height: 26px; font-size: 15px; }
-  .language-toggle button:first-child { font-size: 12px; }
+  .language-toggle button { min-height: 26px; font-size: var(--button-font-utility); }
   .board-wrap { padding-top: 2px; }
 }

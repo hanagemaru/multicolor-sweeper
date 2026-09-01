@@ -22,7 +22,7 @@
   border-radius: 2px;
   color: var(--muted, #a7aecf);
   background: transparent;
-  font-size: 16px;
+  font-size: var(--button-font-utility);
   line-height: 1;
   cursor: pointer;
   white-space: nowrap;
@@ -50,6 +50,6 @@
   .language-toggle button {
     min-height: 28px;
     padding-inline: 5px;
-    font-size: 14px;
+    font-size: var(--button-font-utility);
   }
 }
