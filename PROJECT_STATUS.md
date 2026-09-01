@@ -16,6 +16,7 @@
 - 低い画面の最小文字を日本語12px・VT323英数字14px目安へ引き上げ
 - `VIEW BOARD` 後はHUD右端を `RESULT` に切り替え、盤面サイズをプレイ中と同じまま維持
 - 日本語モードのフォントを `VT323 → MaruMonica` の文字種別フォールバックへ統一し、英数字がMaruMonicaになる箇所を解消
+- 入力を止めない通常開封・連鎖・爆発・CLEAR演出と、Web Audio API生成の効果音を実装
 
 ## PR #19 — Board First UI
 
@@ -74,7 +75,7 @@
 
 ## 検証
 
-PR #16〜#18反映後のmain基準は44 tests。PR #19ではランキング純粋ロジック4 testsと日英表記1 testを追加。今回、終了判定3 testsを追加し、最終テスト構成は **52 tests**。
+PR #16〜#18反映後のmain基準は44 tests。PR #19以降のランキング・日英表記・終了判定・ボタン文字組みテストに加え、演出実装で効果タイミング4 testsを追加し、最終テスト構成は **61 tests**。
 
 最終確認:
 - `npm run typecheck`
@@ -99,8 +100,7 @@ PR #16〜#18反映後のmain基準は44 tests。PR #19ではランキング純�
 
 ## 残課題 / 次の順序
 
-1. 開封・連鎖・爆発・CLEARの演出＋効果音
-2. iPhone / Android実機・アクセシビリティ最終QA
-3. 実ランキングAPI / DB / 認証 / 不正対策
+1. iPhone / Android実機・アクセシビリティ最終QA
+2. 実ランキングAPI / DB / 認証 / 不正対策
 
 別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。
