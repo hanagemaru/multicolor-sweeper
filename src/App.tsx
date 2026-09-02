@@ -2,6 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { buttonUiText } from "./button-typography";
 import { GameBoard } from "./components/GameBoard";
 import { GestureArrow } from "./components/GestureArrow";
+import { GameAudio } from "./effects/game-audio";
+import {
+  openingEffectsForCells,
+  prefersReducedMotion,
+  resultDelay,
+  type BoardOutcomeEffect,
+  type CellOpeningEffects
+} from "./effects/game-effects";
 import {
   canChord,
   chordCell,
@@ -121,8 +129,14 @@ export default function App(): React.JSX.Element {
   const [rankingOpen, setRankingOpen] = useState(false);
   const [rankingOrigin, setRankingOrigin] = useState<RankingOrigin>("settings");
   const [rankingMineCount, setRankingMineCount] = useState<MineCount>(20);
+  const [openingEffects, setOpeningEffects] = useState<CellOpeningEffects>({});
+  const [outcomeEffect, setOutcomeEffect] = useState<BoardOutcomeEffect | null>(null);
+  const [resultPending, setResultPending] = useState(false);
 
   const clientRef = useRef<GeneratorClient | null>(null);
+  const audioRef = useRef<GameAudio | null>(null);
+  const boardStateRef = useRef(board);
+  const effectIdRef = useRef(0);
   const generationRequestRef = useRef(0);
   const resultDialogRef = useRef<HTMLDivElement | null>(null);
   const resultButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -134,10 +148,14 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     const client = createGeneratorClient();
+    const audio = new GameAudio();
     clientRef.current = client;
+    audioRef.current = audio;
     return () => {
       client.dispose();
+      audio.dispose();
       clientRef.current = null;
+      audioRef.current = null;
     };
   }, []);
 
@@ -178,7 +196,26 @@ export default function App(): React.JSX.Element {
   }, []);
 
   useEffect(() => {
-    setResultOpen(resultPhase !== null);
+    if (resultPhase === null) {
+      setResultOpen(false);
+      setResultPending(false);
+      return;
+    }
+    if (resultPhase === "error") {
+      setResultPending(false);
+      setResultOpen(true);
+      return;
+    }
+
+    const effectType = resultPhase === "won" ? "clear" : "explosion";
+    setResultOpen(false);
+    setResultPending(true);
+    const timer = window.setTimeout(() => {
+      setOutcomeEffect(null);
+      setResultPending(false);
+      setResultOpen(true);
+    }, resultDelay(effectType, prefersReducedMotion()));
+    return () => window.clearTimeout(timer);
   }, [resultPhase]);
 
   useEffect(() => {
@@ -209,13 +246,26 @@ export default function App(): React.JSX.Element {
       : elapsedBeforeSegmentRef.current + performance.now() - startedAt
   );
 
+  const commitBoard = (next: Board): void => {
+    boardStateRef.current = next;
+    setBoard(next);
+  };
+
+  const animateReveal = (cells: readonly { row: number; col: number }[], row: number, col: number): void => {
+    if (cells.length === 0) return;
+    const id = ++effectIdRef.current;
+    const nextEffects = openingEffectsForCells(cells, { row, col }, id);
+    setOpeningEffects((current) => ({ ...current, ...nextEffects }));
+    audioRef.current?.playReveal(Object.values(nextEffects).map((effect) => effect.delayMs));
+  };
+
   const enterBoard = (nextMineCount: MineCount = mineCount, nextColorCount: ColorCount = colorCount): void => {
     generationRequestRef.current += 1;
     const seed = makeBaseSeed();
     setMineCount(nextMineCount);
     setColorCount(nextColorCount);
     setBaseSeed(seed);
-    setBoard(createEmptyBoard(nextColorCount, nextMineCount, seed));
+    commitBoard(createEmptyBoard(nextColorCount, nextMineCount, seed));
     elapsedBeforeSegmentRef.current = 0;
     setElapsedMs(0);
     setStartedAt(null);
@@ -226,6 +276,9 @@ export default function App(): React.JSX.Element {
     setSubmitState("idle");
     setSubmittedRank(null);
     setRankingOpen(false);
+    setOpeningEffects({});
+    setOutcomeEffect(null);
+    setResultPending(false);
     setPhase("awaiting-first");
   };
 
@@ -253,8 +306,9 @@ export default function App(): React.JSX.Element {
       if ("failed" in result) throw new Error("条件Cの盤面を生成上限内に発見できませんでした");
       const generated = colorCount === 3 ? result.board3 : result.board4;
       if (!generated) throw new Error("4色盤面が生成されませんでした");
-      revealCell(generated, row, col);
-      setBoard(generated);
+      const reveal = revealCell(generated, row, col);
+      commitBoard(generated);
+      animateReveal(reveal.cells, row, col);
       elapsedBeforeSegmentRef.current = 0;
       setElapsedMs(0);
       setStartedAt(performance.now());
@@ -284,9 +338,9 @@ export default function App(): React.JSX.Element {
     }
   };
 
-  const finishAfterMove = (next: Board, hitMine: boolean): void => {
+  const finishAfterMove = (next: Board, hitMine: boolean, row: number, col: number): void => {
     const outcome = resolveMoveOutcome(next, hitMine);
-    setBoard(next);
+    commitBoard(next);
     if (outcome === null) return;
 
     const finalElapsed = currentElapsed();
@@ -294,39 +348,48 @@ export default function App(): React.JSX.Element {
     setElapsedMs(finalElapsed);
     setStartedAt(null);
     if (outcome === "lost") {
+      const exploded = next.cells.flat().find((cell) => cell.state === "exploded") ?? { row, col };
+      setOutcomeEffect({ id: ++effectIdRef.current, type: "explosion", origin: { row: exploded.row, col: exploded.col } });
+      setResultPending(true);
+      audioRef.current?.playExplosion();
       setPhase("lost");
     } else {
       recordLocalBest(finalElapsed);
+      setOutcomeEffect({ id: ++effectIdRef.current, type: "clear" });
+      setResultPending(true);
+      audioRef.current?.playClear(prefersReducedMotion() ? 0 : undefined);
       setPhase("won");
     }
   };
 
   const handleOpen = (row: number, col: number): void => {
     if (paused) return;
+    audioRef.current?.unlock();
     if (phase === "awaiting-first") {
       void generateFromFirstClick(row, col);
       return;
     }
     if (phase !== "playing") return;
-    const next = cloneBoard(board);
+    const next = cloneBoard(boardStateRef.current);
     const cell = next.cells[row][col];
     const result = cell.state === "revealed" && canChord(next, row, col)
       ? chordCell(next, row, col)
       : revealCell(next, row, col);
-    finishAfterMove(next, result.type === "mine");
+    if (result.type === "reveal") animateReveal(result.cells, row, col);
+    finishAfterMove(next, result.type === "mine", row, col);
   };
 
   const handleFlag = (row: number, col: number, flag: FlagColor): void => {
     if (phase !== "playing" || paused) return;
-    const next = cloneBoard(board);
+    const next = cloneBoard(boardStateRef.current);
     setFlag(next, row, col, flag);
-    setBoard(next);
+    commitBoard(next);
   };
 
   const resetToSettings = (): void => {
     generationRequestRef.current += 1;
     setPhase("settings");
-    setBoard(createEmptyBoard(colorCount, mineCount));
+    commitBoard(createEmptyBoard(colorCount, mineCount));
     elapsedBeforeSegmentRef.current = 0;
     setStartedAt(null);
     setElapsedMs(0);
@@ -334,6 +397,9 @@ export default function App(): React.JSX.Element {
     setResultOpen(false);
     setRankingOpen(false);
     setSubmitState("idle");
+    setOpeningEffects({});
+    setOutcomeEffect(null);
+    setResultPending(false);
   };
 
   const pauseGame = (): void => {
@@ -594,7 +660,9 @@ export default function App(): React.JSX.Element {
               >
                 <small>{copy.flags}</small><strong>{flagsRemaining.toString().padStart(2, "0")}</strong>
               </span>
-              {resultPhase !== null && !resultOpen ? (
+              {resultPhase !== null && resultPending ? (
+                <span className="hud-action hud-action-pending" aria-hidden="true" />
+              ) : resultPhase !== null && !resultOpen ? (
                 <button ref={resultButtonRef} className="hud-action hud-action-result" type="button" onClick={() => setResultOpen(true)}>{buttonUiText(copy.result)}</button>
               ) : phase === "playing" ? (
                 <button className="hud-action" type="button" onClick={pauseGame}>{buttonUiText(copy.pause)}</button>
@@ -613,9 +681,11 @@ export default function App(): React.JSX.Element {
                 board={board}
                 language={language}
                 interactive={!paused && (phase === "awaiting-first" || phase === "playing")}
-                review={phase === "won" || phase === "lost"}
+                review={(phase === "won" || phase === "lost") && !resultPending}
                 awaitingFirst={phase === "awaiting-first"}
                 masked={paused}
+                openingEffects={openingEffects}
+                outcomeEffect={outcomeEffect}
                 onOpen={handleOpen}
                 onFlag={handleFlag}
               />
@@ -631,7 +701,7 @@ export default function App(): React.JSX.Element {
               className={`status status-${phase}${resultOpen ? " status-result-open" : ""}`}
               aria-live="polite"
             >
-              <span>{mixedUiText(statusText[phase])}</span>
+              <span>{mixedUiText(resultPending ? "" : statusText[phase])}</span>
             </p>
 
             <div

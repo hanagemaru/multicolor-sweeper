@@ -1,4 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
+import {
+  cellKey,
+  clearWaveDelay,
+  type BoardOutcomeEffect,
+  type CellOpeningEffects
+} from "../effects/game-effects";
 import { classifyFlagSwipe, COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
 import { flagColorHex, reviewMark, totalAdjacent } from "../game/game-core";
 import { BombIcon, WrongMark } from "./BombIcon";
@@ -21,6 +27,8 @@ interface GameBoardProps {
   review: boolean;
   awaitingFirst: boolean;
   masked?: boolean;
+  openingEffects?: CellOpeningEffects;
+  outcomeEffect?: BoardOutcomeEffect | null;
   onOpen: (row: number, col: number) => void;
   onFlag: (row: number, col: number, flag: FlagColor) => void;
 }
@@ -150,6 +158,8 @@ export function GameBoard({
   review,
   awaitingFirst,
   masked = false,
+  openingEffects = {},
+  outcomeEffect = null,
   onOpen,
   onFlag
 }: GameBoardProps): React.JSX.Element {
@@ -209,7 +219,9 @@ export function GameBoard({
   return (
     <div
       ref={boardRef}
-      className={`board${masked ? " board-masked" : ""}`}
+      className={`board${masked ? " board-masked" : ""}${
+        outcomeEffect?.type === "explosion" ? " board-exploding" : ""
+      }${outcomeEffect?.type === "clear" ? " board-clearing" : ""}`}
       role="grid"
       aria-label={masked ? "Board hidden while paused" : boardLabel(language, GRID_SIZE)}
       aria-hidden={masked || undefined}
@@ -218,29 +230,50 @@ export function GameBoard({
         gridTemplateRows: `repeat(${GRID_SIZE}, minmax(0, 1fr))`
       }}
     >
-      {board.cells.flat().map((cell) => (
-        <button
-          key={`${cell.row}-${cell.col}`}
-          type="button"
-          role="gridcell"
-          className={`cell ${masked ? "cell-masked" : `cell-${cell.state}`}${
-            !masked && review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
-          }`}
-          disabled={!interactive || masked}
-          tabIndex={masked ? -1 : undefined}
-          aria-label={masked ? undefined : cellLabel(cell, review, language)}
-          onPointerDown={(event) => handlePointerDown(event, cell)}
-          onPointerMove={handlePointerMove}
-          onPointerUp={finishGesture}
-          onPointerCancel={(event) => {
-            gesture.current = null;
-            delete event.currentTarget.dataset.gesture;
-          }}
-          onContextMenu={(event) => event.preventDefault()}
-        >
-          {masked ? null : <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />}
-        </button>
-      ))}
+      {board.cells.flat().map((cell) => {
+        const openingEffect = openingEffects[cellKey(cell.row, cell.col)];
+        const exploding = outcomeEffect?.type === "explosion"
+          && outcomeEffect.origin.row === cell.row
+          && outcomeEffect.origin.col === cell.col;
+        const clearing = outcomeEffect?.type === "clear";
+        const effectStyle = openingEffect || clearing
+          ? ({
+              "--opening-delay": `${openingEffect?.delayMs ?? 0}ms`,
+              "--clear-delay": `${clearing ? clearWaveDelay(cell.row, cell.col) : 0}ms`
+            } as CSSProperties)
+          : undefined;
+        return (
+          <button
+            key={`${cell.row}-${cell.col}`}
+            type="button"
+            role="gridcell"
+            className={`cell ${masked ? "cell-masked" : `cell-${cell.state}`}${
+              !masked && review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
+            }${openingEffect ? " cell-opening" : ""}${exploding ? " cell-exploding" : ""}${
+              clearing ? " cell-clear-wave" : ""
+            }`}
+            style={effectStyle}
+            disabled={!interactive || masked}
+            tabIndex={masked ? -1 : undefined}
+            aria-label={masked ? undefined : cellLabel(cell, review, language)}
+            onPointerDown={(event) => handlePointerDown(event, cell)}
+            onPointerMove={handlePointerMove}
+            onPointerUp={finishGesture}
+            onPointerCancel={(event) => {
+              gesture.current = null;
+              delete event.currentTarget.dataset.gesture;
+            }}
+            onContextMenu={(event) => event.preventDefault()}
+          >
+            {masked ? null : <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />}
+            {exploding ? (
+              <span className="explosion-particles" aria-hidden="true">
+                {Array.from({ length: 10 }, (_, index) => <i key={`${outcomeEffect.id}-${index}`} />)}
+              </span>
+            ) : null}
+          </button>
+        );
+      })}
     </div>
   );
 }
