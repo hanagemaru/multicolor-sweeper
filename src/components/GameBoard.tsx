@@ -1,8 +1,11 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import {
+  EFFECT_TIMING,
   cellKey,
   clearWaveDelay,
+  prefersReducedMotion,
   type BoardOutcomeEffect,
+  type CascadePulseEffect,
   type CellOpeningEffects
 } from "../effects/game-effects";
 import { classifyFlagSwipe, COLORS, GRID_SIZE, SWIPE_LOCK_DISTANCE_PX } from "../game/rules";
@@ -28,6 +31,7 @@ interface GameBoardProps {
   awaitingFirst: boolean;
   masked?: boolean;
   openingEffects?: CellOpeningEffects;
+  cascadePulse?: CascadePulseEffect | null;
   outcomeEffect?: BoardOutcomeEffect | null;
   onOpen: (row: number, col: number) => void;
   onFlag: (row: number, col: number, flag: FlagColor) => void;
@@ -159,6 +163,7 @@ export function GameBoard({
   awaitingFirst,
   masked = false,
   openingEffects = {},
+  cascadePulse = null,
   outcomeEffect = null,
   onOpen,
   onFlag
@@ -178,6 +183,24 @@ export function GameBoard({
     element.addEventListener("touchstart", preventBrowserNavigation, { passive: false });
     return () => element.removeEventListener("touchstart", preventBrowserNavigation);
   }, [interactive, masked]);
+
+  useEffect(() => {
+    const element = boardRef.current;
+    if (!element || !cascadePulse || outcomeEffect !== null || prefersReducedMotion()) return;
+    const animation = element.animate(
+      [
+        { transform: "scale(1)", filter: "brightness(1)" },
+        { transform: `scale(${cascadePulse.scale})`, filter: "brightness(1.12)", offset: 0.48 },
+        { transform: "scale(1)", filter: "brightness(1)" }
+      ],
+      {
+        duration: EFFECT_TIMING.cascadeBoardPulseMs,
+        delay: cascadePulse.delayMs,
+        easing: "cubic-bezier(0.2, 0.8, 0.35, 1)"
+      }
+    );
+    return () => animation.cancel();
+  }, [cascadePulse, outcomeEffect]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, cell: Cell): void => {
     if (!interactive || masked) return;
@@ -268,7 +291,7 @@ export function GameBoard({
             {masked ? null : <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />}
             {exploding ? (
               <span className="explosion-particles" aria-hidden="true">
-                {Array.from({ length: 10 }, (_, index) => <i key={`${outcomeEffect.id}-${index}`} />)}
+                {Array.from({ length: 14 }, (_, index) => <i key={`${outcomeEffect.id}-${index}`} />)}
               </span>
             ) : null}
           </button>
