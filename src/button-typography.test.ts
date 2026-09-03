@@ -24,7 +24,7 @@ describe("buttonUiText", () => {
     expect(markup.replace(/<[^>]+>/gu, "")).toBe("盤面を見る");
   });
 
-  it.each(["3色", "爆弾 15個", "RESULTへ戻る"])("混在ラベル %s の文字種を分ける", (label) => {
+  it.each(["3色", "4色"])("混在ラベル %s の文字種を分ける", (label) => {
     const markup = renderButtonText(label);
 
     expect(markup).toContain("button-latin-run");

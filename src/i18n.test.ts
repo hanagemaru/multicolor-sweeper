@@ -30,7 +30,7 @@ describe("localized UI copy", () => {
   });
 
   it("localizes counts and flag labels", () => {
-    expect(bombCountLabel("ja", 20)).toBe("爆弾 20個");
+    expect(bombCountLabel("ja", 20)).toBe("20 BOMBS");
     expect(bombCountLabel("en", 20)).toBe("20 BOMBS");
     expect(colorCountLabel("ja", 3)).toBe("3色");
     expect(colorCountLabel("en", 4)).toBe("4 COLORS");
@@ -43,6 +43,8 @@ describe("localized UI copy", () => {
     expect(copy.flags).toBe("FLAGS");
     expect(copy.clearTime).toBe("CLEAR TIME");
     expect(copy.retry).toBe("RETRY");
+    expect(copy.bestTime).toBe("BEST TIME");
+    expect(copy.rankingCategory).toBe("ランキング部門");
     expect(copy.submitTime).toBe("タイムを登録");
   });
 

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mockRanking, playerRank, rankedEntries, rankingWithPlayer } from "./ranking";
+import {
+  destinationAfterSuccessfulSubmit,
+  mockRanking,
+  playerRank,
+  rankedEntries,
+  rankingWithPlayer
+} from "./ranking";
 
 describe("ranking", () => {
   it("mixes 3-color and 4-color records in the same mine-count category", () => {
@@ -24,5 +30,10 @@ describe("ranking", () => {
 
   it("does not insert an unnamed player", () => {
     expect(rankingWithPlayer(25, "   ", 4, 1000).some((entry) => entry.isPlayer)).toBe(false);
+  });
+
+  it("opens the ranking automatically only after a new best", () => {
+    expect(destinationAfterSuccessfulSubmit(true)).toBe("ranking");
+    expect(destinationAfterSuccessfulSubmit(false)).toBe("result");
   });
 });

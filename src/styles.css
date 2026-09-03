@@ -664,6 +664,17 @@ legend {
 .result-error { margin: 0; color: #d9dcf6; font-family: "VT323", "MaruMonica", monospace; font-size: 12px; line-height: 1.45; }
 .best-badge,
 .submit-status { margin: 0; min-height: 19px; color: var(--accent); font-size: 21px; line-height: 1; }
+.best-time {
+  display: flex;
+  min-height: 19px;
+  margin: 0;
+  align-items: baseline;
+  justify-content: center;
+  gap: 7px;
+  line-height: 1;
+}
+.best-time small { color: var(--muted); font-size: 14px; letter-spacing: 0.08em; }
+.best-time strong { color: #d9dcf6; font-size: 21px; font-weight: 400; }
 .submit-status.success { color: var(--success); }
 .submit-status.error { color: var(--danger); }
 
@@ -736,6 +747,7 @@ legend {
 .ranking-table th:nth-child(4), .ranking-table td:nth-child(4) { width: 26%; text-align: right; }
 .ranking-table tr.is-player td { color: #fff6c7; background: #393728; }
 .ranking-actions { grid-template-columns: 1fr 1fr; }
+.ranking-actions-single { grid-template-columns: 1fr; }
 .ranking-actions button { min-height: 44px; font-size: var(--button-font-standard); }
 
 @media (max-width: 350px) {
