@@ -4,10 +4,12 @@ import { GameBoard } from "./components/GameBoard";
 import { GestureArrow } from "./components/GestureArrow";
 import { GameAudio } from "./effects/game-audio";
 import {
+  cascadePulseForReveal,
   openingEffectsForCells,
   prefersReducedMotion,
   resultDelay,
   type BoardOutcomeEffect,
+  type CascadePulseEffect,
   type CellOpeningEffects
 } from "./effects/game-effects";
 import {
@@ -129,6 +131,7 @@ export default function App(): React.JSX.Element {
   const [rankingOrigin, setRankingOrigin] = useState<RankingOrigin>("settings");
   const [rankingMineCount, setRankingMineCount] = useState<MineCount>(20);
   const [openingEffects, setOpeningEffects] = useState<CellOpeningEffects>({});
+  const [cascadePulse, setCascadePulse] = useState<CascadePulseEffect | null>(null);
   const [outcomeEffect, setOutcomeEffect] = useState<BoardOutcomeEffect | null>(null);
   const [resultPending, setResultPending] = useState(false);
 
@@ -269,7 +272,9 @@ export default function App(): React.JSX.Element {
     const id = ++effectIdRef.current;
     const nextEffects = openingEffectsForCells(cells, { row, col }, id);
     setOpeningEffects((current) => ({ ...current, ...nextEffects }));
-    audioRef.current?.playReveal(Object.values(nextEffects).map((effect) => effect.delayMs));
+    const delays = Object.values(nextEffects).map((effect) => effect.delayMs);
+    setCascadePulse(cascadePulseForReveal(nextEffects, cells.length, id));
+    audioRef.current?.playReveal(delays, cells.length);
   };
 
   const enterBoard = (nextMineCount: MineCount = mineCount, nextColorCount: ColorCount = colorCount): void => {
@@ -292,6 +297,7 @@ export default function App(): React.JSX.Element {
     setSubmittedRank(null);
     setRankingOpen(false);
     setOpeningEffects({});
+    setCascadePulse(null);
     setOutcomeEffect(null);
     setResultPending(false);
     setPhase("awaiting-first");
@@ -358,6 +364,8 @@ export default function App(): React.JSX.Element {
     commitBoard(next);
     if (outcome === null) return;
 
+    setCascadePulse(null);
+
     const finalElapsed = currentElapsed();
     elapsedBeforeSegmentRef.current = finalElapsed;
     setElapsedMs(finalElapsed);
@@ -396,8 +404,14 @@ export default function App(): React.JSX.Element {
 
   const handleFlag = (row: number, col: number, flag: FlagColor): void => {
     if (phase !== "playing" || paused) return;
+    audioRef.current?.unlock();
     const next = cloneBoard(boardStateRef.current);
+    const previousFlag = next.cells[row][col].flag;
     setFlag(next, row, col, flag);
+    const nextFlag = next.cells[row][col].flag;
+    if (nextFlag !== previousFlag) {
+      audioRef.current?.playFlag(nextFlag === null ? "remove" : "place");
+    }
     commitBoard(next);
   };
 
@@ -415,6 +429,7 @@ export default function App(): React.JSX.Element {
     setRankingOpen(false);
     setSubmitState("idle");
     setOpeningEffects({});
+    setCascadePulse(null);
     setOutcomeEffect(null);
     setResultPending(false);
   };
@@ -721,6 +736,7 @@ export default function App(): React.JSX.Element {
                 awaitingFirst={phase === "awaiting-first"}
                 masked={paused}
                 openingEffects={openingEffects}
+                cascadePulse={cascadePulse}
                 outcomeEffect={outcomeEffect}
                 onOpen={handleOpen}
                 onFlag={handleFlag}
