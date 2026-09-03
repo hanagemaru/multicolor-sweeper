@@ -35,8 +35,8 @@ const COPY = {
     retry: "RETRY",
     viewBoard: "盤面を見る",
     ranking: "RANKING",
+    rankingCategory: "ランキング部門",
     back: "戻る",
-    backToResult: "RESULTへ戻る",
     player: "PLAYER",
     notSet: "未登録",
     setName: "名前登録",
@@ -45,7 +45,6 @@ const COPY = {
     rank: "順位",
     name: "名前",
     tableColors: "色数",
-    play: "PLAY",
     registerName: "名前登録",
     nameRequiredForSubmit: "タイムを登録するため、名前を登録してください。",
     playerNamePlaceholder: "プレイヤー名",
@@ -56,6 +55,7 @@ const COPY = {
     submitted: "登録完了",
     submitFailed: "送信失敗",
     retrySubmit: "再試行",
+    bestTime: "BEST TIME",
     newBest: "NEW BEST!",
     status: {
       settings: "難易度と色数を選んでください",
@@ -86,7 +86,7 @@ const COPY = {
     start: "START",
     menu: "MENU",
     pause: "PAUSE",
-    paused: "PAUSED",
+    paused: "PAUSE",
     resume: "RESUME",
     generating: "GENERATING",
     result: "RESULT",
@@ -97,8 +97,8 @@ const COPY = {
     retry: "RETRY",
     viewBoard: "VIEW BOARD",
     ranking: "RANKING",
+    rankingCategory: "Ranking category",
     back: "BACK",
-    backToResult: "BACK TO RESULT",
     player: "PLAYER",
     notSet: "NOT SET",
     setName: "SET NAME",
@@ -107,7 +107,6 @@ const COPY = {
     rank: "RANK",
     name: "NAME",
     tableColors: "COLORS",
-    play: "PLAY",
     registerName: "REGISTER NAME",
     nameRequiredForSubmit: "Register a name to submit this time.",
     playerNamePlaceholder: "PLAYER NAME",
@@ -118,6 +117,7 @@ const COPY = {
     submitted: "SUBMITTED",
     submitFailed: "SUBMIT FAILED",
     retrySubmit: "TRY AGAIN",
+    bestTime: "BEST TIME",
     newBest: "NEW BEST!",
     status: {
       settings: "Choose a difficulty and number of colors",
@@ -159,8 +159,8 @@ export function difficultyLabel(language: Language, difficulty: "easy" | "normal
   return COPY[language].difficulties[difficulty];
 }
 
-export function bombCountLabel(language: Language, mineCount: MineCount): string {
-  return language === "ja" ? `爆弾 ${mineCount}個` : `${mineCount} BOMBS`;
+export function bombCountLabel(_language: Language, mineCount: MineCount): string {
+  return `${mineCount} BOMBS`;
 }
 
 export function colorCountLabel(language: Language, colorCount: ColorCount): string {

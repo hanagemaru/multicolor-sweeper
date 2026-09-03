@@ -41,6 +41,11 @@ const MOCK_RANKINGS: Record<MineCount, readonly Omit<RankingEntry, "mineCount">[
 
 export const PLAYER_NAME_STORAGE_KEY = "multicolor-sweeper-player-name";
 export const BEST_RECORD_STORAGE_PREFIX = "multicolor-sweeper-best";
+export const AUTO_RANKING_DELAY_MS = 1000;
+
+export function destinationAfterSuccessfulSubmit(newBest: boolean): "ranking" | "result" {
+  return newBest ? "ranking" : "result";
+}
 
 export function bestRecordStorageKey(mineCount: MineCount): string {
   return `${BEST_RECORD_STORAGE_PREFIX}-${mineCount}`;

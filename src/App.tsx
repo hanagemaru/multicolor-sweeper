@@ -40,7 +40,9 @@ import {
   type Language
 } from "./i18n";
 import {
+  AUTO_RANKING_DELAY_MS,
   bestRecordStorageKey,
+  destinationAfterSuccessfulSubmit,
   PLAYER_NAME_STORAGE_KEY,
   playerRank,
   rankingWithPlayer,
@@ -60,7 +62,6 @@ interface LocalRecord {
 }
 
 const SUBMITTED_RECORD_STORAGE_PREFIX = "multicolor-sweeper-submitted";
-
 function isResultPhase(phase: Phase): phase is ResultPhase {
   return phase === "won" || phase === "lost" || phase === "error";
 }
@@ -140,6 +141,9 @@ export default function App(): React.JSX.Element {
   const generationRequestRef = useRef(0);
   const resultDialogRef = useRef<HTMLDivElement | null>(null);
   const resultButtonRef = useRef<HTMLButtonElement | null>(null);
+  const rankingRedirectTimerRef = useRef<number | null>(null);
+  const submissionIdRef = useRef(0);
+  const allowAutoRankingRef = useRef(false);
 
   const gameplayLayout = phase !== "settings";
   const resultPhase = isResultPhase(phase) ? phase : null;
@@ -152,6 +156,8 @@ export default function App(): React.JSX.Element {
     clientRef.current = client;
     audioRef.current = audio;
     return () => {
+      submissionIdRef.current += 1;
+      if (rankingRedirectTimerRef.current !== null) window.clearTimeout(rankingRedirectTimerRef.current);
       client.dispose();
       audio.dispose();
       clientRef.current = null;
@@ -251,6 +257,14 @@ export default function App(): React.JSX.Element {
     setBoard(next);
   };
 
+  const cancelAutoRanking = (): void => {
+    allowAutoRankingRef.current = false;
+    if (rankingRedirectTimerRef.current !== null) {
+      window.clearTimeout(rankingRedirectTimerRef.current);
+      rankingRedirectTimerRef.current = null;
+    }
+  };
+
   const animateReveal = (cells: readonly { row: number; col: number }[], row: number, col: number): void => {
     if (cells.length === 0) return;
     const id = ++effectIdRef.current;
@@ -261,6 +275,8 @@ export default function App(): React.JSX.Element {
 
   const enterBoard = (nextMineCount: MineCount = mineCount, nextColorCount: ColorCount = colorCount): void => {
     generationRequestRef.current += 1;
+    submissionIdRef.current += 1;
+    cancelAutoRanking();
     const seed = makeBaseSeed();
     setMineCount(nextMineCount);
     setColorCount(nextColorCount);
@@ -388,6 +404,8 @@ export default function App(): React.JSX.Element {
 
   const resetToSettings = (): void => {
     generationRequestRef.current += 1;
+    submissionIdRef.current += 1;
+    cancelAutoRanking();
     setPhase("settings");
     commitBoard(createEmptyBoard(colorCount, mineCount));
     elapsedBeforeSegmentRef.current = 0;
@@ -419,6 +437,7 @@ export default function App(): React.JSX.Element {
 
   const closeResult = (): void => {
     if (resultPhase === "error") return;
+    cancelAutoRanking();
     setResultOpen(false);
     window.requestAnimationFrame(() => resultButtonRef.current?.focus());
   };
@@ -449,8 +468,11 @@ export default function App(): React.JSX.Element {
       return;
     }
 
+    const submissionId = ++submissionIdRef.current;
+    allowAutoRankingRef.current = true;
     setSubmitState("sending");
     window.setTimeout(() => {
+      if (submissionIdRef.current !== submissionId) return;
       try {
         const record = { timeMs: elapsedMs, colorCount };
         const currentRanking = rankingWithPlayer(mineCount, trimmed, record.colorCount, record.timeMs);
@@ -460,6 +482,15 @@ export default function App(): React.JSX.Element {
         setSubmittedRecords((current) => ({ ...current, [mineCount]: submitted }));
         persistRecord(submittedRecordStorageKey(mineCount), submitted);
         setSubmitState("success");
+        if (destinationAfterSuccessfulSubmit(newBest) === "ranking" && allowAutoRankingRef.current) {
+          rankingRedirectTimerRef.current = window.setTimeout(() => {
+            rankingRedirectTimerRef.current = null;
+            if (!allowAutoRankingRef.current) return;
+            setRankingOrigin("result");
+            setRankingMineCount(mineCount);
+            setRankingOpen(true);
+          }, AUTO_RANKING_DELAY_MS);
+        }
       } catch {
         setSubmitState("error");
       }
@@ -475,12 +506,14 @@ export default function App(): React.JSX.Element {
   };
 
   const openRanking = (origin: RankingOrigin): void => {
+    cancelAutoRanking();
     setRankingOrigin(origin);
     setRankingMineCount(mineCount);
     setRankingOpen(true);
   };
 
   const rankingRecord = submittedRecords[rankingMineCount] ?? null;
+  const resultBestRecord = bestRecords[mineCount] ?? null;
   const rankingEntries: RankingEntry[] = rankingWithPlayer(
     rankingMineCount,
     playerName,
@@ -514,7 +547,7 @@ export default function App(): React.JSX.Element {
             </div>
           </header>
 
-          <div className="ranking-tabs" aria-label="Ranking category">
+          <div className="ranking-tabs" role="group" aria-label={copy.rankingCategory}>
             {([15, 20, 25] as const).map((count) => (
               <button
                 key={count}
@@ -546,17 +579,21 @@ export default function App(): React.JSX.Element {
             </table>
           </div>
 
-          <div className="ranking-actions">
-            <button
-              className="primary-button"
-              type="button"
-              onClick={() => enterBoard(rankingMineCount, colorCount)}
-            >
-              {buttonUiText(`${copy.play} ${rankingMineCount}`)}
-            </button>
-            <button className="secondary-button" type="button" onClick={() => setRankingOpen(false)}>
-              {buttonUiText(rankingOrigin === "result" ? copy.backToResult : copy.back)}
-            </button>
+          <div className={`ranking-actions${rankingOrigin === "settings" ? " ranking-actions-single" : ""}`}>
+            {rankingOrigin === "result" ? (
+              <>
+                <button className="primary-button" type="button" onClick={() => setRankingOpen(false)}>
+                  {buttonUiText(copy.result)}
+                </button>
+                <button className="secondary-button" type="button" onClick={resetToSettings}>
+                  {buttonUiText(copy.menu)}
+                </button>
+              </>
+            ) : (
+              <button className="secondary-button" type="button" onClick={() => setRankingOpen(false)}>
+                {buttonUiText(copy.back)}
+              </button>
+            )}
           </div>
 
           {nameEditorOpen ? (
@@ -751,6 +788,9 @@ export default function App(): React.JSX.Element {
                 <>
                   <p className="result-time"><small>{copy.clearTime}</small><strong>{formatTime(elapsedMs)}</strong></p>
                   {newBest ? <p className="best-badge">{copy.newBest}</p> : null}
+                  {!newBest && resultBestRecord ? (
+                    <p className="best-time"><small>{copy.bestTime}</small><strong>{formatTime(resultBestRecord.timeMs)}</strong></p>
+                  ) : null}
                   {submitState === "sending" ? <p className="submit-status">{copy.submitting}</p> : null}
                   {submitState === "success" ? <p className="submit-status success">{mixedUiText(`${copy.submitted} · #${submittedRank ?? "--"}`)}</p> : null}
                   {submitState === "error" ? <p className="submit-status error">{copy.submitFailed}</p> : null}
