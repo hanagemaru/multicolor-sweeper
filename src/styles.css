@@ -33,7 +33,10 @@
   --button-font-subtitle: 14px;
   --button-ja-scale: 0.65em;
   --cell-open-duration: 140ms;
+  --cell-scan-duration: 275ms;
   --explosion-duration: 455ms;
+  --cinematic-explosion-beat: 220ms;
+  --cinematic-explosion-duration: 920ms;
   --clear-cell-duration: 170ms;
   --clear-board-pulse-delay: 625ms;
   --clear-board-pulse-duration: 120ms;
@@ -55,6 +58,15 @@ body {
   min-height: 100vh;
   margin: 0;
   overscroll-behavior: none;
+}
+
+.effects-lab-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  color: var(--accent);
+  background: var(--bg);
+  font-size: clamp(22px, 6vw, 34px);
 }
 
 html.app-viewport-locked,
@@ -381,6 +393,7 @@ legend {
 }
 
 .board {
+  position: relative;
   display: grid;
   width: min(100cqw, 100cqh);
   height: min(100cqw, 100cqh);
@@ -452,15 +465,22 @@ legend {
   animation-delay: var(--opening-delay, 0ms);
 }
 
-.cell-opening::before {
+.cell-opening-scan {
+  overflow: hidden;
+}
+
+.cell-opening-scan::before {
   content: "";
   position: absolute;
   z-index: 3;
-  inset: 2px;
-  background: rgba(255, 247, 199, 0.34);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  top: -45%;
+  bottom: -45%;
+  left: -65%;
+  width: 55%;
+  background: linear-gradient(90deg, transparent, rgba(255, 242, 168, 0.95), transparent);
   pointer-events: none;
-  animation: cell-open-flash var(--cell-open-duration) steps(4, end) both;
+  transform: rotate(28deg) translateX(-120%);
+  animation: cell-open-scan var(--cell-scan-duration) ease-out both;
   animation-delay: var(--opening-delay, 0ms);
 }
 
@@ -470,16 +490,60 @@ legend {
   100% { opacity: 1; transform: scale(1); filter: brightness(1); }
 }
 
-@keyframes cell-open-flash {
-  0% { opacity: 0; transform: scale(0.72); }
-  30% { opacity: 0.9; transform: scale(1); }
-  70%, 100% { opacity: 0; transform: scale(1); }
+@keyframes cell-open-scan {
+  0% { opacity: 0; transform: rotate(28deg) translateX(-120%); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(28deg) translateX(430%); }
 }
 
 .board-exploding {
   z-index: 2;
   animation: board-shake var(--explosion-duration) steps(2, end) both;
 }
+
+.board-exploding-cinematic {
+  animation: cinematic-board var(--cinematic-explosion-duration) cubic-bezier(0.2, 0.8, 0.28, 1) both;
+}
+
+.board-exploding-cinematic::before {
+  content: "";
+  position: absolute;
+  z-index: 10;
+  inset: -3px;
+  opacity: 0;
+  background: #fff8d8;
+  pointer-events: none;
+  animation: cinematic-board-flash 720ms ease-out both;
+}
+
+.cell-cinematic-blast {
+  animation: cinematic-cell-blast 760ms cubic-bezier(0.17, 0.76, 0.28, 1) var(--cinematic-explosion-beat) both;
+}
+
+.cell-exploding-cinematic .bomb {
+  animation: cinematic-bomb-anticipation var(--cinematic-explosion-beat) ease-in both;
+}
+
+.cell-exploding-cinematic::before {
+  animation: cinematic-bomb-ring 650ms ease-out var(--cinematic-explosion-beat) both;
+}
+
+.cell-exploding-cinematic::after {
+  animation: bomb-flash 160ms steps(2, end) var(--cinematic-explosion-beat) both;
+}
+
+.board-exploding-cinematic .explosion-particles i {
+  width: clamp(4px, 1.7cqw, 8px);
+  height: clamp(4px, 1.7cqw, 8px);
+  background: #f1c85d;
+  box-shadow: 0 0 0 1px #7c2938;
+  transform: translate(-50%, -50%) rotate(var(--cinematic-particle-angle)) translateX(0) scale(1.5);
+  animation: cinematic-particle 720ms cubic-bezier(0.12, 0.72, 0.32, 1)
+    calc(var(--cinematic-explosion-beat) + var(--cinematic-particle-delay)) both;
+}
+
+.board-exploding-cinematic .explosion-particles i:nth-child(3n) { background: #fff2a8; }
+.board-exploding-cinematic .explosion-particles i:nth-child(3n + 2) { background: #ff6677; }
 
 .cell-exploding {
   z-index: 4;
@@ -572,6 +636,54 @@ legend {
   80% { transform: translate(2px, -1px); }
 }
 
+@keyframes cinematic-board {
+  0%, 18% { filter: brightness(1); transform: scale(1); }
+  21% { filter: brightness(0.45) saturate(0.65); transform: scale(0.985); }
+  24% { filter: brightness(2.2); transform: scale(1.025); }
+  100% { filter: brightness(0.72); transform: scale(0.97); }
+}
+
+@keyframes cinematic-board-flash {
+  0%, 29% { opacity: 0; }
+  30% { opacity: 0.9; }
+  38% { opacity: 0.12; }
+  100% { opacity: 0; }
+}
+
+@keyframes cinematic-cell-blast {
+  0% { opacity: 1; transform: translate(0) rotate(0) scale(1); }
+  9% { opacity: 1; transform: translate(0) rotate(0) scale(1.12); }
+  100% {
+    opacity: 0;
+    transform: translate(var(--blast-x), var(--blast-y)) rotate(var(--blast-rotate)) scale(0.62);
+  }
+}
+
+@keyframes cinematic-bomb-anticipation {
+  0% { filter: brightness(1); transform: scale(1); }
+  70% { filter: brightness(1.7); transform: scale(1.13); }
+  100% { filter: brightness(2.1); transform: scale(1.2); }
+}
+
+@keyframes cinematic-bomb-ring {
+  0% { opacity: 0; transform: scale(0.15); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: scale(8.5); }
+}
+
+@keyframes cinematic-particle {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--cinematic-particle-angle)) translateX(0) scale(1.5);
+  }
+  12% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--cinematic-particle-angle))
+      translateX(calc(var(--cinematic-particle-distance) + 35px)) scale(0.25);
+  }
+}
+
 .board-clearing {
   animation: clear-board-finish var(--clear-board-pulse-duration) cubic-bezier(0.2, 0.8, 0.35, 1) var(--clear-board-pulse-delay) both;
 }
@@ -581,11 +693,83 @@ legend {
   animation-delay: var(--clear-delay, 0ms);
 }
 
+.board-clearing-super {
+  z-index: 2;
+  animation: super-clear-board 760ms cubic-bezier(0.15, 0.76, 0.28, 1) 300ms both;
+}
+
+.cell-clear-super {
+  animation: super-clear-cell 520ms cubic-bezier(0.12, 0.82, 0.24, 1.2) var(--super-clear-delay) both;
+}
+
 .cell-opening.cell-clear-wave {
   animation:
     cell-open-pop var(--cell-open-duration) cubic-bezier(0.2, 0.75, 0.35, 1) both,
     clear-cell-pop var(--clear-cell-duration) cubic-bezier(0.2, 0.8, 0.35, 1) both;
   animation-delay: var(--opening-delay, 0ms), var(--clear-delay, 0ms);
+}
+
+.cell-opening.cell-clear-super {
+  animation:
+    cell-open-pop var(--cell-open-duration) cubic-bezier(0.2, 0.75, 0.35, 1) both,
+    super-clear-cell 520ms cubic-bezier(0.12, 0.82, 0.24, 1.2) both;
+  animation-delay: var(--opening-delay, 0ms), var(--super-clear-delay, 0ms);
+}
+
+.super-clear-overlay {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.super-clear-overlay strong {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  padding: 4px 12px 6px;
+  border: 3px solid #fff2a8;
+  color: #fff2a8;
+  background: #111426e8;
+  box-shadow: 0 0 0 3px #111426, 0 0 18px rgba(241, 200, 93, 0.6);
+  font-size: clamp(30px, 10cqw, 54px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  transform: translate(-50%, -50%);
+  animation: super-clear-title 440ms cubic-bezier(0.17, 0.85, 0.28, 1.2) 610ms both;
+}
+
+.super-clear-border {
+  position: absolute;
+  inset: 2px;
+  border: 4px solid #f1c85d;
+  box-shadow: inset 0 0 16px rgba(241, 200, 93, 0.5);
+  animation: super-clear-border 520ms ease-out 360ms both;
+}
+
+.super-clear-rays {
+  position: absolute;
+  inset: 4%;
+  opacity: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 242, 168, 0.25) 0deg 4deg, transparent 4deg 22.5deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 28%, #000 31% 100%);
+  mask: radial-gradient(circle, transparent 0 28%, #000 31% 100%);
+  animation: super-clear-rays 780ms ease-out 250ms both;
+}
+
+.super-clear-overlay i {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: 3.2%;
+  aspect-ratio: 1;
+  background: var(--super-spark-color);
+  transform: translate(-50%, -50%) rotate(var(--super-spark-angle));
+  animation: super-clear-spark 760ms ease-out var(--super-spark-delay) both;
 }
 
 @keyframes clear-cell-pop {
@@ -596,6 +780,48 @@ legend {
 @keyframes clear-board-finish {
   0%, 100% { transform: scale(1); filter: brightness(1); }
   50% { transform: scale(1.015); filter: brightness(1.12) saturate(1.12); }
+}
+
+@keyframes super-clear-cell {
+  0%, 100% { filter: brightness(1); transform: translate(0) rotate(0) scale(1); }
+  28% {
+    filter: brightness(1.9);
+    transform: translate(var(--blast-x-soft), var(--blast-y-soft)) rotate(2deg) scale(1.16);
+  }
+  58% {
+    filter: brightness(1.22);
+    transform: translate(var(--blast-x-return), var(--blast-y-return)) scale(0.96);
+  }
+}
+
+@keyframes super-clear-board {
+  0%, 100% { filter: saturate(1); transform: scale(1); }
+  30% { filter: saturate(1.45) brightness(1.1); transform: scale(1.05); }
+  58% { filter: saturate(1.15); transform: scale(0.985); }
+}
+
+@keyframes super-clear-title {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); }
+  58% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes super-clear-border {
+  0% { opacity: 0; transform: scale(0.72); }
+  45% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 0.7; transform: scale(1); }
+}
+
+@keyframes super-clear-spark {
+  0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--super-spark-angle)) translateX(24px) scale(0.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--super-spark-angle)) translateX(145px) scale(0.7); }
+}
+
+@keyframes super-clear-rays {
+  0% { opacity: 0; transform: rotate(-14deg) scale(0.55); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(10deg) scale(1.1); }
 }
 
 .hud-action-pending {
@@ -899,14 +1125,23 @@ legend {
 @media (prefers-reduced-motion: reduce) {
   .spinner { animation: none; }
   .cell-opening,
-  .cell-opening::before,
+  .cell-opening-scan::before,
   .board-exploding,
+  .board-exploding-cinematic::before,
   .board-clearing,
+  .cell-cinematic-blast,
   .cell-exploding,
   .cell-exploding::before,
   .cell-exploding::after,
   .explosion-particles i,
-  .cell-clear-wave { animation: none; }
+  .cell-clear-wave,
+  .cell-clear-super,
+  .super-clear-overlay strong { animation: none; }
+
+  .board-exploding-cinematic::before,
+  .super-clear-rays,
+  .super-clear-border,
+  .super-clear-overlay i { display: none; }
 }
 
 

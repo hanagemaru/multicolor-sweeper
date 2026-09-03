@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   EFFECT_TIMING,
+  PRODUCT_EFFECT_SELECTION,
   cascadePulseForReveal,
   cellKey,
   chebyshevDistance,
+  clearEffectForResult,
   clearWaveDelay,
   openingEffectsForCells,
   revealFeedbackForCount,
@@ -52,7 +54,23 @@ describe("game effect timing", () => {
   });
 
   it("reduced motionでは結果表示待ちを短縮する", () => {
-    expect(resultDelay("clear", true)).toBe(EFFECT_TIMING.reducedResultDelayMs);
-    expect(resultDelay("explosion", false)).toBe(EFFECT_TIMING.explosionResultDelayMs);
+    expect(resultDelay({ id: 1, type: "clear", variant: "super" }, true)).toBe(EFFECT_TIMING.reducedResultDelayMs);
+    expect(resultDelay({ id: 2, type: "explosion", origin: { row: 4, col: 4 }, variant: "pixel" }, false))
+      .toBe(EFFECT_TIMING.explosionResultDelayMs);
+  });
+
+  it("採用演出は斜めスキャン、シネマチック爆発、ベスト時だけSUPER CLEAR", () => {
+    expect(PRODUCT_EFFECT_SELECTION).toEqual({
+      openingLight: "scan",
+      explosion: "cinematic",
+      regularClear: "wave",
+      newBestClear: "super"
+    });
+    expect(clearEffectForResult(false)).toBe("wave");
+    expect(clearEffectForResult(true)).toBe("super");
+    expect(resultDelay({ id: 3, type: "explosion", origin: { row: 4, col: 4 }, variant: "cinematic" }, false))
+      .toBe(EFFECT_TIMING.cinematicExplosionResultDelayMs);
+    expect(resultDelay({ id: 4, type: "clear", variant: "super" }, false))
+      .toBe(EFFECT_TIMING.superClearResultDelayMs);
   });
 });
