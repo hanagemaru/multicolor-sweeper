@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  bestRecordStorageKey,
+  canSubmitResult,
   destinationAfterSuccessfulSubmit,
   mockRanking,
   playerRank,
   rankedEntries,
-  rankingWithPlayer
+  rankingWithPlayer,
+  resetLegacyTestRecordsOnce,
+  submittedRecordStorageKey
 } from "./ranking";
 
 describe("ranking", () => {
@@ -35,5 +39,34 @@ describe("ranking", () => {
   it("opens the ranking automatically only after a new best", () => {
     expect(destinationAfterSuccessfulSubmit(true)).toBe("ranking");
     expect(destinationAfterSuccessfulSubmit(false)).toBe("result");
+  });
+
+  it("allows submission only for a new best", () => {
+    expect(canSubmitResult(true)).toBe(true);
+    expect(canSubmitResult(false)).toBe(false);
+  });
+
+  it("clears legacy test records once while keeping profile data", () => {
+    const values = new Map<string, string>([
+      [bestRecordStorageKey(15), '{"timeMs":7910,"colorCount":3}'],
+      [submittedRecordStorageKey(15), '{"timeMs":234930,"colorCount":3}'],
+      ["multicolor-sweeper-player-name", "PLAYER"],
+      ["multicolor-sweeper-language", "ja"]
+    ]);
+    const storage = {
+      getItem: (key: string) => values.get(key) ?? null,
+      removeItem: (key: string) => { values.delete(key); },
+      setItem: (key: string, value: string) => { values.set(key, value); }
+    };
+
+    expect(resetLegacyTestRecordsOnce(storage)).toBe(true);
+    expect(values.has(bestRecordStorageKey(15))).toBe(false);
+    expect(values.has(submittedRecordStorageKey(15))).toBe(false);
+    expect(values.get("multicolor-sweeper-player-name")).toBe("PLAYER");
+    expect(values.get("multicolor-sweeper-language")).toBe("ja");
+
+    values.set(bestRecordStorageKey(15), '{"timeMs":120000,"colorCount":3}');
+    expect(resetLegacyTestRecordsOnce(storage)).toBe(false);
+    expect(values.has(bestRecordStorageKey(15))).toBe(true);
   });
 });

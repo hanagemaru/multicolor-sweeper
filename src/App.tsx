@@ -42,10 +42,13 @@ import {
 import {
   AUTO_RANKING_DELAY_MS,
   bestRecordStorageKey,
+  canSubmitResult,
   destinationAfterSuccessfulSubmit,
   PLAYER_NAME_STORAGE_KEY,
   playerRank,
   rankingWithPlayer,
+  resetLegacyTestRecordsOnce,
+  submittedRecordStorageKey,
   type RankingEntry
 } from "./ranking";
 import { createGeneratorClient, type GeneratorClient } from "./workers/generator-client";
@@ -61,7 +64,6 @@ interface LocalRecord {
   colorCount: ColorCount;
 }
 
-const SUBMITTED_RECORD_STORAGE_PREFIX = "multicolor-sweeper-submitted";
 function isResultPhase(phase: Phase): phase is ResultPhase {
   return phase === "won" || phase === "lost" || phase === "error";
 }
@@ -82,10 +84,6 @@ function mixedUiText(text: string): React.ReactNode {
       ? <span className="mixed-latin-run" key={`${part}-${index}`}>{part}</span>
       : part
   ));
-}
-
-function submittedRecordStorageKey(mineCount: MineCount): string {
-  return `${SUBMITTED_RECORD_STORAGE_PREFIX}-${mineCount}`;
 }
 
 function readStoredRecord(key: string): LocalRecord | null {
@@ -185,6 +183,7 @@ export default function App(): React.JSX.Element {
 
   useEffect(() => {
     try {
+      resetLegacyTestRecordsOnce(window.localStorage);
       setPlayerName(window.localStorage.getItem(PLAYER_NAME_STORAGE_KEY) ?? "");
     } catch {
       setPlayerName("");
@@ -461,7 +460,7 @@ export default function App(): React.JSX.Element {
   };
 
   const submitScore = (name: string = playerName): void => {
-    if (resultPhase !== "won" || submitState === "sending") return;
+    if (resultPhase !== "won" || !canSubmitResult(newBest) || submitState === "sending") return;
     const trimmed = name.trim();
     if (!trimmed) {
       openNameEditor("submit");
@@ -801,17 +800,21 @@ export default function App(): React.JSX.Element {
               <div className="result-actions">
                 <button className="primary-button" type="button" onClick={() => enterBoard()}>{buttonUiText(copy.retry)}</button>
                 {resultPhase === "won" ? (
-                  submitState === "success" ? (
-                    <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{buttonUiText(copy.ranking)}</button>
+                  canSubmitResult(newBest) ? (
+                    submitState === "success" ? (
+                      <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{buttonUiText(copy.ranking)}</button>
+                    ) : (
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        disabled={submitState === "sending"}
+                        onClick={() => submitScore()}
+                      >
+                        {buttonUiText(submitState === "error" ? copy.retrySubmit : copy.submitTime)}
+                      </button>
+                    )
                   ) : (
-                    <button
-                      className="secondary-button"
-                      type="button"
-                      disabled={submitState === "sending"}
-                      onClick={() => submitScore()}
-                    >
-                      {buttonUiText(submitState === "error" ? copy.retrySubmit : copy.submitTime)}
-                    </button>
+                    <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{buttonUiText(copy.ranking)}</button>
                   )
                 ) : null}
                 {resultPhase !== "error" ? (
