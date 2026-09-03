@@ -1,0 +1,47 @@
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  upload:
+    # Cloudflareのsecretをforkへ渡さない。リポジトリ内ブランチのPRだけ実行する。
+    if: github.event.pull_request.head.repo.full_name == github.repository && vars.CLOUDFLARE_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Upload preview version
+        id: preview
+        shell: bash
+        run: |
+          npx wrangler versions upload --preview-alias "pr-${{ github.event.pull_request.number }}" \
+            --message "PR #${{ github.event.pull_request.number }} preview" | tee wrangler-output.txt
+          preview_url="$(grep -Eo 'https://[^[:space:]]+' wrangler-output.txt | tail -n 1)"
+          if [ -z "$preview_url" ]; then
+            echo "Cloudflare preview URL was not found in Wrangler output." >&2
+            exit 1
+          fi
+          echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
+          {
+            echo "### EFFECT LAB Preview"
+            echo
+            echo "[$preview_url/?effects-lab=1]($preview_url/?effects-lab=1)"
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NO_COLOR: "1"

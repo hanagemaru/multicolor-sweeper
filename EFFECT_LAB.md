@@ -10,6 +10,8 @@
 
 通常ゲームとURLを共用するが、ラボ本体のJavaScript/CSSはラボを開いたときだけ遅延読み込みされる。選択内容は保存せず、通常ゲームの演出・ロジック・ランキングには影響しない。
 
+同一リポジトリ内のPull Requestでは、GitHub ActionsがCloudflare Preview Versionをアップロードする。本番トラフィックは変更せず、ActionsのSummaryにEFFECT LABへのリンクを表示する。
+
 ## 比較できる内容
 
 ### OPEN
