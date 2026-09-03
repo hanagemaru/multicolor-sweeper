@@ -9,52 +9,8 @@ export const LIGHT_VARIANTS: readonly LightVariant[] = ["current", "frame", "sca
 export const EXPLOSION_VARIANTS: readonly ExplosionVariant[] = ["pixel", "cinematic", "shockwave"];
 export const CLEAR_VARIANTS: readonly ClearVariant[] = ["wave", "victory", "super"];
 
-export interface CountedRevealPlan {
-  pulseCount: number;
-  intervalMs: number;
-  finalLayers: 0 | 2 | 3;
-  pitchShiftSemitones: number;
-  durationMs: number;
-}
-
-export function countedRevealPlan(revealedCount: number): CountedRevealPlan {
-  const count = Math.max(1, Math.floor(revealedCount));
-  if (count <= 4) {
-    const intervalMs = count === 1 ? 0 : count === 2 ? 35 : count === 3 ? 30 : 25;
-    return {
-      pulseCount: count,
-      intervalMs,
-      finalLayers: 0,
-      pitchShiftSemitones: 0,
-      durationMs: (count - 1) * intervalMs + 55
-    };
-  }
-  if (count <= 8) {
-    return {
-      pulseCount: 4,
-      intervalMs: 23,
-      finalLayers: 2,
-      pitchShiftSemitones: 1 + (count - 5) * 0.35,
-      durationMs: 155
-    };
-  }
-  if (count <= 16) {
-    return {
-      pulseCount: 5,
-      intervalMs: 20,
-      finalLayers: 3,
-      pitchShiftSemitones: 2.2 + (count - 9) * 0.22,
-      durationMs: 195
-    };
-  }
-  return {
-    pulseCount: 6,
-    intervalMs: 18,
-    finalLayers: 3,
-    pitchShiftSemitones: Math.min(4.2 + (count - 17) * 0.12, 7),
-    durationMs: 245
-  };
-}
+export { countedRevealPlan } from "../effects/game-effects";
+export type { CountedRevealPlan } from "../effects/game-effects";
 
 export interface LabCellTiming {
   index: number;

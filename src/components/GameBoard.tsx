@@ -1,6 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import {
   EFFECT_TIMING,
+  PRODUCT_EFFECT_SELECTION,
   cellKey,
   clearWaveDelay,
   prefersReducedMotion,
@@ -155,6 +156,26 @@ function CellFace({ cell, colorCount, review, language }: { cell: Cell; colorCou
   return null;
 }
 
+function SuperClearOverlay(): React.JSX.Element {
+  return (
+    <span className="super-clear-overlay" aria-hidden="true">
+      <span className="super-clear-rays" />
+      <span className="super-clear-border" />
+      {Array.from({ length: 16 }, (_, index) => (
+        <i
+          key={index}
+          style={({
+            "--super-spark-angle": `${index * 22.5}deg`,
+            "--super-spark-delay": `${300 + index * 10}ms`,
+            "--super-spark-color": COLORS[index % COLORS.length].hex
+          } as CSSProperties)}
+        />
+      ))}
+      <strong>CLEAR!</strong>
+    </span>
+  );
+}
+
 export function GameBoard({
   board,
   language,
@@ -170,6 +191,8 @@ export function GameBoard({
 }: GameBoardProps): React.JSX.Element {
   const gesture = useRef<GestureState | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
+  const cinematicExplosion = outcomeEffect?.type === "explosion" && outcomeEffect.variant === "cinematic";
+  const superClear = outcomeEffect?.type === "clear" && outcomeEffect.variant === "super";
 
   useEffect(() => {
     const element = boardRef.current;
@@ -243,8 +266,8 @@ export function GameBoard({
     <div
       ref={boardRef}
       className={`board${masked ? " board-masked" : ""}${
-        outcomeEffect?.type === "explosion" ? " board-exploding" : ""
-      }${outcomeEffect?.type === "clear" ? " board-clearing" : ""}`}
+        outcomeEffect?.type === "explosion" ? ` board-exploding board-exploding-${outcomeEffect.variant}` : ""
+      }${outcomeEffect?.type === "clear" ? ` board-clearing board-clearing-${outcomeEffect.variant}` : ""}`}
       role="grid"
       aria-label={masked ? "Board hidden while paused" : boardLabel(language, GRID_SIZE)}
       aria-hidden={masked || undefined}
@@ -259,10 +282,21 @@ export function GameBoard({
           && outcomeEffect.origin.row === cell.row
           && outcomeEffect.origin.col === cell.col;
         const clearing = outcomeEffect?.type === "clear";
-        const effectStyle = openingEffect || clearing
+        const rowFromCenter = cell.row - Math.floor(GRID_SIZE / 2);
+        const colFromCenter = cell.col - Math.floor(GRID_SIZE / 2);
+        const radialDistance = Math.max(Math.abs(rowFromCenter), Math.abs(colFromCenter));
+        const effectStyle = openingEffect || clearing || cinematicExplosion
           ? ({
               "--opening-delay": `${openingEffect?.delayMs ?? 0}ms`,
-              "--clear-delay": `${clearing ? clearWaveDelay(cell.row, cell.col) : 0}ms`
+              "--clear-delay": `${clearing ? clearWaveDelay(cell.row, cell.col) : 0}ms`,
+              "--super-clear-delay": `${radialDistance * 32}ms`,
+              "--blast-x": `${colFromCenter * 24}px`,
+              "--blast-y": `${rowFromCenter * 24}px`,
+              "--blast-x-soft": `${colFromCenter * 1.92}px`,
+              "--blast-y-soft": `${rowFromCenter * 1.92}px`,
+              "--blast-x-return": `${colFromCenter * -0.6}px`,
+              "--blast-y-return": `${rowFromCenter * -0.6}px`,
+              "--blast-rotate": `${(colFromCenter * 17 + rowFromCenter * 11) % 55}deg`
             } as CSSProperties)
           : undefined;
         return (
@@ -272,8 +306,10 @@ export function GameBoard({
             role="gridcell"
             className={`cell ${masked ? "cell-masked" : `cell-${cell.state}`}${
               !masked && review && reviewMark(cell) === "correct-flag" ? " cell-correct" : ""
-            }${openingEffect ? " cell-opening" : ""}${exploding ? " cell-exploding" : ""}${
-              clearing ? " cell-clear-wave" : ""
+            }${openingEffect ? ` cell-opening cell-opening-${PRODUCT_EFFECT_SELECTION.openingLight}` : ""}${
+              cinematicExplosion ? " cell-cinematic-blast" : ""
+            }${exploding ? ` cell-exploding cell-exploding-${outcomeEffect.variant}` : ""}${
+              clearing ? ` cell-clear-${outcomeEffect.variant}` : ""
             }`}
             style={effectStyle}
             disabled={!interactive || masked}
@@ -291,12 +327,22 @@ export function GameBoard({
             {masked ? null : <CellFace cell={cell} colorCount={board.colorCount} review={review} language={language} />}
             {exploding ? (
               <span className="explosion-particles" aria-hidden="true">
-                {Array.from({ length: 14 }, (_, index) => <i key={`${outcomeEffect.id}-${index}`} />)}
+                {Array.from({ length: cinematicExplosion ? 28 : 14 }, (_, index) => (
+                  <i
+                    key={`${outcomeEffect.id}-${index}`}
+                    style={cinematicExplosion ? ({
+                      "--cinematic-particle-angle": `${index * (360 / 28) + (index % 2) * 9}deg`,
+                      "--cinematic-particle-distance": `${56 + (index % 4) * 13}px`,
+                      "--cinematic-particle-delay": `${(index % 3) * 12}ms`
+                    } as CSSProperties) : undefined}
+                  />
+                ))}
               </span>
             ) : null}
           </button>
         );
       })}
+      {superClear ? <SuperClearOverlay /> : null}
     </div>
   );
 }

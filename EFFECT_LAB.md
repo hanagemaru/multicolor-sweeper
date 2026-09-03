@@ -42,4 +42,5 @@
 - 音は外部素材を使わずWeb Audio APIで生成
 - アニメーションはCSSのみで、比較用コードは `src/effects-lab/` に分離
 - `prefers-reduced-motion: reduce` では移動・点滅をほぼ即時表示へ短縮
-- ラボは候補比較用。製品版へ採用する種類・強度・ランダム比率は触感確認後に決める
+- 製品版の採用結果: 開封は斜めスキャン、爆発はCINEMATIC BLAST、通常CLEARはCLEAR WAVE、自己ベスト更新時はSUPER CLEAR
+- 未採用候補も削除せず、ラボでは全種類を引き続き比較できる

@@ -5,8 +5,10 @@ import { GestureArrow } from "./components/GestureArrow";
 import { GameAudio } from "./effects/game-audio";
 import {
   cascadePulseForReveal,
+  clearEffectForResult,
   openingEffectsForCells,
   prefersReducedMotion,
+  PRODUCT_EFFECT_SELECTION,
   resultDelay,
   type BoardOutcomeEffect,
   type CascadePulseEffect,
@@ -215,14 +217,14 @@ export default function App(): React.JSX.Element {
       return;
     }
 
-    const effectType = resultPhase === "won" ? "clear" : "explosion";
+    if (!outcomeEffect) return;
     setResultOpen(false);
     setResultPending(true);
     const timer = window.setTimeout(() => {
       setOutcomeEffect(null);
       setResultPending(false);
       setResultOpen(true);
-    }, resultDelay(effectType, prefersReducedMotion()));
+    }, resultDelay(outcomeEffect, prefersReducedMotion()));
     return () => window.clearTimeout(timer);
   }, [resultPhase]);
 
@@ -345,11 +347,11 @@ export default function App(): React.JSX.Element {
     }
   };
 
-  const recordLocalBest = (timeMs: number): void => {
+  const recordLocalBest = (timeMs: number): boolean => {
     const previous = bestRecords[mineCount];
     const isBest = previous === undefined || timeMs < previous.timeMs;
     setNewBest(isBest);
-    if (!isBest) return;
+    if (!isBest) return false;
     const record = { timeMs, colorCount };
     setBestRecords((current) => ({ ...current, [mineCount]: record }));
     try {
@@ -357,6 +359,7 @@ export default function App(): React.JSX.Element {
     } catch {
       // The result still remains visible when storage is unavailable.
     }
+    return true;
   };
 
   const finishAfterMove = (next: Board, hitMine: boolean, row: number, col: number): void => {
@@ -372,15 +375,21 @@ export default function App(): React.JSX.Element {
     setStartedAt(null);
     if (outcome === "lost") {
       const exploded = next.cells.flat().find((cell) => cell.state === "exploded") ?? { row, col };
-      setOutcomeEffect({ id: ++effectIdRef.current, type: "explosion", origin: { row: exploded.row, col: exploded.col } });
+      setOutcomeEffect({
+        id: ++effectIdRef.current,
+        type: "explosion",
+        origin: { row: exploded.row, col: exploded.col },
+        variant: PRODUCT_EFFECT_SELECTION.explosion
+      });
       setResultPending(true);
-      audioRef.current?.playExplosion();
+      audioRef.current?.playExplosion(PRODUCT_EFFECT_SELECTION.explosion);
       setPhase("lost");
     } else {
-      recordLocalBest(finalElapsed);
-      setOutcomeEffect({ id: ++effectIdRef.current, type: "clear" });
+      const isNewBest = recordLocalBest(finalElapsed);
+      const clearVariant = clearEffectForResult(isNewBest);
+      setOutcomeEffect({ id: ++effectIdRef.current, type: "clear", variant: clearVariant });
       setResultPending(true);
-      audioRef.current?.playClear(prefersReducedMotion() ? 0 : undefined);
+      audioRef.current?.playClear(clearVariant, prefersReducedMotion() ? 0 : undefined);
       setPhase("won");
     }
   };
