@@ -1,7 +1,7 @@
-import { canChord, chordCell, revealCell, setFlag } from "../game/game-core";
-import { MAX_GENERATION_ATTEMPTS, PRODUCT_FILTER, isColorCount, isMineCount } from "../game/rules";
+import { canChord, chordCell, generateBoard, revealCell, setFlag } from "../game/game-core";
+import { MAX_GENERATION_ATTEMPTS, isColorCount, isMineCount } from "../game/rules";
 import { resolveMoveOutcome } from "../game/move-outcome";
-import { evaluateCandidate } from "../game/no-guess-generator";
+import { attemptSeed } from "../game/no-guess-generator";
 import type { Board } from "../game/types";
 import {
   PLAYER_NAME_MAX_LENGTH,
@@ -112,26 +112,18 @@ export function verifySubmission(input: SubmitRecordRequest): VerificationResult
     return { valid: false, suspicious: false, reason: "finish-time-mismatch" };
   }
 
-  let candidate;
+  let board: Board;
   try {
-    candidate = evaluateCandidate({
-      baseSeed: input.baseSeed,
-      attempt: input.attempt,
+    board = generateBoard({
+      seed: attemptSeed(input.baseSeed, input.attempt),
       mineCount: input.mineCount,
+      colorCount: input.colorCount,
       firstRow: input.firstRow,
-      firstCol: input.firstCol,
-      includeTrace: false
+      firstCol: input.firstCol
     });
   } catch {
     return { valid: false, suspicious: false, reason: "board-reproduction-failed" };
   }
-
-  if (!candidate.flags[PRODUCT_FILTER]) {
-    return { valid: false, suspicious: false, reason: "board-not-product-eligible" };
-  }
-
-  const board = input.colorCount === 3 ? candidate.board3 : candidate.board4;
-  if (!board) return { valid: false, suspicious: false, reason: "missing-board" };
 
   const firstReveal = revealCell(board, input.firstRow, input.firstCol);
   if (firstReveal.type === "mine") return { valid: false, suspicious: false, reason: "invalid-first-click" };
