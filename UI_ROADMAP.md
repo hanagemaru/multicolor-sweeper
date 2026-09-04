@@ -43,7 +43,7 @@
 
 ## 3. 実オンラインランキング
 
-**状態: IN PROGRESS — Draft PR #30 / main未反映 / Preview確認待ち**
+**状態: DONE — PR #30 / Preview・ユーザー確認済み**
 
 採用構成:
 - Cloudflare Workers + D1
@@ -52,7 +52,7 @@
 - 3色/4色混在
 - 同一player・同一爆弾数の最速記録1件
 
-PR #30実装範囲:
+完了範囲:
 - 実ランキング取得、自分の順位、名前変更、記録送信
 - Seed / first click / accepted attempt / rule/app version / 操作履歴の保存
 - Seed+attemptからの盤面再現と操作replayによるCLEAR成立検証
@@ -60,18 +60,14 @@ PR #30実装範囲:
 - 通信失敗をゲーム本体から分離
 - production / preview D1分離
 - production deploy前のD1 migration自動適用
+- Cloudflare API tokenへD1 Edit権限追加
+- production / preview D1作成・migration
+- Cloudflare Preview発行
+- Preview上でhealth、15/20/25ランキング取得、player作成・削除の実API smoke test
+- Previewでユーザー実画面確認
 
-Cloudflare側は完了:
-- API tokenへD1 Edit権限追加済み
-- production / preview D1作成済み
-- preview D1 migration適用済み
-- Cloudflare Preview発行済み
-- Preview上でhealth、15/20/25ランキング取得、player作成・削除の実API smoke test成功
-
-残作業:
-1. Previewで15/20/25、3/4色、日英、320×480を含む実画面確認
-2. ユーザー確認後にPR #30をmainへマージ
-3. mainデプロイ時にproduction D1 migrationを自動適用
+次:
+- mainデプロイでproduction D1 migration + Worker deployを確認
 
 ## 4. 端末・アクセシビリティ最終QA
 
@@ -103,3 +99,4 @@ Cloudflare側は完了:
 - P1-C 多言語基盤: PR #15、フォローアップ PR #16〜#18
 - Board First / PAUSE / ランキングUI / 日英切替: PR #19
 - 開封・連鎖・爆発・CLEAR演出＋効果音 / EFFECT LAB: PR #29まで
+- 実オンラインランキング / Cloudflare Workers + D1: PR #30
