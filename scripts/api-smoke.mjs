@@ -1,5 +1,6 @@
 import { mkdirSync, rmSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 
 const npx = process.platform === "win32" ? "npx.cmd" : "npx";
 const persistDir = ".wrangler/api-test";
@@ -26,13 +27,41 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+async function stopWorker(worker) {
+  if (worker.exitCode !== null || !worker.pid) return;
+
+  if (process.platform === "win32") {
+    spawnSync("taskkill", ["/pid", String(worker.pid), "/T", "/F"], { stdio: "ignore" });
+    return;
+  }
+
+  const exited = once(worker, "exit").catch(() => undefined);
+  try {
+    process.kill(-worker.pid, "SIGTERM");
+  } catch {
+    worker.kill("SIGTERM");
+  }
+
+  await Promise.race([
+    exited,
+    new Promise((resolve) => setTimeout(resolve, 2000))
+  ]);
+
+  if (worker.exitCode === null) {
+    try {
+      process.kill(-worker.pid, "SIGKILL");
+    } catch {}
+  }
+}
+
 rmSync(persistDir, { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
 run(["wrangler", "d1", "migrations", "apply", "multicolor-sweeper-ranking", "--local", `--persist-to=${persistDir}`]);
 run(["wrangler", "d1", "execute", "multicolor-sweeper-ranking", "--local", `--persist-to=${persistDir}`, "--file", "scripts/api-seed.sql"]);
 
-const worker = spawn(npx, ["wrangler", "dev", "--local", "--port", String(port), `--persist-to=${persistDir}`], {
+const worker = spawn(process.execPath, ["node_modules/wrangler/bin/wrangler.js", "dev", "--local", "--port", String(port), `--persist-to=${persistDir}`], {
   stdio: ["ignore", "pipe", "pipe"],
+  detached: process.platform !== "win32",
   env: { ...process.env, NO_COLOR: "1" }
 });
 let logs = "";
@@ -97,5 +126,5 @@ try {
   console.error(logs);
   process.exitCode = 1;
 } finally {
-  worker.kill("SIGTERM");
+  await stopWorker(worker);
 }
