@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   upload:
-    # Cloudflareのsecretをforkへ渡さない。リポジトリ内ブランチのPRだけ実行する。
+    # Cloudflareのsecretをforkへ渡さない。
     if: github.event.pull_request.head.repo.full_name == github.repository && vars.CLOUDFLARE_DEPLOY == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -22,13 +22,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm ci --no-audit
       - run: npm run build
+      - name: Prepare preview D1 binding
+        shell: bash
+        run: |
+          cp wrangler.jsonc wrangler.preview.jsonc
+          sed -i 's/"database_name": "multicolor-sweeper-ranking"/"database_name": "multicolor-sweeper-ranking-preview"/' wrangler.preview.jsonc
+          sed -i 's/"database_id": "bae4d381-409e-44e2-b76f-953b397f2be1"/"database_id": "0d70c1ca-2fa3-4f1d-925a-a12f993f200a"/' wrangler.preview.jsonc
+      - name: Apply preview D1 migrations
+        run: npx wrangler d1 migrations apply multicolor-sweeper-ranking-preview --remote --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NO_COLOR: "1"
       - name: Upload preview version
         id: preview
         shell: bash
         run: |
-          npx wrangler versions upload --preview-alias "pr-${{ github.event.pull_request.number }}" \
+          npx wrangler versions upload --config wrangler.preview.jsonc --preview-alias "pr-${{ github.event.pull_request.number }}" \
             --message "PR #${{ github.event.pull_request.number }} preview" | tee wrangler-output.txt
           preview_url="$(grep -Eo 'https://[^[:space:]]+' wrangler-output.txt | tail -n 1)"
           if [ -z "$preview_url" ]; then
@@ -37,7 +49,9 @@ jobs:
           fi
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
           {
-            echo "### EFFECT LAB Preview"
+            echo "### PR Preview"
+            echo
+            echo "[$preview_url/]($preview_url/)"
             echo
             echo "[$preview_url/?effects-lab=1]($preview_url/?effects-lab=1)"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -45,3 +59,46 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NO_COLOR: "1"
+      - name: Smoke test preview API
+        shell: bash
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { randomBytes } from "node:crypto";
+
+          const base = process.env.PREVIEW_URL;
+          if (!base) throw new Error("Preview URL is missing");
+
+          const expectOk = async (url, init, label) => {
+            const response = await fetch(url, init);
+            const text = await response.text();
+            if (!response.ok) throw new Error(`${label} failed: ${response.status} ${text}`);
+            return text ? JSON.parse(text) : null;
+          };
+
+          const health = await expectOk(`${base}/api/health`, undefined, "health");
+          if (!health?.ok) throw new Error("health response is invalid");
+
+          for (const mineCount of [15, 20, 25]) {
+            const ranking = await expectOk(`${base}/api/rankings?mineCount=${mineCount}&limit=50`, undefined, `${mineCount}-bomb ranking`);
+            if (!Array.isArray(ranking?.entries)) throw new Error(`${mineCount}-bomb ranking response is invalid`);
+          }
+
+          const playerId = `preview-smoke-${Date.now()}`;
+          const credential = randomBytes(32).toString("hex");
+          const auth = { Authorization: `Bearer ${playerId}.${credential}`, "Content-Type": "application/json" };
+
+          await expectOk(`${base}/api/player`, {
+            method: "PUT",
+            headers: auth,
+            body: JSON.stringify({ displayName: "SMOKE" })
+          }, "preview player write");
+
+          await expectOk(`${base}/api/player`, {
+            method: "DELETE",
+            headers: { Authorization: auth.Authorization }
+          }, "preview player cleanup");
+
+          console.log("Preview ranking API smoke test passed");
+          NODE

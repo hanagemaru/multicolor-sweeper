@@ -1,6 +1,6 @@
 # Multicolor Sweeper 製品仕様
 
-最終更新: 2026-09-01
+最終更新: 2026-09-04
 
 ## ゲーム構成
 
@@ -121,7 +121,7 @@ UIレイアウト・文字・配色の品質改善では、完成案C「Board Fi
 - CLEARではクリアタイムを最も強く表示する
 - CLEAR時の主要操作は `RETRY`
 - 記録未送信時の第二操作は英語 `SUBMIT TIME` / 日本語 `タイムを登録`
-- 送信成功後の第二操作は `VIEW RANKING`
+- 送信成功後の第二操作はランキング閲覧
 - `VIEW BOARD` と `MENU` は補助操作として一段弱く表示する
 - GAME OVERでは `RETRY` を主要操作とし、`VIEW BOARD` / `MENU` を補助操作にする。敗北時タイムは表示しない
 - 生成エラーではエラー内容、`RETRY`、`MENU`を表示する
@@ -141,9 +141,9 @@ UIレイアウト・文字・配色の品質改善では、完成案C「Board Fi
 - Web Audioは最初の盤面操作で有効化し、音の再生や演出待ちでゲームロジックと入力をブロックしない
 - `prefers-reduced-motion: reduce` ではセル・盤面・粒子のアニメーションを停止し、結果表示までの待ちも短縮する
 
-## ランキングUI
+## オンラインランキング
 
-ランキングはTime Attackの主要機能としてUI構造を先に実装する。ただし今回の段階では通信・認証・DB・不正対策を実装しない。
+ランキングはTime Attackの主要機能として、Cloudflare Workers + D1でオンライン化する。
 
 ### 部門
 
@@ -155,26 +155,73 @@ UIレイアウト・文字・配色の品質改善では、完成案C「Board Fi
 - プレイヤーは3色/4色の得意な方でより良いタイムを狙える
 - ランキング表には `COLORS` 列を設け、各記録が3色か4色か明示する
 - 自己ベストも同じ爆弾数なら3色/4色をまたいで比較する
+- 同一player・同一部門では最速のverified recordだけをランキング対象とする
+- ランキング取得は上限件数を設け、V1は最大50件。UIは上位10件を基本表示する
 
-### 名前登録
+### プレイヤー識別・名前
 
 - ゲーム開始前の名前登録は必須にしない
 - 名前未登録でも通常プレイ・再挑戦できる
+- 匿名player ID + ランダムcredentialを端末に保持し、ログインを要求しない
+- credential本体をDBへ保存せず、サーバーはSHA-256ハッシュで照合する
 - 初めて `SUBMIT TIME` / `タイムを登録` を選んだ時だけ名前登録を求める
-- 一度登録した名前は端末内に保持できる
+- 一度登録した表示名は端末内にも保持する
 - 設定画面とランキング画面から後で名前を登録・変更できる
-- 将来バックエンド接続時も、ゲーム開始自体を名前登録でブロックしない
+- 保存済みの旧表示名は引き継いでよい
+- メールアドレスやSNSアカウントはV1では収集しない
+- 将来の任意アカウントへ匿名playerの記録を引き継げる構造を維持する
 
-### 記録送信UI
+### 記録送信
 
 - CLEAR時にローカル自己ベスト更新なら `NEW BEST!` を表示する
 - 自己ベスト未更新時は、今回の `CLEAR TIME` の下に従来の自己ベストを `BEST TIME` として小さく表示する
+- 自己ベスト更新時だけ記録を送信できる。未更新時はランキング閲覧のみ
 - 登録操作には `SUBMITTING...` / 成功 / 失敗の状態を持つ
 - 成功時は今回の順位を表示する
 - 自己ベスト更新時は登録成功後に結果を約1秒表示してからランキングへ自動遷移する
-- 自己ベスト未更新時と登録失敗時は結果に留まる
+- 登録失敗時は結果に留まり、再試行できる
 - 失敗時も結果、RETRY、MENU、VIEW BOARDを失わない
-- 現段階ではモックランキングとlocalStorageを使い、将来の通信層へ置換可能な構造にする
+- 二重送信はsubmission IDで冪等化する
+- 旧localStorageのモックランキング/テスト記録はオンラインへ自動送信しない
+
+### 保存データ
+
+最低限、次を保存する。
+
+- 匿名player ID
+- 表示名
+- 爆弾数
+- 色数
+- クリアタイム
+- base Seed
+- 初手位置
+- 採用attempt
+- rule version
+- app version
+- open / flag操作履歴とゲーム内経過時間
+- 登録/更新日時
+- verification status
+
+### V1サーバー検証
+
+- API入力の型・値域をすべてサーバー側で検証する
+- 爆弾数は15/20/25、色数は3/4のみ受け付ける
+- 表示名はNFC正規化、最大16文字、制御文字と `<` / `>` を拒否する
+- `baseSeed + attempt + mineCount + colorCount + firstClick` から盤面を決定論的に再生成する
+- 初手開封とopen/flag操作をproduction game coreでreplayし、Chordを含めCLEAR成立を確認する
+- 爆弾ヒット、未CLEAR、CLEAR後の追加操作、不正な時系列、異なるrule/app versionを拒否する
+- 異常に短いタイムは通常ランキングへ載せず隔離する
+- 記録送信、名前更新、削除へplayer/IP系シグナルのレート制限を設ける
+- IPアドレスそのものはDBへ保存せず、レート制限用にハッシュ化したシグナルだけを使う
+- 管理者権限、D1の秘密情報、Cloudflare API tokenをブラウザへ渡さない
+- Workers FreeのCPU制限を優先し、V1のscore submitでは標準Solverを再実行して条件Cまで証明しない。条件Cは製品クライアントの盤面生成時に適用し、サーバー側は盤面再現とCLEAR成立を検証する
+
+### 将来の不正対策強化
+
+- サーバー発行のone-time run ticket
+- サーバー側開始時刻と期限
+- signed board metadataまたはサーバー側のより強い盤面適格性検証
+- 必要に応じCloudflare Rate Limiting binding等へ強化
 
 ### ランキング画面
 
@@ -185,6 +232,12 @@ UIレイアウト・文字・配色の品質改善では、完成案C「Board Fi
 - 表の主要列は英語時 `RANK / NAME / COLORS / TIME`。日本語時は順位・名前・色数を日本語化し、`TIME` は英語のまま維持する
 - 設定画面から開いた場合は `BACK` / `戻る` だけを表示する
 - CLEAR結果から開いた場合は `RESULT` と `MENU` を表示する
+- 通信失敗時はランキング取得失敗を表示するが、ゲーム本体へ影響させない
+
+### 削除・プライバシー
+
+- `DELETE /api/player` で認証済み匿名playerとオンライン記録を削除できる構造にする
+- 将来のプライバシーポリシーには匿名識別子の目的、プレイ/検証データ、ハッシュ化ネットワークシグナル、Cloudflare利用、保存/削除を記載する
 
 ## 多言語化
 
@@ -205,22 +258,29 @@ UIレイアウト・文字・配色の品質改善では、完成案C「Board Fi
 - React / Vite / TypeScript
 - PWA（生成Service Worker、manifest、maskable含むPNGアイコン一式）
 - 盤面生成・Solverはmodule Web Worker
+- Cloudflare WorkerがStatic Assetsと `/api/*` を同居させる
+- ランキングDBはCloudflare D1
+- production D1とPR preview D1を分離する
 
 ## 配信
 
-- 配信先は Cloudflare Workers（Static Assets）。静的成果物は `dist/` に出力し、`wrangler.jsonc` がそのまま配る
+- 配信先は Cloudflare Workers（Static Assets + ranking API）
+- 静的成果物は `dist/` に出力し、`wrangler.jsonc` のAssetsから配る
+- `/api/*` はWorkerコードを先に実行する
 - 公開URLは `https://mcsweeper.hanage.app/` を予定（カスタムドメイン割り当て前は `*.workers.dev`）
 - 専用ドメイン前提のため Vite の `base` と manifest の `start_url` / `scope` はいずれも `/`
 - ヘッダーは `public/_headers` で指定する
+- D1 migrationは `migrations/` で管理する
+- PR Previewは本番トラフィックを変更せずpreview D1へ接続する
 
 ## 今回の対象外
 
-- 実ランキング通信、ランキングDB
-- 認証、不正対策
+- メール/SNSアカウント認証
+- サーバー発行run ticketを使うV2不正対策
+- score submit時の標準Solver/条件C完全再検証
 - 振動
 - ゲームルール・難易度・旗操作の変更
 - 広告
 - エンドレスモード
 - No-Guess生成ロジック変更
 - 爆弾・旗アートの作り直し
-- 言語切替UIの復活
