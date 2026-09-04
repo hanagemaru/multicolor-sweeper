@@ -13,7 +13,7 @@
 - Cloudflare Workers（Static Assets）へデプロイ構成済み
 - 通常開封・連鎖・CINEMATIC BLAST・通常CLEAR・自己ベスト用SUPER CLEARとWeb Audio効果音を実装済み
 - PR #29までmainへ反映済み
-- **Draft PR #30でCloudflare Workers + D1の実オンラインランキングを実装中。main未反映**
+- **Draft PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview発行・実API smoke testまで成功。main未反映**
 
 ## Board First / 既存UI
 
@@ -103,7 +103,7 @@
 
 main基準は74 tests。Draft PR #30でランキング検証テストを追加し、現在は **77 tests**。
 
-PR #30のCI対象:
+PR #30のCI:
 - `npm run typecheck`
 - `npm test`（77 tests）
 - `npm run test:api`（Wrangler + local D1を実起動するAPI smoke test）
@@ -118,14 +118,25 @@ API smoke testでは以下を確認する。
 - 不正部門拒否
 - 未認証/不正値送信拒否
 
-主要viewport: 320×480 / 320×568 / 375×667 / 390×844。オンライン化によるランキング画面の実機レイアウトはCloudflare Previewで最終確認してからmainへマージする。
+Cloudflare Previewでも以下の実通信確認を自動実行する。
+- `/api/health`
+- 15 / 20 / 25 BOMBSランキング取得
+- preview D1への匿名player作成
+- preview D1からの匿名player削除
+
+主要viewport: 320×480 / 320×568 / 375×667 / 390×844。オンライン化によるランキング画面の実機レイアウトはCloudflare Previewでユーザー確認してからmainへマージする。
 
 ## Cloudflareセットアップ状況
 
-- 既存GitHub ActionsのCloudflare API tokenではWorkers deployは可能
-- D1 API呼び出しは `Authentication error [code: 10000]` となり、現tokenにD1編集権限が不足していることを確認
-- D1 production / preview databaseはまだ未作成
-- D1権限追加後にDB作成、migration、database ID反映、Cloudflare Preview発行を行う
+- GitHub ActionsのCloudflare API tokenへD1 Edit権限追加済み
+- production D1 `multicolor-sweeper-ranking` 作成済み（APAC）
+- preview D1 `multicolor-sweeper-ranking-preview` 作成済み（APAC）
+- production / previewのdatabase IDを設定済み
+- preview D1へmigration適用済み
+- Preview Workerがpreview D1を参照していることをdeploy logで確認済み
+- Preview実API smoke test成功済み
+- production D1 migrationはmainデプロイ時にdeploy workflowが自動適用する
+- Preview alias: `https://pr-30-multicolor-sweeper.jibunnha.workers.dev`
 - 実画面確認前にはPR #30をmainへマージしない
 
 ## 既存の確定事項
@@ -143,10 +154,9 @@ API smoke testでは以下を確認する。
 
 ## 残課題 / 次の順序
 
-1. D1権限を持つCloudflare API tokenへ更新
-2. production / preview D1作成・migration
-3. PR #30 Cloudflare Previewでオンライン登録/取得と主要viewportを実画面確認
-4. 問題なければPR #30をmainへマージ
-5. iPhone / Android実機・アクセシビリティ最終QA
+1. PR #30 Cloudflare Previewでオンライン登録/取得と主要viewportを実画面確認
+2. 問題なければPR #30をmainへマージ
+3. mainデプロイでproduction D1 migration + Worker deployを確認
+4. iPhone / Android実機・アクセシビリティ最終QA
 
 別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。
