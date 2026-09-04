@@ -30,7 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           npx wrangler deploy | tee wrangler-deploy-output.txt
-          grep -F 'bae4d381-409e-44e2-b76f-953b397f2be1' wrangler-deploy-output.txt >/dev/null
+          grep -F 'env.DB (multicolor-sweeper-ranking)' wrangler-deploy-output.txt >/dev/null
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
