@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:api": "node scripts/api-smoke.mjs",
     "typecheck": "tsc -b --pretty false",
     "icons": "node scripts/generate-icons.mjs",
     "deploy": "wrangler deploy"
