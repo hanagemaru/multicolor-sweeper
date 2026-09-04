@@ -1,18 +1,25 @@
 {
-  // Cloudflare Workers (Static Assets) で mcsweeper.hanage.app に配信する。
-  // Workerスクリプト（main）は持たず、dist/ をそのまま配る静的アセット専用Worker。
-  //
-  //   npm run build && npm run deploy
-  //
-  // 初回のみ Cloudflare ダッシュボードで独自ドメインを割り当てる。手順は DEPLOY.md を参照。
+  // Cloudflare Workers Static Assets + ranking API.
+  // D1のremote database_idは初回セットアップ時に実IDへ置き換える。
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "multicolor-sweeper",
-  "compatibility_date": "2026-08-01",
+  "main": "./src/server/worker.ts",
+  "compatibility_date": "2026-09-04",
   "assets": {
     "directory": "./dist",
-    // 単一ページのため、存在しないパスはindex.htmlへ寄せずそのまま404を返す。
-    "not_found_handling": "none"
+    "not_found_handling": "none",
+    // APIだけWorkerを先に実行し、通常のゲーム資産はStatic Assetsから配る。
+    "run_worker_first": ["/api/*"]
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "multicolor-sweeper-ranking",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "preview_database_id": "multicolor-sweeper-ranking-local",
+      "migrations_dir": "migrations"
+    }
+  ],
   "observability": {
     "enabled": true
   }
