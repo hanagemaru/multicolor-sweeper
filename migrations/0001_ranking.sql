@@ -29,12 +29,13 @@ CREATE INDEX IF NOT EXISTS idx_records_ranking
   ON records (mine_count, verification_status, time_ms, updated_at, player_id);
 
 CREATE TABLE IF NOT EXISTS submission_log (
-  submission_id TEXT PRIMARY KEY,
+  submission_id TEXT NOT NULL,
   player_id TEXT NOT NULL,
   mine_count INTEGER NOT NULL CHECK (mine_count IN (15, 20, 25)),
   status TEXT NOT NULL CHECK (status IN ('verified', 'suspicious')),
   response_json TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (submission_id, player_id),
   FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE
 );
 
