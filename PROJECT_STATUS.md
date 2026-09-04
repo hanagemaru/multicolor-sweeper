@@ -13,7 +13,7 @@
 - Cloudflare Workers（Static Assets）へデプロイ構成済み
 - 通常開封・連鎖・CINEMATIC BLAST・通常CLEAR・自己ベスト用SUPER CLEARとWeb Audio効果音を実装済み
 - PR #29までmainへ反映済み
-- **Draft PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview発行・実API smoke testまで成功。main未反映**
+- **PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview・実API smoke test・ユーザー実画面確認まで完了**
 
 ## Board First / 既存UI
 
@@ -40,7 +40,7 @@
 - 旧localStorageのモックランキング/保存済みテスト記録はオンラインへ自動送信しない
 - 保存済み表示名は引き継ぐ
 
-## Draft PR #30 — Online Ranking V1
+## PR #30 — Online Ranking V1
 
 ### バックエンド
 
@@ -101,15 +101,15 @@
 
 ## 検証
 
-main基準は74 tests。Draft PR #30でランキング検証テストを追加し、現在は **77 tests**。
+main基準は74 tests。PR #30でランキング検証テストを追加し、現在は **77 tests**。
 
-PR #30のCI:
+PR #30の最終CIは以下すべて成功済み:
 - `npm run typecheck`
 - `npm test`（77 tests）
 - `npm run test:api`（Wrangler + local D1を実起動するAPI smoke test）
 - `npm run build`
 
-API smoke testでは以下を確認する。
+API smoke testでは以下を確認済み。
 - 15 / 20 / 25 BOMBS取得
 - 3色/4色混在
 - タイム昇順
@@ -118,13 +118,13 @@ API smoke testでは以下を確認する。
 - 不正部門拒否
 - 未認証/不正値送信拒否
 
-Cloudflare Previewでも以下の実通信確認を自動実行する。
+Cloudflare Previewでも以下の実通信確認を自動実行し、成功済み。
 - `/api/health`
 - 15 / 20 / 25 BOMBSランキング取得
 - preview D1への匿名player作成
 - preview D1からの匿名player削除
 
-主要viewport: 320×480 / 320×568 / 375×667 / 390×844。オンライン化によるランキング画面の実機レイアウトはCloudflare Previewでユーザー確認してからmainへマージする。
+主要viewport: 320×480 / 320×568 / 375×667 / 390×844。PR #30 Previewでユーザー実画面確認済み。
 
 ## Cloudflareセットアップ状況
 
@@ -137,7 +137,6 @@ Cloudflare Previewでも以下の実通信確認を自動実行する。
 - Preview実API smoke test成功済み
 - production D1 migrationはmainデプロイ時にdeploy workflowが自動適用する
 - Preview alias: `https://pr-30-multicolor-sweeper.jibunnha.workers.dev`
-- 実画面確認前にはPR #30をmainへマージしない
 
 ## 既存の確定事項
 
@@ -152,11 +151,9 @@ Cloudflare Previewでも以下の実通信確認を自動実行する。
 - ページ全体を100dvhに固定し、盤面は9×9正方形を維持
 - 爆弾・旗・矢印はSVG/ピクセルアートで保持
 
-## 残課題 / 次の順序
+## 次の確認 / 残課題
 
-1. PR #30 Cloudflare Previewでオンライン登録/取得と主要viewportを実画面確認
-2. 問題なければPR #30をmainへマージ
-3. mainデプロイでproduction D1 migration + Worker deployを確認
-4. iPhone / Android実機・アクセシビリティ最終QA
+1. mainデプロイでproduction D1 migration + Worker deployを確認
+2. iPhone / Android実機・アクセシビリティ最終QA
 
 別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。
