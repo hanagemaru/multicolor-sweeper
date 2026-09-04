@@ -63,6 +63,7 @@ export function validateSubmissionShape(value: unknown): value is SubmitRecordRe
     && isMineCount(input.mineCount)
     && typeof input.colorCount === "number"
     && isColorCount(input.colorCount)
+    && typeof input.timeMs === "number"
     && Number.isInteger(input.timeMs)
     && input.timeMs >= MIN_TIME_MS
     && input.timeMs <= MAX_TIME_MS
