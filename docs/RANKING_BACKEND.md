@@ -25,7 +25,7 @@
 - verification status
 
 `submission_log`
-- idempotency key and response snapshot for duplicate-submit protection
+- per-player idempotency key and response snapshot for duplicate-submit protection
 - suspicious submissions are recorded here but not placed in rankings
 
 `rate_limits`
@@ -41,31 +41,35 @@
 - `POST /api/records`
 
 All writes require `Authorization: Bearer <playerId>.<credential>`.
+Ranking reads may include the same identity so the API can return `YOUR RANK`, but reads never create a player row.
 
 ## V1 verification
 
 The server validates all fields and then:
 
-1. Recreates the selected candidate from base seed, first click and accepted attempt.
-2. Confirms the candidate still satisfies product filter C.
-3. Selects the submitted 3-color or 4-color board.
-4. Replays the first reveal and every submitted open/flag operation with the production game core.
-5. Rejects a replay that hits a mine, does not clear, contains actions after clear, has impossible coordinates/order/timing, or uses another rule version.
-6. Quarantines an otherwise valid clear below the conservative V1 suspicious-time threshold instead of publishing it.
+1. Recreates the submitted 3-color or 4-color board deterministically from base seed, accepted attempt, bomb count and first click.
+2. Applies the first reveal with the production game core.
+3. Replays every submitted open/flag operation, including Chord behavior.
+4. Rejects a replay that hits a mine, does not clear, contains actions after clear, has impossible coordinates/order/timing, or uses another rule/app version.
+5. Quarantines an otherwise valid clear below the conservative V1 suspicious-time threshold instead of publishing it.
 
-This verifies clear成立 and board reproducibility, but it does not make a modified client impossible. A future V2 should add a server-issued one-time run ticket and server-side start timestamp.
+The production client selects only product-filter-C boards before play. V1 does **not** rerun the full Solver/filter-C evaluation inside the score-submit Worker, because Workers Free has a tight per-request CPU budget and the ranking API must remain usable on the free tier. The V1 server therefore verifies board reproducibility and CLEAR成立, but cannot prove that a modified client originally selected the board through the product generator.
+
+A future V2 should add a server-issued one-time run ticket/server timestamp and, if needed, stronger server-side eligibility verification or pre-issued signed board metadata.
 
 ## Rate limiting
 
-V1 uses D1-backed one-minute counters:
-- per anonymous player: 12 record submissions/minute
-- per hashed IP signal: 40 record submissions/minute
+V1 uses D1-backed one-minute counters. The raw IP address is never written to D1; only a SHA-256-derived key is used.
 
-This avoids exposing DB credentials to the browser and works without a paid third-party service. A future deployment can replace/augment this with Cloudflare Workers Rate Limiting bindings.
+- record submit: 12/minute per anonymous player, 40/minute per hashed IP signal
+- name update: 10/minute per anonymous player, 20/minute per hashed IP signal
+- deletion: 4/minute per anonymous player, 12/minute per hashed IP signal
+
+This works without a paid third-party service. A future deployment can replace/augment the D1 counters with Cloudflare Workers Rate Limiting bindings.
 
 ## Failure behavior
 
-Ranking fetch, name update and record submit failures are isolated from gameplay. Board generation, result review, RETRY and MENU do not depend on the API.
+Ranking fetch, name update and record submit failures are isolated from gameplay. Board generation, result review, RETRY and MENU do not depend on the API. A failed submit keeps the result visible and can be retried with the same idempotency key.
 
 ## Privacy / deletion
 
@@ -78,3 +82,5 @@ Use separate production and preview D1 databases:
 - `multicolor-sweeper-ranking-preview`
 
 PR previews must use the preview database so manual test records never enter production rankings. Apply `migrations/0001_ranking.sql` before using the API.
+
+The GitHub Actions Cloudflare API token must include D1 edit permission in addition to the existing Workers deployment permission.
