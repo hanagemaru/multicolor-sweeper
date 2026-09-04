@@ -1,6 +1,6 @@
 # Project Status
 
-最終更新: 2026-09-03
+最終更新: 2026-09-04
 
 ## 現在地
 
@@ -9,107 +9,144 @@
 - 生成処理をmodule Web Worker境界へ分離済み
 - EASY 15 / NORMAL 20 / HARD 25爆弾、3色/4色選択、自由初手、初手周囲安全、生成後タイマー開始を実装済み
 - タップ開封、Chord、3色/4色の色旗・無色旗、勝敗、決着後答え合わせを実装済み
-- PR #16〜#18までの用語・UI基盤整理をmain反映済み
-- PR #19で完成案C「Board First」、PAUSE、ランキングUIシェル、日英切替を反映
+- PR #19で完成案C「Board First」、PAUSE、ランキングUIシェル、日英切替を反映済み
 - Cloudflare Workers（Static Assets）へデプロイ構成済み
-- 通常開封でタイマーが停止する不具合を修正し、勝敗確定時だけ停止するよう整理
-- 低い画面の最小文字を日本語12px・VT323英数字14px目安へ引き上げ
-- `VIEW BOARD` 後はHUD右端を `RESULT` に切り替え、盤面サイズをプレイ中と同じまま維持
-- 日本語モードのフォントを `VT323 → MaruMonica` の文字種別フォールバックへ統一し、英数字がMaruMonicaになる箇所を解消
-- 入力を止めない通常開封・連鎖・爆発・CLEAR演出と、Web Audio API生成の効果音を実装
-- 開封ポップと斜めスキャン、CINEMATIC BLAST、通常CLEAR波と自己ベスト用SUPER CLEARへ演出を強化
-- 1〜4マスは開封数と同数発音、5マス以上は短い連打と終止和音へ圧縮する開封音と、設置/解除を区別する旗音を実装
-- 製品版へ採用する前の演出候補を比較する隠し `EFFECT LAB` を追加（`?effects-lab=1`）。開封音・光5案・爆発3案・CLEAR 3案を個別/連続/ランダム再生可能
-- EFFECT LABでの確認結果を製品版へ採用。開封は斜めスキャン＋マス数連動音、爆発はCINEMATIC BLAST、通常CLEARは現行波、自己ベスト更新時だけSUPER CLEAR。未採用案もラボに保持
+- 通常開封・連鎖・CINEMATIC BLAST・通常CLEAR・自己ベスト用SUPER CLEARとWeb Audio効果音を実装済み
+- PR #29までmainへ反映済み
+- **Draft PR #30でCloudflare Workers + D1の実オンラインランキングを実装中。main未反映**
 
-## PR #19 — Board First UI
+## Board First / 既存UI
 
-ユーザー確認済みの完成案Cを採用。
-
-### レイアウト / HUD
-
-- プレイ画面を `TIME / FLAGS / PAUSE` の1行HUDへ整理
-- 難易度・色数を盤面直上へ簡潔に表示
-- 縦長画面でHUDと盤面の距離が開きすぎないよう盤面を上寄せし、余剰高さを盤面より下側へ逃がす
+- プレイ画面は `TIME / FLAGS / PAUSE` の1行HUD
+- 難易度・色数は盤面直上に簡潔表示
 - `MULTICOLOR SWEEPER` / `TIME ATTACK` は設定画面だけに表示
-- `VIEW BOARD` 後の `RESULT` はHUD右端に配置し、セルと重ねず盤面サイズも変えない
-- 320×480を含む小画面で主要文字と操作を極端に縮小しない
-- 操作ボタンは可能な限り約44pxのタップ領域を確保
-- 背景、パネル、罫線、文字、アクセントを共通のデザイン体系へ整理
+- `VIEW BOARD` 後の `RESULT` はHUD右端に表示し、盤面サイズ・位置を維持
+- 320×480を含む小画面で主要文字を極端に縮小しない
+- PAUSE中はタイマー停止、全81セルを未開封表示へマスクし、盤面操作を無効化
+- 日英切替は設定・ランキングに `日本語 | EN` を表示し端末保存
+- 表記は `UI_TERMINOLOGY.md` を正とする
 
-### PAUSE
+## ランキング仕様
 
-- プレイ中HUDに `PAUSE`
-- PAUSE中はタイマー停止
-- 全81セルを未開封見た目へマスクし、Clue・旗・爆弾・開封位置を見せない
-- PAUSE中は盤面操作を無効化
-- 主要操作は `RESUME` / 日本語モードでは `再開`、補助操作は `MENU`
-- RESUME後は停止時間をタイムへ含めない
-- ポーズ前後で盤面サイズ・位置を変えない
-
-### ランキングUIシェル
-
-実ランキング通信、DB、認証、不正対策は未実装。現段階はモックデータ＋localStorage。
-
-- 設定画面とCLEAR結果から `RANKING` へ遷移
+- 部門は15 / 20 / 25 BOMBSの3部門
+- 3色と4色は同一部門へ混在し、`COLORS` / `色数` 列で識別
+- 自己ベストも同じ爆弾数なら3色/4色をまたいで比較
 - 名前はプレイ開始時に要求しない
 - 初回 `SUBMIT TIME` / `タイムを登録` 時、未登録なら名前登録
-- 設定・ランキングから名前を登録/変更可能
-- CLEARでクリアタイムと `NEW BEST!` を表示
-- 登録中 / 成功 / 失敗 / 今回順位のUI状態を用意
-- 部門は15 / 20 / 25 BOMBSの3部門
-- 3色と4色は同一ランキングへ混在
-- ランキング表は英語時 `RANK / NAME / COLORS / TIME`。3色/4色を `COLORS` で識別
-- 自己ベストも同じ爆弾数なら3色/4色をまたいで比較
-- 自己ベスト未更新時は結果に `BEST TIME` を小さく表示
-- 自己ベスト更新時は登録成功から約1秒後にランキングへ自動遷移
-- ランキング登録は自己ベスト更新時だけ可能。未更新時は結果からランキング閲覧のみ可能
-- 旧テスト期間の端末内自己ベスト・登録済み記録を一度だけリセット（名前・言語は維持）
-- 記録リセット専用UIは設けず、必要時はブラウザの当該サイトデータ削除で対応し、紹介ページへ手順を記載する
-- 設定から開いたランキングは `BACK` / `戻る` のみ、結果から開いた場合は `RESULT` / `MENU`
+- 設定・ランキングから名前登録/変更可能
+- 自己ベスト更新時だけ登録可能。未更新時はランキング閲覧のみ
+- 登録成功時は現在順位を表示し、自己ベスト更新時は約1秒後にランキングへ自動遷移
+- 通信失敗時も結果確認、RETRY、MENU、盤面確認を妨げない
+- 旧localStorageのモックランキング/保存済みテスト記録はオンラインへ自動送信しない
+- 保存済み表示名は引き継ぐ
 
-### 日英切替 / 用語
+## Draft PR #30 — Online Ranking V1
 
-- 設定画面とランキング画面に `日本語 | EN` を表示
-- 選択言語をlocalStorageへ保存し、実行中HTML `lang` も追従
-- 操作案内・説明・エラーは選択言語だけを表示
-- 日本語モードでも一般的なゲーム英語は維持
-  - `TIME ATTACK / START / RANKING / TIME / FLAGS / PAUSE / MENU / CLEAR! / CLEAR TIME / RETRY / NEW BEST! / RESULT`
-- 説明・状態・ランキング固有語は日本語化
-- `SAVE SCORE` は廃止し、英語 `SUBMIT TIME` / 日本語 `タイムを登録`
-- `COLOR` 列は `COLORS` に変更
-- 詳細表記は `UI_TERMINOLOGY.md` を正とする
-- フォローアップとして、言語切替を横一列に固定し、盤面の左端スワイプでブラウザ履歴戻るが発火しにくいようネイティブtouchstartを抑止する
-- PAUSEは `PAUSE` / `RESUME`（日本語では `再開`）/ `MENU` のみに簡略化し、設定・ランキングからの名前登録では補足説明を省く
+### バックエンド
+
+- Cloudflare Static Assets Workerへ `/api/*` のAPI処理を追加
+- Cloudflare D1をランキングDBに使用
+- 本番DBとPRプレビューDBを分離し、プレビューのテスト記録を本番へ混ぜない
+- API:
+  - `GET /api/health`
+  - `GET /api/rankings?mineCount=15|20|25&limit=1..50`
+  - `PUT /api/player`
+  - `DELETE /api/player`
+  - `POST /api/records`
+
+### プレイヤー識別
+
+- ログイン不要の匿名player ID + ランダムcredential
+- credential本体は端末localStorageに保持し、D1にはSHA-256ハッシュだけを保存
+- メールアドレス・SNSアカウントは収集しない
+- ランキング閲覧だけではDBにplayer行を作らず、名前登録/変更または記録送信時に作成
+- 将来アカウント方式へ引き継げるようplayerを記録所有者として分離
+
+### DB
+
+- `players`: 匿名ID、credential hash、表示名、日時
+- `records`: 同一player・同一爆弾数につきランキング対象の最速記録1件
+- `submission_log`: 二重送信防止/idempotency、隔離記録
+- `rate_limits`: player/ハッシュ化IPシグナル単位の短時間カウンタ
+- 記録には色数、タイム、base seed、初手、採用attempt、rule/app version、操作履歴を保持
+
+### V1不正対策
+
+- 全API入力の型・範囲をサーバー側で検証
+- 15/20/25 BOMBS、3/4 COLORS以外を拒否
+- 表示名はNFC正規化、最大16文字、制御文字と `<` / `>` を拒否
+- Seed + accepted attempt + 初手 + 爆弾数 + 色数から盤面を決定論的に再生成
+- 初手開封とopen/flag/Chordの操作履歴をproduction game coreで再生し、CLEAR成立を検証
+- 爆弾ヒット、未CLEAR、CLEAR後操作、不正な時系列、異なるrule/app versionを拒否
+- V1閾値未満の異常に短いタイムは通常ランキングへ載せず隔離
+- 記録送信の二重実行をsubmission IDで冪等化
+- D1-backed rate limitをplayerとハッシュ化IPシグナルに適用。生IPはDBへ保存しない
+- DB秘密鍵/管理者権限はブラウザへ公開しない
+- Workers FreeのCPU制限を優先し、V1の記録送信時には重いSolver/条件Cの再判定は実行しない。条件Cは製品クライアント生成時に担保し、サーバー側の完全な採用経路証明は将来強化とする
+
+### 将来強化
+
+- サーバー発行のone-time run ticket
+- サーバー側の開始時刻/期限
+- signed board metadataまたはより強い盤面適格性検証
+- 匿名playerから任意アカウントへの移行
+- 必要に応じCloudflare Rate Limiting binding等へ強化
+
+### プライバシー/削除
+
+- メールアドレス等は不要
+- 匿名IDは記録所有・自己順位・二重送信防止・不正対策に使用
+- `DELETE /api/player` で認証済み匿名playerとオンライン記録を削除可能
+- 将来のプライバシーポリシーへ匿名識別子、プレイ検証データ、ハッシュ化ネットワークシグナル、保存/削除、Cloudflare利用を記載する
 
 ## 検証
 
-PR #16〜#18反映後のmain基準は44 tests。PR #19以降のランキング・日英表記・終了判定・ボタン文字組みテストに加え、演出・開封数別フィードバック・EFFECT LAB・採用演出DOMのテストを追加し、最終テスト構成は **74 tests**。
+main基準は74 tests。Draft PR #30でランキング検証テストを追加し、現在は **77 tests**。
 
-最終確認:
+PR #30のCI対象:
 - `npm run typecheck`
-- `npm test`（74 tests）
+- `npm test`（77 tests）
+- `npm run test:api`（Wrangler + local D1を実起動するAPI smoke test）
 - `npm run build`
 
-主要viewport: 320×480 / 320×568 / 375×667 / 390×844。
+API smoke testでは以下を確認する。
+- 15 / 20 / 25 BOMBS取得
+- 3色/4色混在
+- タイム昇順
+- 自分の順位
+- 名前変更反映
+- 不正部門拒否
+- 未認証/不正値送信拒否
+
+主要viewport: 320×480 / 320×568 / 375×667 / 390×844。オンライン化によるランキング画面の実機レイアウトはCloudflare Previewで最終確認してからmainへマージする。
+
+## Cloudflareセットアップ状況
+
+- 既存GitHub ActionsのCloudflare API tokenではWorkers deployは可能
+- D1 API呼び出しは `Authentication error [code: 10000]` となり、現tokenにD1編集権限が不足していることを確認
+- D1 production / preview databaseはまだ未作成
+- D1権限追加後にDB作成、migration、database ID反映、Cloudflare Preview発行を行う
+- 実画面確認前にはPR #30をmainへマージしない
 
 ## 既存の確定事項
 
 - 製品版の採用フィルタは条件C
-- 条件C / No-Guess / Seed / attempt / generation ms は内部仕様であり通常UIには表示しない
+- 条件C / No-Guess / Seed / attempt / generation ms は通常UIに表示しない
 - タイマーはWorker生成完了・初手開封後に開始
 - Chordは旗総数判定
-- 旗の設置本数は爆弾総数で制限せず、超過時は `FLAGS` を負数の警告表示にする
+- 旗の設置本数は爆弾総数で制限しない
 - 3色は ↖赤 / ↗青 / ↙緑 / ↑無色、↘未使用
 - 4色は ↖赤 / ↗青 / ↙緑 / ↘黄 / ↑無色
 - 色の定義は `rules.ts` の `COLORS` が唯一の出処
-- `MULTICOLOR SWEEPER` / `TIME ATTACK` は設定画面だけに表示
 - ページ全体を100dvhに固定し、盤面は9×9正方形を維持
 - 爆弾・旗・矢印はSVG/ピクセルアートで保持
 
 ## 残課題 / 次の順序
 
-1. iPhone / Android実機・アクセシビリティ最終QA
-2. 実ランキングAPI / DB / 認証 / 不正対策
+1. D1権限を持つCloudflare API tokenへ更新
+2. production / preview D1作成・migration
+3. PR #30 Cloudflare Previewでオンライン登録/取得と主要viewportを実画面確認
+4. 問題なければPR #30をmainへマージ
+5. iPhone / Android実機・アクセシビリティ最終QA
 
 別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。
