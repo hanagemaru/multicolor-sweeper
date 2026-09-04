@@ -15,7 +15,7 @@
       "binding": "DB",
       "database_name": "multicolor-sweeper-ranking",
       "database_id": "bae4d381-409e-44e2-b76f-953b397f2be1",
-      "preview_database_id": "multicolor-sweeper-ranking-local",
+      "preview_database_id": "0d70c1ca-2fa3-4f1d-925a-a12f993f200a",
       "migrations_dir": "migrations"
     }
   ],
