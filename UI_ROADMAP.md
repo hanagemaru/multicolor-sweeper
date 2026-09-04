@@ -43,7 +43,7 @@
 
 ## 3. 実オンラインランキング
 
-**状態: IN PROGRESS — Draft PR #30 / main未反映**
+**状態: IN PROGRESS — Draft PR #30 / main未反映 / Preview確認待ち**
 
 採用構成:
 - Cloudflare Workers + D1
@@ -59,13 +59,19 @@ PR #30実装範囲:
 - 不正値拒否、異常に短いタイムの隔離、二重送信防止、レート制限
 - 通信失敗をゲーム本体から分離
 - production / preview D1分離
+- production deploy前のD1 migration自動適用
+
+Cloudflare側は完了:
+- API tokenへD1 Edit権限追加済み
+- production / preview D1作成済み
+- preview D1 migration適用済み
+- Cloudflare Preview発行済み
+- Preview上でhealth、15/20/25ランキング取得、player作成・削除の実API smoke test成功
 
 残作業:
-1. Cloudflare API tokenへD1 edit権限を追加
-2. production / preview D1作成・migration
-3. Cloudflare Preview発行
-4. 15/20/25、3/4色、日英、320×480を含む実画面確認
-5. ユーザー確認後にmainへマージ
+1. Previewで15/20/25、3/4色、日英、320×480を含む実画面確認
+2. ユーザー確認後にPR #30をmainへマージ
+3. mainデプロイ時にproduction D1 migrationを自動適用
 
 ## 4. 端末・アクセシビリティ最終QA
 
