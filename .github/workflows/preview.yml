@@ -13,8 +13,8 @@ concurrency:
 
 jobs:
   upload:
-    # Cloudflareのsecretをforkへ渡さない。リポジトリ内ブランチのPRだけ実行する。
-    if: github.event.pull_request.head.repo.full_name == github.repository && vars.CLOUDFLARE_DEPLOY == 'true'
+    # Cloudflareのsecretをforkへ渡さない。D1 preview ID設定後だけ実行する。
+    if: github.event.pull_request.head.repo.full_name == github.repository && vars.CLOUDFLARE_DEPLOY == 'true' && vars.RANKING_D1_PREVIEW_DATABASE_ID != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,11 +24,23 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Prepare preview D1 binding
+        shell: bash
+        run: |
+          cp wrangler.jsonc wrangler.preview.jsonc
+          sed -i 's/"database_name": "multicolor-sweeper-ranking"/"database_name": "multicolor-sweeper-ranking-preview"/' wrangler.preview.jsonc
+          sed -i 's/"database_id": "00000000-0000-0000-0000-000000000000"/"database_id": "${{ vars.RANKING_D1_PREVIEW_DATABASE_ID }}"/' wrangler.preview.jsonc
+      - name: Apply preview D1 migrations
+        run: npx wrangler d1 migrations apply multicolor-sweeper-ranking-preview --remote --config wrangler.preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NO_COLOR: "1"
       - name: Upload preview version
         id: preview
         shell: bash
         run: |
-          npx wrangler versions upload --preview-alias "pr-${{ github.event.pull_request.number }}" \
+          npx wrangler versions upload --config wrangler.preview.jsonc --preview-alias "pr-${{ github.event.pull_request.number }}" \
             --message "PR #${{ github.event.pull_request.number }} preview" | tee wrangler-output.txt
           preview_url="$(grep -Eo 'https://[^[:space:]]+' wrangler-output.txt | tail -n 1)"
           if [ -z "$preview_url" ]; then
@@ -37,7 +49,9 @@ jobs:
           fi
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
           {
-            echo "### EFFECT LAB Preview"
+            echo "### PR Preview"
+            echo
+            echo "[$preview_url/]($preview_url/)"
             echo
             echo "[$preview_url/?effects-lab=1]($preview_url/?effects-lab=1)"
           } >> "$GITHUB_STEP_SUMMARY"
