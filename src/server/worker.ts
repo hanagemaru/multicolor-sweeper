@@ -88,14 +88,22 @@ async function requireAuth(request: Request): Promise<AuthIdentity | Response> {
   return auth ?? error("Authentication required", 401);
 }
 
-async function ensurePlayer(db: D1Database, auth: AuthIdentity, displayName?: string): Promise<PlayerRow | Response> {
+async function findAuthenticatedPlayer(
+  db: D1Database,
+  auth: AuthIdentity
+): Promise<PlayerRow | null | Response> {
   const existing = await db.prepare(
     "SELECT player_id, credential_hash, display_name FROM players WHERE player_id = ?"
   ).bind(auth.playerId).first<PlayerRow>();
+  if (existing && existing.credential_hash !== auth.credentialHash) return error("Invalid player credential", 401);
+  return existing;
+}
 
+async function ensurePlayer(db: D1Database, auth: AuthIdentity, displayName: string): Promise<PlayerRow | Response> {
+  const existing = await findAuthenticatedPlayer(db, auth);
+  if (existing instanceof Response) return existing;
   if (existing) {
-    if (existing.credential_hash !== auth.credentialHash) return error("Invalid player credential", 401);
-    if (displayName && existing.display_name !== displayName) {
+    if (existing.display_name !== displayName) {
       await db.prepare(
         "UPDATE players SET display_name = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?"
       ).bind(displayName, auth.playerId).run();
@@ -106,8 +114,8 @@ async function ensurePlayer(db: D1Database, auth: AuthIdentity, displayName?: st
 
   await db.prepare(
     "INSERT INTO players (player_id, credential_hash, display_name) VALUES (?, ?, ?)"
-  ).bind(auth.playerId, auth.credentialHash, displayName ?? null).run();
-  return { player_id: auth.playerId, credential_hash: auth.credentialHash, display_name: displayName ?? null };
+  ).bind(auth.playerId, auth.credentialHash, displayName).run();
+  return { player_id: auth.playerId, credential_hash: auth.credentialHash, display_name: displayName };
 }
 
 async function consumeRateLimit(db: D1Database, key: string, limit: number, windowSeconds: number): Promise<boolean> {
@@ -122,6 +130,19 @@ async function consumeRateLimit(db: D1Database, key: string, limit: number, wind
     "SELECT count FROM rate_limits WHERE rate_key = ? AND window_start = ?"
   ).bind(key, windowStart).first<{ count: number }>();
   return (row?.count ?? limit + 1) <= limit;
+}
+
+async function allowWrite(
+  request: Request,
+  db: D1Database,
+  auth: AuthIdentity,
+  playerLimit: number,
+  ipLimit: number
+): Promise<boolean> {
+  const ip = request.headers.get("CF-Connecting-IP") ?? "local";
+  const ipKey = `ip:${await sha256(ip)}`;
+  if (!await consumeRateLimit(db, ipKey, ipLimit, 60)) return false;
+  return consumeRateLimit(db, `player:${auth.playerId}`, playerLimit, 60);
 }
 
 async function rankForPlayer(db: D1Database, mineCount: MineCount, playerId: string): Promise<number | null> {
@@ -148,7 +169,7 @@ async function handleRanking(request: Request, env: Env, url: URL): Promise<Resp
   const auth = authHeader ? await readAuth(request) : null;
   if (authHeader && !auth) return error("Invalid player credential", 401);
   if (auth) {
-    const player = await ensurePlayer(env.DB, auth);
+    const player = await findAuthenticatedPlayer(env.DB, auth);
     if (player instanceof Response) return player;
   }
 
@@ -199,6 +220,8 @@ async function handleRanking(request: Request, env: Env, url: URL): Promise<Resp
 async function handleUpdatePlayer(request: Request, env: Env): Promise<Response> {
   const auth = await requireAuth(request);
   if (auth instanceof Response) return auth;
+  if (!await allowWrite(request, env.DB, auth, 10, 20)) return error("Too many updates", 429);
+
   let body: UpdatePlayerRequest;
   try {
     body = await request.json() as UpdatePlayerRequest;
@@ -215,8 +238,11 @@ async function handleUpdatePlayer(request: Request, env: Env): Promise<Response>
 async function handleDeletePlayer(request: Request, env: Env): Promise<Response> {
   const auth = await requireAuth(request);
   if (auth instanceof Response) return auth;
-  const player = await ensurePlayer(env.DB, auth);
+  if (!await allowWrite(request, env.DB, auth, 4, 12)) return error("Too many updates", 429);
+  const player = await findAuthenticatedPlayer(env.DB, auth);
   if (player instanceof Response) return player;
+  if (!player) return json({ ok: true });
+
   await env.DB.batch([
     env.DB.prepare("DELETE FROM submission_log WHERE player_id = ?").bind(auth.playerId),
     env.DB.prepare("DELETE FROM records WHERE player_id = ?").bind(auth.playerId),
@@ -230,15 +256,7 @@ async function handleSubmit(request: Request, env: Env): Promise<Response> {
   if (contentLength > MAX_BODY_BYTES) return error("Request too large", 413);
   const auth = await requireAuth(request);
   if (auth instanceof Response) return auth;
-
-  const ip = request.headers.get("CF-Connecting-IP") ?? "local";
-  const ipKey = `ip:${await sha256(ip)}`;
-  const playerKey = `player:${auth.playerId}`;
-  const [ipAllowed, playerAllowed] = await Promise.all([
-    consumeRateLimit(env.DB, ipKey, 40, 60),
-    consumeRateLimit(env.DB, playerKey, 12, 60)
-  ]);
-  if (!ipAllowed || !playerAllowed) return error("Too many submissions", 429);
+  if (!await allowWrite(request, env.DB, auth, 12, 40)) return error("Too many submissions", 429);
 
   let body: SubmitRecordRequest;
   try {
@@ -273,9 +291,9 @@ async function handleSubmit(request: Request, env: Env): Promise<Response> {
   const previous = await env.DB.prepare(
     "SELECT player_id, mine_count, color_count, time_ms, updated_at FROM records WHERE player_id = ? AND mine_count = ?"
   ).bind(auth.playerId, body.mineCount).first<RecordRow>();
-  const newBest = previous === null || body.timeMs < previous.time_ms;
+  const requestedNewBest = previous === null || body.timeMs < previous.time_ms;
 
-  if (newBest) {
+  if (requestedNewBest) {
     await env.DB.prepare(
       `INSERT INTO records (
          player_id, mine_count, color_count, time_ms, base_seed, first_row, first_col, attempt,
@@ -309,6 +327,10 @@ async function handleSubmit(request: Request, env: Env): Promise<Response> {
     ).run();
   }
 
+  const stored = await env.DB.prepare(
+    "SELECT time_ms FROM records WHERE player_id = ? AND mine_count = ?"
+  ).bind(auth.playerId, body.mineCount).first<{ time_ms: number }>();
+  const newBest = stored?.time_ms === body.timeMs && (previous === null || body.timeMs < previous.time_ms);
   const rank = await rankForPlayer(env.DB, body.mineCount, auth.playerId);
   const response: SubmitRecordResponse = { accepted: true, newBest, rank, status: "verified" };
   await env.DB.prepare(
