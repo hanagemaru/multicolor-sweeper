@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
 
 const npx = process.platform === "win32" ? "npx.cmd" : "npx";
@@ -27,6 +27,7 @@ function assert(condition, message) {
 }
 
 rmSync(persistDir, { recursive: true, force: true });
+mkdirSync("dist", { recursive: true });
 run(["wrangler", "d1", "migrations", "apply", "multicolor-sweeper-ranking", "--local", `--persist-to=${persistDir}`]);
 run(["wrangler", "d1", "execute", "multicolor-sweeper-ranking", "--local", `--persist-to=${persistDir}`, "--file", "scripts/api-seed.sql"]);
 
