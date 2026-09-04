@@ -1,6 +1,5 @@
 {
   // Cloudflare Workers Static Assets + ranking API.
-  // D1のremote database_idは初回セットアップ時に実IDへ置き換える。
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "multicolor-sweeper",
   "main": "./src/server/worker.ts",
@@ -15,7 +14,7 @@
     {
       "binding": "DB",
       "database_name": "multicolor-sweeper-ranking",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "bae4d381-409e-44e2-b76f-953b397f2be1",
       "preview_database_id": "multicolor-sweeper-ranking-local",
       "migrations_dir": "migrations"
     }
