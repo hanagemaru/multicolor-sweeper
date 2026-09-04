@@ -59,3 +59,46 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NO_COLOR: "1"
+      - name: Smoke test preview API
+        shell: bash
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { randomBytes } from "node:crypto";
+
+          const base = process.env.PREVIEW_URL;
+          if (!base) throw new Error("Preview URL is missing");
+
+          const expectOk = async (url, init, label) => {
+            const response = await fetch(url, init);
+            const text = await response.text();
+            if (!response.ok) throw new Error(`${label} failed: ${response.status} ${text}`);
+            return text ? JSON.parse(text) : null;
+          };
+
+          const health = await expectOk(`${base}/api/health`, undefined, "health");
+          if (!health?.ok) throw new Error("health response is invalid");
+
+          for (const mineCount of [15, 20, 25]) {
+            const ranking = await expectOk(`${base}/api/rankings?mineCount=${mineCount}&limit=50`, undefined, `${mineCount}-bomb ranking`);
+            if (!Array.isArray(ranking?.entries)) throw new Error(`${mineCount}-bomb ranking response is invalid`);
+          }
+
+          const playerId = `preview-smoke-${Date.now()}`;
+          const credential = randomBytes(32).toString("hex");
+          const auth = { Authorization: `Bearer ${playerId}.${credential}`, "Content-Type": "application/json" };
+
+          await expectOk(`${base}/api/player`, {
+            method: "PUT",
+            headers: auth,
+            body: JSON.stringify({ displayName: "SMOKE" })
+          }, "preview player write");
+
+          await expectOk(`${base}/api/player`, {
+            method: "DELETE",
+            headers: { Authorization: auth.Authorization }
+          }, "preview player cleanup");
+
+          console.log("Preview ranking API smoke test passed");
+          NODE
