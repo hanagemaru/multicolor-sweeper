@@ -1,6 +1,6 @@
 # Project Status
 
-最終更新: 2026-09-04
+最終更新: 2026-09-05
 
 ## 現在地
 
@@ -14,6 +14,8 @@
 - 通常開封・連鎖・CINEMATIC BLAST・通常CLEAR・自己ベスト用SUPER CLEARとWeb Audio効果音を実装済み
 - PR #29までmainへ反映済み
 - **PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview・実API smoke test・ユーザー実画面確認まで完了**
+- 2026-09-05にCloudflare APIトークンをD1権限付きで作り直し、`CLOUDFLARE_API_TOKEN` を更新済み。GitHub ActionsのD1 migrationとdeployが成功することを確認（詳細は `DEPLOY.md`）
+- 2026-09-05に `hanage.app` をCloudflareゾーンとしてActive化済み。`mcsweeper.hanage.app` のカスタムドメイン割り当ては未実施
 
 ## Board First / 既存UI
 
