@@ -999,6 +999,7 @@ legend {
 .settings-delete-button { color: #ffd1d6; border-color: #a95b68; }
 .settings-delete-status { min-height: 19px; margin: -4px 0 0; color: var(--success); font-size: 18px; line-height: 1; text-align: center; }
 .settings-delete-status.error { color: var(--danger); }
+.settings-screen .player-setting button { min-height: 44px; }
 .settings-back-button { flex: 0 0 auto; min-height: 46px; }
 
 .result-time { margin: 0; }
