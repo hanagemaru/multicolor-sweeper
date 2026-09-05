@@ -99,7 +99,8 @@
 - メールアドレス等は不要
 - 匿名IDは記録所有・自己順位・二重送信防止・不正対策に使用
 - `DELETE /api/player` で認証済み匿名playerとオンライン記録を削除可能
-- 将来のプライバシーポリシーへ匿名識別子、プレイ検証データ、ハッシュ化ネットワークシグナル、保存/削除、Cloudflare利用を記載する
+- ハブの公開プライバシーポリシー（`https://hanage.app/privacy/`）へ、匿名識別子、プレイ検証データ、ハッシュ化ネットワークシグナル、保存/削除、Cloudflare利用を記載済み
+- ゲームの設定画面から同ポリシーを開く導線と、オンラインデータ削除UIは未実装
 
 ## 検証
 
@@ -157,5 +158,6 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 
 1. mainデプロイでproduction D1 migration + Worker deployを確認
 2. iPhone / Android実機・アクセシビリティ最終QA
+3. 設定画面から `https://hanage.app/privacy/` を開く導線と、オンラインデータ削除UIを追加
 
-別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。
+別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。広告の共通方針は hanage-hub の `docs/ADVERTISING_POLICY.md`、このゲーム固有の方針は `SPEC.md` を正とする。
