@@ -1,9 +1,9 @@
 # デプロイ手順
 
-配信先は **Cloudflare Workers（Static Assets + `/api/*`）**、公開URLは `https://mcsweeper.hanage.app/` を予定。
+配信先は **Cloudflare Workers（Static Assets + `/api/*`）**、公開URLは `https://mcsweeper.hanage.app/`。
 
-**カスタムドメインはまだ割り当てていない。** 現在の配信URLは Worker の既定URL
-`https://multicolor-sweeper.jibunnha.workers.dev/`。
+2026-09-05に `mcsweeper.hanage.app` を `multicolor-sweeper` WorkerへCustom Domainとして割り当て、iPhone Safariで正常にゲームが開くことを確認済み。
+Worker既定URL `https://multicolor-sweeper.jibunnha.workers.dev/` も残るが、ユーザー向けの正式URLはカスタムドメインを使用する。
 
 Draft PR #30以降は、静的アセット `dist/` の配信に加え、同じWorkerでオンラインランキングAPIを処理し、Cloudflare D1へ記録を保存する。
 
@@ -52,7 +52,7 @@ API token本体はリポジトリやチャットへ書かず、GitHub Actionsの
 7. `npm ci` → `npm run typecheck` → `npm test` → `npm run test:api` → `npm run build`
 8. Workerへデプロイする
 9. PRの場合はCloudflare Preview Versionで実画面確認する
-10. カスタムドメインを使う段階で、Cloudflare Workers設定から `mcsweeper.hanage.app` を追加する
+10. Cloudflare Workers設定から `mcsweeper.hanage.app` をCustom Domainとして追加する（2026-09-05実施済み）
 
 ### ローカル確認
 
@@ -115,14 +115,17 @@ D1 preview database IDが未設定の間はPreview jobをスキップし、誤�
 
 `hanage.app` のCloudflareゾーン化は2026-09-05に完了済み（Freeプラン、status: Active）。
 レジストラはお名前.comのままで、ネームサーバーだけ `cecelia.ns.cloudflare.com` / `dean.ns.cloudflare.com` へ変更した。
-残る作業は `mcsweeper.hanage.app` のカスタムドメイン割り当てのみ。
 
-- Workersのカスタムドメインは対象ゾーンがCloudflare上で有効になっている必要がある
-- 既存の `hanage.app` のDNSレコードがある場合はCloudflare側へ移設して維持する
-- Workers & Pages → `multicolor-sweeper` → Settings → Domains & Routes から `mcsweeper.hanage.app` を追加する（未実施）
+2026-09-05に以下を完了。
+
+- Workers & Pages → `multicolor-sweeper` → Settings → Domains & Routes から `mcsweeper.hanage.app` を追加
+- Custom Domainとして `hanage.app` ゾーンへ接続
+- iPhone Safariから `https://mcsweeper.hanage.app/` を開き、ゲームが正常表示されることをユーザー確認
+- hanage-hub PR #10で `GAME_URLS.multicolorSweeper` を正式URLへ変更
 
 ## デプロイ後の確認
 
+- `https://mcsweeper.hanage.app/` が正常に開く
 - `/api/health` が200を返す
 - 15 / 20 / 25 BOMBSのランキング取得
 - 3色/4色が同じ部門へ混在
