@@ -26,7 +26,18 @@ GitHub ActionsでデプロイとD1 migrationを行うため、`CLOUDFLARE_API_TO
 - Workers D1: Edit
 - 対象Cloudflare accountをAccount Resourcesに含める
 
-既存tokenはWorkers deployには使えているが、2026-09-04時点の確認ではD1 APIが `Authentication error [code: 10000]` になっており、D1 edit権限の追加が必要。
+2026-09-05に対応済み。旧tokenはD1権限を欠いており `Authentication error [code: 10000]` で失敗していたため、
+`Edit Cloudflare Workers` テンプレートに `Account -> D1 -> Edit` を追加した新token
+`github-actions-deploy (Workers + D1)` を作成し、Repository Secret `CLOUDFLARE_API_TOKEN` を差し替えた。旧tokenは削除済み。
+
+- Account Resources: 対象Cloudflareアカウントを include 済み
+- Zone Resources: All zones from an account
+- TTL: 無期限
+- `Cloudflare Pages: Edit` も含むため、hanage-hub等をCloudflareへ移す際も同じtokenを使える
+- 全プロジェクト共通の1本として運用する（Cloudflareのtokenは個別Worker単位に絞れないため、分けても影響範囲は変わらない）
+
+確認: 2026-09-05のDeploy #35で `Apply production D1 migrations` / `Deploy to Cloudflare Workers` /
+`Smoke test production ranking API` がすべて成功。
 
 API token本体はリポジトリやチャットへ書かず、GitHub ActionsのRepository Secret `CLOUDFLARE_API_TOKEN` にだけ保存する。
 
@@ -102,11 +113,13 @@ D1 preview database IDが未設定の間はPreview jobをスキップし、誤�
 
 ## カスタムドメイン
 
-`hanage.app` をCloudflareにゾーンとして追加し、ネームサーバーをCloudflareへ向ける。
+`hanage.app` のCloudflareゾーン化は2026-09-05に完了済み（Freeプラン、status: Active）。
+レジストラはお名前.comのままで、ネームサーバーだけ `cecelia.ns.cloudflare.com` / `dean.ns.cloudflare.com` へ変更した。
+残る作業は `mcsweeper.hanage.app` のカスタムドメイン割り当てのみ。
 
 - Workersのカスタムドメインは対象ゾーンがCloudflare上で有効になっている必要がある
 - 既存の `hanage.app` のDNSレコードがある場合はCloudflare側へ移設して維持する
-- Workers & Pages → `multicolor-sweeper` → Settings → Domains & Routes から `mcsweeper.hanage.app` を追加する
+- Workers & Pages → `multicolor-sweeper` → Settings → Domains & Routes から `mcsweeper.hanage.app` を追加する（未実施）
 
 ## デプロイ後の確認
 
