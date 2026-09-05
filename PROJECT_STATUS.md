@@ -14,6 +14,7 @@
 - 通常開封・連鎖・CINEMATIC BLAST・通常CLEAR・自己ベスト用SUPER CLEARとWeb Audio効果音を実装済み
 - PR #29までmainへ反映済み
 - **PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview・実API smoke test・ユーザー実画面確認まで完了**
+- **PR #34で正式公開前の設定・プライバシー導線を実装し、2026-09-05にmainへマージ済み**
 - 2026-09-05にCloudflare APIトークンをD1権限付きで作り直し、`CLOUDFLARE_API_TOKEN` を更新済み。GitHub ActionsのD1 migrationとdeployが成功することを確認（詳細は `DEPLOY.md`）
 - 2026-09-05に `hanage.app` をCloudflareゾーンとしてActive化済み。`mcsweeper.hanage.app` のカスタムドメイン割り当ては未実施
 
@@ -104,13 +105,15 @@
 
 ## 検証
 
-main基準は74 tests。PR #30でランキング検証テストを追加し、現在は **77 tests**。
+PR #30でランキング検証テストを追加し、PR #34で設定・削除フローのテストを追加。現在は **81 tests**。
 
-PR #30の最終CIは以下すべて成功済み:
+PR #34の最終CIは以下すべて成功済み:
 - `npm run typecheck`
-- `npm test`（77 tests）
-- `npm run test:api`（Wrangler + local D1を実起動するAPI smoke test）
+- `npm test`（15 files / 81 tests）
+- `npm run test:api`
 - `npm run build`
+- `git diff --check`
+- Cloudflare Preview build / D1 migration / API smoke
 
 API smoke testでは以下を確認済み。
 - 15 / 20 / 25 BOMBS取得
@@ -127,7 +130,7 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 - preview D1への匿名player作成
 - preview D1からの匿名player削除
 
-主要viewport: 320×480 / 320×568 / 375×667 / 390×844。PR #30 Previewでユーザー実画面確認済み。
+主要viewport: 320×480 / 320×568 / 375×667 / 390×844。PR #30 / #34 Previewでユーザー実画面確認済み。
 
 ## Cloudflareセットアップ状況
 
@@ -156,10 +159,10 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 
 ## 次の確認 / 残課題
 
-1. PR #34のCloudflare Previewで、設定・名前変更・プライバシーリンク・オンラインデータ削除をユーザー確認する（実装と自動テストは完了、確認前にマージしない）
-2. `mcsweeper.hanage.app` をWorkerへ割り当てる
-3. iPhone / Android実機・アクセシビリティ最終QA
+1. `mcsweeper.hanage.app` をWorkerへ割り当て、hanage-hubの `GAME_URLS` を正式URLへ更新する
+2. iPhone / Android実機・アクセシビリティ最終QA
+3. 正式公開前にPWAインストール導線・アイコン・起動表示を実機確認する
 
 正式公開後の拡張候補: Effect Labに残してある未採用エフェクトのプリセット選択 / 視認性確認済みの盤面カラーテーマ。
 
-別系統: エンドレスモード / 広告 / カスタムドメイン / hanage-hub紹介ページ / Daily Challenge。広告の共通方針は hanage-hub の `docs/ADVERTISING_POLICY.md`、このゲーム固有の方針は `SPEC.md` を正とする。
+別系統: エンドレスモード / 広告 / hanage-hub紹介ページ / Daily Challenge。広告の共通方針は hanage-hub の `docs/ADVERTISING_POLICY.md`、このゲーム固有の方針は `SPEC.md` を正とする。
