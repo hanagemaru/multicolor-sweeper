@@ -48,6 +48,17 @@ describe("localized UI copy", () => {
     expect(copy.submitTime).toBe("タイムを登録");
   });
 
+  it("provides complete settings and irreversible deletion copy in both languages", () => {
+    const ja = getCopy("ja");
+    const en = getCopy("en");
+    expect(ja.settings).toBe("設定");
+    expect(en.settings).toBe("SETTINGS");
+    expect(ja.deleteOnlineDataWarning).toContain("取り消せません");
+    expect(en.deleteOnlineDataWarning).toContain("cannot be undone");
+    expect(ja.deleteOnlineDataWarning).toContain("名前とランキング記録");
+    expect(en.deleteOnlineDataWarning).toContain("name and ranking records");
+  });
+
   it("localizes normal and over-limit remaining flag announcements", () => {
     expect(flagsRemainingLabel("ja", -2)).toContain("2本多い");
     expect(flagsRemainingLabel("en", -2)).toContain("2 too many flags");

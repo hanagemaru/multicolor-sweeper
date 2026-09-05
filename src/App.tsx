@@ -43,6 +43,7 @@ import {
   readInitialLanguage,
   type Language
 } from "./i18n";
+import { deletePlayerData } from "./player-data";
 import {
   fetchRanking,
   readOrCreatePlayerIdentity,
@@ -105,6 +106,28 @@ function mixedUiText(text: string): React.ReactNode {
   ));
 }
 
+function trapDialogFocus(event: React.KeyboardEvent<HTMLDivElement>, onEscape?: () => void): void {
+  if (event.key === "Escape" && onEscape) {
+    event.preventDefault();
+    onEscape();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+    'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+  )).filter((element) => !element.hasAttribute("hidden"));
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function readStoredRecord(key: string): LocalRecord | null {
   try {
     const raw = window.localStorage.getItem(key);
@@ -152,6 +175,9 @@ export default function App(): React.JSX.Element {
   const [yourRank, setYourRank] = useState<number | null>(null);
   const [rankingLoading, setRankingLoading] = useState(false);
   const [rankingError, setRankingError] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteState, setDeleteState] = useState<SubmitState>("idle");
   const [openingEffects, setOpeningEffects] = useState<CellOpeningEffects>({});
   const [cascadePulse, setCascadePulse] = useState<CascadePulseEffect | null>(null);
   const [outcomeEffect, setOutcomeEffect] = useState<BoardOutcomeEffect | null>(null);
@@ -166,6 +192,7 @@ export default function App(): React.JSX.Element {
   const resultDialogRef = useRef<HTMLDivElement | null>(null);
   const resultButtonRef = useRef<HTMLButtonElement | null>(null);
   const rankingRedirectTimerRef = useRef<number | null>(null);
+  const rankingRequestVersionRef = useRef(0);
   const submitRequestVersionRef = useRef(0);
   const allowAutoRankingRef = useRef(false);
   const acceptedAttemptRef = useRef<number | null>(null);
@@ -530,10 +557,12 @@ export default function App(): React.JSX.Element {
   const loadRanking = async (count: MineCount): Promise<void> => {
     const identity = identityRef.current;
     if (!identity) return;
+    const requestVersion = ++rankingRequestVersionRef.current;
     setRankingLoading(true);
     setRankingError(false);
     try {
       const response = await fetchRanking(identity, count);
+      if (rankingRequestVersionRef.current !== requestVersion) return;
       setRankingEntries(response.entries.map((entry) => ({
         rank: entry.rank,
         playerId: entry.playerId,
@@ -545,11 +574,12 @@ export default function App(): React.JSX.Element {
       })));
       setYourRank(response.yourRank);
     } catch {
+      if (rankingRequestVersionRef.current !== requestVersion) return;
       setRankingEntries([]);
       setYourRank(null);
       setRankingError(true);
     } finally {
-      setRankingLoading(false);
+      if (rankingRequestVersionRef.current === requestVersion) setRankingLoading(false);
     }
   };
 
@@ -649,6 +679,38 @@ export default function App(): React.JSX.Element {
     setRankingOpen(true);
   };
 
+  const confirmDeletePlayerData = async (): Promise<void> => {
+    if (deleteState === "sending") return;
+    const identity = identityRef.current;
+    if (!identity) {
+      setDeleteState("error");
+      return;
+    }
+    setDeleteState("sending");
+    try {
+      const nextIdentity = await deletePlayerData({
+        identity,
+        storage: window.localStorage
+      });
+      identityRef.current = nextIdentity;
+      rankingRequestVersionRef.current += 1;
+      submitRequestVersionRef.current += 1;
+      cancelAutoRanking();
+      setPlayerName("");
+      setRankingEntries([]);
+      setYourRank(null);
+      setRankingLoading(false);
+      setRankingError(false);
+      setSubmittedRank(null);
+      setSubmitState("idle");
+      scoreSubmissionIdRef.current = null;
+      setDeleteState("success");
+      setDeleteDialogOpen(false);
+    } catch {
+      setDeleteState("error");
+    }
+  };
+
   const resultBestRecord = bestRecords[mineCount] ?? null;
 
   const statusText: Record<Phase, string> = {
@@ -662,6 +724,65 @@ export default function App(): React.JSX.Element {
   };
 
   const flagsLabel = flagsRemainingLabel(language, flagsRemaining);
+
+  if (settingsOpen) {
+    return (
+      <main className="app-shell app-shell-settings-page">
+        <section className={`game-panel settings-screen language-${language}`} lang={language} aria-labelledby="settings-title">
+          <header className="settings-screen-header">
+            <h1 id="settings-title">{copy.settings}</h1>
+          </header>
+
+          <div className="settings-list">
+            <div className="player-setting settings-player">
+              <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
+              <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
+            </div>
+            <a className="settings-link" href="https://hanage.app/privacy/" target="_blank" rel="noopener noreferrer">
+              <span>{mixedUiText(copy.privacyPolicy)}</span>
+              <small>{copy.opensNewTab}</small>
+            </a>
+            <button className="settings-delete-button" type="button" onClick={() => { setDeleteState("idle"); setDeleteDialogOpen(true); }}>
+              <span>{buttonUiText(copy.deleteOnlineData)}</span>
+            </button>
+            <p className={`settings-delete-status${deleteState === "error" ? " error" : ""}`} role="status" aria-live="polite">
+              {deleteState === "success" ? copy.dataDeleted : deleteState === "error" ? copy.deleteFailed : ""}
+            </p>
+          </div>
+
+          <button className="secondary-button settings-back-button" type="button" onClick={() => setSettingsOpen(false)}>{buttonUiText(copy.back)}</button>
+
+          {nameEditorOpen ? (
+            <div className="modal-layer modal-layer-solid">
+              <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-name-title" onKeyDown={(event) => trapDialogFocus(event, nameSaving ? undefined : () => setNameEditorOpen(false))}>
+                <h2 id="settings-name-title">{playerName ? copy.changeName : copy.registerName}</h2>
+                <input autoFocus value={nameDraft} maxLength={16} aria-label={copy.name} onChange={(event) => setNameDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void confirmName(); }} placeholder={copy.playerNamePlaceholder} />
+                {nameError ? <p className="submit-status error">{copy.submitFailed}</p> : null}
+                <div className="dialog-actions">
+                  <button className="primary-button" type="button" disabled={!nameDraft.trim() || nameSaving} onClick={() => void confirmName()}>{buttonUiText(copy.save)}</button>
+                  <button className="secondary-button" type="button" disabled={nameSaving} onClick={() => setNameEditorOpen(false)}>{buttonUiText(copy.cancel)}</button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {deleteDialogOpen ? (
+            <div className="modal-layer modal-layer-solid">
+              <div className="delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-warning" onKeyDown={(event) => trapDialogFocus(event, deleteState === "sending" ? undefined : () => setDeleteDialogOpen(false))}>
+                <h2 id="delete-title">{copy.deleteOnlineDataQuestion}</h2>
+                <p id="delete-warning">{copy.deleteOnlineDataWarning}</p>
+                {deleteState === "error" ? <p className="submit-status error" role="alert">{copy.deleteFailed}</p> : null}
+                <div className="dialog-actions">
+                  <button className="danger-button" autoFocus type="button" disabled={deleteState === "sending"} onClick={() => void confirmDeletePlayerData()}>{buttonUiText(deleteState === "sending" ? copy.deleting : copy.delete)}</button>
+                  <button className="secondary-button" type="button" disabled={deleteState === "sending"} onClick={() => setDeleteDialogOpen(false)}>{buttonUiText(copy.cancel)}</button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      </main>
+    );
+  }
 
   if (rankingOpen) {
     return (
@@ -733,7 +854,7 @@ export default function App(): React.JSX.Element {
 
           {nameEditorOpen ? (
             <div className="modal-layer modal-layer-solid">
-              <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
+              <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title" onKeyDown={(event) => trapDialogFocus(event, nameSaving ? undefined : () => setNameEditorOpen(false))}>
                 <h2 id="name-title">{playerName ? copy.changeName : copy.registerName}</h2>
                 <input
                   autoFocus
@@ -772,10 +893,17 @@ export default function App(): React.JSX.Element {
                 <p className="eyebrow">{copy.timeAttack}</p>
                 <h1 id="game-title">MULTICOLOR SWEEPER</h1>
               </div>
-              <div className="language-toggle" aria-label={copy.language}>
-                <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{buttonUiText(copy.japanese)}</button>
-                <span aria-hidden="true">|</span>
-                <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
+              <div className="top-header-actions">
+                <div className="language-toggle" aria-label={copy.language}>
+                  <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{buttonUiText(copy.japanese)}</button>
+                  <span aria-hidden="true">|</span>
+                  <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
+                </div>
+                <button className="settings-icon-button" type="button" aria-label={copy.settings} onClick={() => setSettingsOpen(true)}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" shapeRendering="crispEdges">
+                    <path d="M9 2h6v3h3V2h3v6h-3v3h3v6h-3v3h-3v3H9v-3H6v3H3v-6h3v-3H3V8h3V5h3V2Zm3 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                  </svg>
+                </button>
               </div>
             </header>
             <div className="settings">
@@ -810,11 +938,6 @@ export default function App(): React.JSX.Element {
                   ))}
                 </div>
               </fieldset>
-
-              <div className="player-setting">
-                <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
-                <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
-              </div>
 
               <div className="settings-actions">
                 <button className="start-button" type="button" onClick={() => enterBoard()}>{buttonUiText(copy.start)}</button>
@@ -895,7 +1018,7 @@ export default function App(): React.JSX.Element {
 
         {paused ? (
           <div className="modal-layer pause-layer">
-            <div className="pause-dialog" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+            <div className="pause-dialog" role="dialog" aria-modal="true" aria-labelledby="pause-title" onKeyDown={(event) => trapDialogFocus(event)}>
               <h2 id="pause-title">{copy.paused}</h2>
               <div className="dialog-actions">
                 <button className="primary-button" type="button" onClick={resumeGame}>{buttonUiText(copy.resume)}</button>
@@ -914,9 +1037,7 @@ export default function App(): React.JSX.Element {
               aria-modal="true"
               aria-labelledby="result-title"
               tabIndex={-1}
-              onKeyDown={(event) => {
-                if (event.key === "Escape" && resultPhase !== "error") closeResult();
-              }}
+              onKeyDown={(event) => trapDialogFocus(event, resultPhase === "error" ? undefined : closeResult)}
             >
               <h2 id="result-title">
                 {resultPhase === "won" ? copy.clear : resultPhase === "lost" ? copy.gameOver : copy.error}
@@ -970,7 +1091,7 @@ export default function App(): React.JSX.Element {
 
         {nameEditorOpen ? (
           <div className="modal-layer modal-layer-solid">
-            <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title">
+            <div className="name-dialog" role="dialog" aria-modal="true" aria-labelledby="name-title" onKeyDown={(event) => trapDialogFocus(event, nameSaving ? undefined : () => setNameEditorOpen(false))}>
               <h2 id="name-title">{playerName ? copy.changeName : copy.registerName}</h2>
               {namePurpose === "submit" ? <p>{copy.nameRequiredForSubmit}</p> : null}
               <input
