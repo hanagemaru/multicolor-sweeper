@@ -739,7 +739,7 @@ export default function App(): React.JSX.Element {
               <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
             </div>
             <a className="settings-link" href="https://hanage.app/privacy/" target="_blank" rel="noopener noreferrer">
-              <span>{mixedUiText(copy.privacyPolicy)}</span>
+              <span>{buttonUiText(copy.privacyPolicy)}</span>
               <small>{copy.opensNewTab}</small>
             </a>
             <button className="settings-delete-button" type="button" onClick={() => { setDeleteState("idle"); setDeleteDialogOpen(true); }}>
@@ -901,7 +901,7 @@ export default function App(): React.JSX.Element {
                 </div>
                 <button className="settings-icon-button" type="button" aria-label={copy.settings} onClick={() => setSettingsOpen(true)}>
                   <svg viewBox="0 0 24 24" aria-hidden="true" shapeRendering="crispEdges">
-                    <path d="M9 2h6v3h3V2h3v6h-3v3h3v6h-3v3h-3v3H9v-3H6v3H3v-6h3v-3H3V8h3V5h3V2Zm3 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                    <path d="M6 0h4v4H6zM14 0h4v4h-4zM6 4h12v2H6zM0 6h24v2H0zM0 8h8v2H0zM16 8h8v2h-8zM4 10h4v4H4zM16 10h4v4h-4zM0 14h8v2H0zM16 14h8v2h-8zM0 16h24v2H0zM6 18h12v2H6zM6 20h4v4H6zM14 20h4v4h-4z" />
                   </svg>
                 </button>
               </div>
