@@ -7,6 +7,7 @@
   flex: 0 0 auto;
   grid-template-columns: max-content max-content max-content;
   align-items: center;
+  min-height: var(--control-h-header);
   gap: 2px;
   padding: 2px;
   border: 1px solid var(--line-soft, #333955);
@@ -16,7 +17,7 @@
 }
 
 .language-toggle button {
-  min-height: 32px;
+  min-height: calc(var(--control-h-header) - 6px);
   padding: 2px 7px;
   border: 1px solid transparent;
   border-radius: 2px;
@@ -47,9 +48,5 @@
 }
 
 @media (max-height: 600px) {
-  .language-toggle button {
-    min-height: 28px;
-    padding-inline: 5px;
-    font-size: var(--button-font-utility);
-  }
+  .language-toggle button { padding-inline: 5px; }
 }
