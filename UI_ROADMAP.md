@@ -67,11 +67,11 @@
 - Previewでユーザー実画面確認
 
 次:
-- 公開前の設定・プライバシー導線を実装する
+- PR #34のCloudflare Previewで公開前設定・プライバシー導線をユーザー確認する
 
 ## 4. 公開前の設定・プライバシー導線
 
-**状態: NEXT**
+**状態: IMPLEMENTED / PREVIEW REVIEW PENDING**
 
 対象:
 - `日本語 | EN` はトップメニューに残す
