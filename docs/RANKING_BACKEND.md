@@ -73,7 +73,7 @@ Ranking fetch, name update and record submit failures are isolated from gameplay
 
 ## Privacy / deletion
 
-No email address or social identity is collected. The anonymous identifier is used for best-record ownership, rank lookup, duplicate prevention and abuse control. `DELETE /api/player` deletes the authenticated player and online records. The future privacy policy should disclose anonymous identifiers, gameplay/verification data, hashed anti-abuse network signals, retention, deletion requests and Cloudflare processing.
+No email address or social identity is collected. The anonymous identifier is used for best-record ownership, rank lookup, duplicate prevention and abuse control. `DELETE /api/player` deletes the authenticated player and online records. The public privacy policy is centralized at `https://hanage.app/privacy/` and discloses anonymous identifiers, gameplay/verification data, hashed anti-abuse network signals, retention, deletion requests and Cloudflare processing.
 
 ## Deployment
 
