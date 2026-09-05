@@ -16,7 +16,7 @@
 - **PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview・実API smoke test・ユーザー実画面確認まで完了**
 - **PR #34で正式公開前の設定・プライバシー導線を実装し、2026-09-05にmainへマージ済み**
 - 2026-09-05にCloudflare APIトークンをD1権限付きで作り直し、`CLOUDFLARE_API_TOKEN` を更新済み。GitHub ActionsのD1 migrationとdeployが成功することを確認（詳細は `DEPLOY.md`）
-- 2026-09-05に `hanage.app` をCloudflareゾーンとしてActive化済み。`mcsweeper.hanage.app` のカスタムドメイン割り当ては未実施
+- **2026-09-05に `mcsweeper.hanage.app` をMulticolor Sweeper Workerへ割り当て、iPhone Safariでゲームが正常に開くことを確認済み。hanage-hub PR #10でゲームリンクも正式URLへ切り替え済み**
 
 ## Board First / 既存UI
 
@@ -142,6 +142,8 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 - Preview Workerがpreview D1を参照していることをdeploy logで確認済み
 - Preview実API smoke test成功済み
 - production D1 migrationはmainデプロイ時にdeploy workflowが自動適用する
+- 公開Custom Domain: `https://mcsweeper.hanage.app/`（2026-09-05割り当て・iPhone Safari確認済み）
+- Worker既定URL: `https://multicolor-sweeper.jibunnha.workers.dev/`
 - Preview alias: `https://pr-30-multicolor-sweeper.jibunnha.workers.dev`
 
 ## 既存の確定事項
@@ -159,9 +161,8 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 
 ## 次の確認 / 残課題
 
-1. `mcsweeper.hanage.app` をWorkerへ割り当て、hanage-hubの `GAME_URLS` を正式URLへ更新する
-2. iPhone / Android実機・アクセシビリティ最終QA
-3. 正式公開前にPWAインストール導線・アイコン・起動表示を実機確認する
+1. iPhone / Android実機・アクセシビリティ最終QA
+2. 正式公開前にPWAインストール導線・アイコン・起動表示を実機確認する
 
 正式公開後の拡張候補: Effect Labに残してある未採用エフェクトのプリセット選択 / 視認性確認済みの盤面カラーテーマ。
 
