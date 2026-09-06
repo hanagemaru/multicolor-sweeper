@@ -31,12 +31,12 @@
   --button-font-compact: 17px;
   --button-font-utility: 14px;
   --button-font-subtitle: 12px;
-  --button-ja-scale: 0.65em;
+  --button-ja-scale: 0.75em;
   --control-h-lg: 44px;
   --control-h-md: 40px;
   --control-h-sm: 34px;
   --control-h-row: 46px;
-  --control-h-header: 44px;
+  --control-h-header: 40px;
   --title-sub: 18px;
   --title-screen: 26px;
   --stack-gap: 20px;
@@ -189,9 +189,7 @@ button:disabled {
   width: var(--control-h-header);
   height: var(--control-h-header);
   flex: 0 0 var(--control-h-header);
-  /* the inset bottom shadow eats 3px of the visible face: nudge the icon up to match.
-     3px lands the icon on whole pixels so crispEdges never snaps it out of shape. */
-  padding-bottom: 3px;
+  padding: 0;
   place-items: center;
   border: 2px solid var(--line);
   border-radius: 3px;
@@ -201,11 +199,11 @@ button:disabled {
   cursor: pointer;
 }
 
-/* 1 unit of the 28-unit artwork must land on exactly 1px, or crispEdges snapping
-   distorts the teeth. Keep the icon at 28px and never scale it. */
+/* 1 unit of the 24-unit artwork must land on exactly 1px, or crispEdges snapping
+   distorts the teeth. Keep the icon at 24px and never scale it. */
 .settings-icon-button svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   fill: currentColor;
 }
 
@@ -1252,6 +1250,7 @@ legend {
   vertical-align: -0.05em;
 }
 .language-ja .choice-row button small { line-height: 1.15; }
+.language-ja .settings-link small { font-size: 13px; }
 .language-ja .condition-line { line-height: 1.15; }
 .language-ja .gesture-guide span { font-size: 12px; }
 @media (max-height: 600px) {
