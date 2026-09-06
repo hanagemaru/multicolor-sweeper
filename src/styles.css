@@ -37,9 +37,10 @@
   --control-h-sm: 38px;
   --control-h-row: 52px;
   --control-h-header: 44px;
-  --stack-gap: clamp(7px, 1.7dvh, 14px);
-  --action-gap: 7px;
-  --option-gap: 6px;
+  --title-sub: clamp(18px, 3dvh, 22px);
+  --stack-gap: clamp(11px, 2.4dvh, 20px);
+  --action-gap: 9px;
+  --option-gap: 7px;
   --cell-open-duration: 140ms;
   --cell-scan-duration: 275ms;
   --explosion-duration: 455ms;
@@ -159,7 +160,8 @@ button:disabled {
    viewport does not open a void between the header rule and the first control. */
 .app-shell:not(.app-shell-gameplay) .game-panel {
   height: auto;
-  min-height: min(100%, 300px);
+  padding: clamp(12px, 2.4dvh, 20px);
+  min-height: min(100%, 264px);
   max-height: 100%;
 }
 
@@ -170,7 +172,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding-bottom: clamp(7px, 1.4dvh, 12px);
+  padding-bottom: clamp(10px, 1.8dvh, 15px);
   border-bottom: 2px solid var(--line-soft);
 }
 
@@ -195,7 +197,11 @@ button:disabled {
   cursor: pointer;
 }
 
-.settings-icon-button svg { width: 24px; height: 24px; fill: currentColor; }
+.settings-icon-button svg {
+  width: calc(var(--control-h-header) - 16px);
+  height: calc(var(--control-h-header) - 16px);
+  fill: currentColor;
+}
 
 .eyebrow {
   margin: 0 0 2px;
@@ -225,14 +231,24 @@ h1 {
 fieldset {
   min-width: 0;
   margin: 0;
-  padding: clamp(8px, 1.6dvh, 13px) 9px 9px;
+  padding: clamp(11px, 2.1dvh, 16px) 11px 11px;
   border: 2px solid #414866;
 }
 
 legend {
   padding: 0 6px;
   color: #cbd0ef;
-  font-size: clamp(18px, 3dvh, 22px);
+  font-size: var(--title-sub);
+}
+
+/* Sub-screens are not the product title: keep their heading on the legend scale. */
+.settings-screen-header h1,
+.ranking-header h1 {
+  max-width: none;
+  color: #dfe3ff;
+  font-size: var(--title-sub);
+  letter-spacing: 0.08em;
+  line-height: 1;
 }
 
 .choice-row {
@@ -953,7 +969,7 @@ legend {
 .delete-dialog {
   display: grid;
   width: min(100%, 306px);
-  gap: 9px;
+  gap: var(--action-gap);
   padding: clamp(13px, 3dvh, 20px);
   border: 3px solid var(--line);
   border-radius: 5px;
@@ -1139,11 +1155,13 @@ legend {
     --control-h-sm: 34px;
     --control-h-row: 44px;
     --control-h-header: 40px;
-    --stack-gap: 6px;
-    --action-gap: 5px;
-    --option-gap: 4px;
+    --title-sub: 18px;
+    --stack-gap: 8px;
+    --action-gap: 6px;
+    --option-gap: 5px;
   }
   .app-shell { --shell-pad: 4px; }
+  .app-shell:not(.app-shell-gameplay) .game-panel { padding: 9px; }
   .game-panel {
     padding: 6px;
     border-radius: 5px;
@@ -1152,12 +1170,11 @@ legend {
 
   .game-header,
   .ranking-header,
-  .settings-screen-header { padding-bottom: 5px; }
+  .settings-screen-header { padding-bottom: 7px; }
   .eyebrow { font-size: 14px; }
   h1 { font-size: clamp(25px, 7.4vw, 30px); }
 
-  fieldset { padding: 6px 7px 7px; }
-  legend { font-size: 18px; }
+  fieldset { padding: 8px 8px 8px; }
   .choice-row button,
   .ranking-tabs button { padding: 3px; }
   .player-setting { padding-block: 3px; }

@@ -731,6 +731,11 @@ export default function App(): React.JSX.Element {
         <section className={`game-panel settings-screen language-${language}`} lang={language} aria-labelledby="settings-title">
           <header className="settings-screen-header">
             <h1 id="settings-title">{copy.settings}</h1>
+            <div className="language-toggle" aria-label={copy.language}>
+              <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{buttonUiText(copy.japanese)}</button>
+              <span aria-hidden="true">|</span>
+              <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
+            </div>
           </header>
 
           <div className="settings-list">
@@ -900,8 +905,8 @@ export default function App(): React.JSX.Element {
                   <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
                 </div>
                 <button className="settings-icon-button" type="button" aria-label={copy.settings} onClick={() => setSettingsOpen(true)}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true" shapeRendering="crispEdges">
-                    <path d="M6 0h4v4H6zM14 0h4v4h-4zM6 4h12v2H6zM0 6h24v2H0zM0 8h8v2H0zM16 8h8v2h-8zM4 10h4v4H4zM16 10h4v4h-4zM0 14h8v2H0zM16 14h8v2h-8zM0 16h24v2H0zM6 18h12v2H6zM6 20h4v4H6zM14 20h4v4h-4z" />
+                  <svg viewBox="0 0 56 56" aria-hidden="true" shapeRendering="crispEdges">
+                    <path d="M23 1h10v1h-10zM22 2h12v8h-12zM12 6h2v1h-2zM42 6h2v1h-2zM10 7h5v1h-5zM41 7h5v1h-5zM9 8h7v1h-7zM40 8h7v1h-7zM8 9h9v1h-9zM39 9h9v1h-9zM7 10h11v1h-11zM21 10h14v1h-14zM38 10h11v1h-11zM7 11h42v1h-42zM6 12h44v2h-44zM7 14h42v1h-42zM8 15h40v1h-40zM9 16h38v1h-38zM10 17h36v1h-36zM11 18h34v1h-34zM11 19h14v1h-14zM31 19h14v1h-14zM11 20h12v1h-12zM33 20h12v1h-12zM10 21h12v1h-12zM34 21h12v1h-12zM2 22h19v1h-19zM35 22h19v1h-19zM1 23h19v2h-19zM36 23h19v2h-19zM1 25h18v6h-18zM37 25h18v6h-18zM1 31h19v2h-19zM36 31h19v2h-19zM2 33h19v1h-19zM35 33h19v1h-19zM10 34h12v1h-12zM34 34h12v1h-12zM11 35h12v1h-12zM33 35h12v1h-12zM11 36h14v1h-14zM31 36h14v1h-14zM11 37h34v1h-34zM10 38h36v1h-36zM9 39h38v1h-38zM8 40h40v1h-40zM7 41h42v1h-42zM6 42h44v2h-44zM7 44h42v1h-42zM7 45h11v1h-11zM21 45h14v1h-14zM38 45h11v1h-11zM8 46h9v1h-9zM22 46h12v8h-12zM39 46h9v1h-9zM9 47h7v1h-7zM40 47h7v1h-7zM10 48h5v1h-5zM41 48h5v1h-5zM12 49h2v1h-2zM42 49h2v1h-2zM23 54h10v1h-10z" />
                   </svg>
                 </button>
               </div>
