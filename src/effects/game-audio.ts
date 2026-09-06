@@ -4,6 +4,7 @@ import {
   type ClearEffectVariant,
   type ExplosionEffectVariant
 } from "./game-effects";
+import type { UiSoundKind } from "./ui-sound";
 
 type BrowserWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
@@ -111,6 +112,42 @@ export class GameAudio {
     const finish = start + 0.27;
     this.playTone(context, finish, 1046.5, 0.12, 0.022, "triangle");
     this.playTone(context, finish, 1567.98, 0.09, 0.012, "square");
+  }
+
+  // UIボタンの押下音。盤面音と同じ矩形波/三角波で、開封音より短く小さく鳴らして前に出さない。
+  playUi(kind: UiSoundKind): void {
+    const context = this.getContext();
+    if (!context) return;
+    const start = context.currentTime;
+
+    if (kind === "start") {
+      this.playClearRun(context, start, [392, 523.25, 659.25, 987.77], 0.042, 0.03);
+      return;
+    }
+    if (kind === "confirm") {
+      this.playTone(context, start, 659.25, 0.05, 0.024, "triangle");
+      this.playTone(context, start + 0.045, 987.77, 0.07, 0.022, "triangle");
+      this.playTone(context, start + 0.045, 1975.53, 0.035, 0.006, "square");
+      return;
+    }
+    if (kind === "back") {
+      this.playTone(context, start, 493.88, 0.038, 0.018, "square");
+      this.playTone(context, start + 0.036, 329.63, 0.055, 0.016, "square");
+      return;
+    }
+    if (kind === "danger") {
+      this.playSweep(context, start, 196, 92, 0.16, 0.03, "square");
+      this.playTone(context, start + 0.02, 98, 0.13, 0.014, "triangle");
+      return;
+    }
+    if (kind === "select") {
+      this.playTone(context, start, 523.25, 0.028, 0.019, "square");
+      this.playTone(context, start + 0.026, 783.99, 0.038, 0.017, "square");
+      this.playTone(context, start + 0.026, 1567.98, 0.022, 0.005, "triangle");
+      return;
+    }
+    this.playTone(context, start, 440, 0.03, 0.017, "square");
+    this.playTone(context, start + 0.004, 880, 0.022, 0.006, "triangle");
   }
 
   private getContext(): AudioContext | null {

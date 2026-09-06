@@ -14,6 +14,7 @@ import {
   type CascadePulseEffect,
   type CellOpeningEffects
 } from "./effects/game-effects";
+import { uiSoundForClickTarget } from "./effects/ui-sound";
 import {
   canChord,
   chordCell,
@@ -232,6 +233,19 @@ export default function App(): React.JSX.Element {
       clientRef.current = null;
       audioRef.current = null;
     };
+  }, []);
+
+  // UIボタンの押下音は種類ごとに鳴らし分ける。onClickへ個別に足さず、
+  // captureフェーズで拾って盤面セル以外のボタンをまとめて扱う。
+  useEffect(() => {
+    const handleUiClick = (event: MouseEvent): void => {
+      const kind = uiSoundForClickTarget(event.target);
+      if (!kind) return;
+      audioRef.current?.unlock();
+      audioRef.current?.playUi(kind);
+    };
+    document.addEventListener("click", handleUiClick, true);
+    return () => document.removeEventListener("click", handleUiClick, true);
   }, []);
 
   useEffect(() => {
