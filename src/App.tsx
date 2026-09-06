@@ -731,6 +731,11 @@ export default function App(): React.JSX.Element {
         <section className={`game-panel settings-screen language-${language}`} lang={language} aria-labelledby="settings-title">
           <header className="settings-screen-header">
             <h1 id="settings-title">{copy.settings}</h1>
+            <div className="language-toggle" aria-label={copy.language}>
+              <button type="button" className={language === "ja" ? "selected" : ""} onClick={() => selectLanguage("ja")}>{buttonUiText(copy.japanese)}</button>
+              <span aria-hidden="true">|</span>
+              <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
+            </div>
           </header>
 
           <div className="settings-list">
@@ -739,7 +744,7 @@ export default function App(): React.JSX.Element {
               <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
             </div>
             <a className="settings-link" href="https://hanage.app/privacy/" target="_blank" rel="noopener noreferrer">
-              <span>{mixedUiText(copy.privacyPolicy)}</span>
+              <span>{buttonUiText(copy.privacyPolicy)}</span>
               <small>{copy.opensNewTab}</small>
             </a>
             <button className="settings-delete-button" type="button" onClick={() => { setDeleteState("idle"); setDeleteDialogOpen(true); }}>
@@ -900,8 +905,8 @@ export default function App(): React.JSX.Element {
                   <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
                 </div>
                 <button className="settings-icon-button" type="button" aria-label={copy.settings} onClick={() => setSettingsOpen(true)}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true" shapeRendering="crispEdges">
-                    <path d="M9 2h6v3h3V2h3v6h-3v3h3v6h-3v3h-3v3H9v-3H6v3H3v-6h3v-3H3V8h3V5h3V2Zm3 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                  <svg viewBox="0 0 20 20" aria-hidden="true" shapeRendering="crispEdges">
+                    <path d="M8 0h4v3h-4zM4 2h2v1h-2zM14 2h2v1h-2zM3 3h14v1h-14zM2 4h16v2h-16zM3 6h14v1h-14zM3 7h5v1h-5zM12 7h5v1h-5zM0 8h7v4h-7zM13 8h7v4h-7zM3 12h5v1h-5zM12 12h5v1h-5zM3 13h14v1h-14zM2 14h16v2h-16zM3 16h14v1h-14zM4 17h2v1h-2zM8 17h4v3h-4zM14 17h2v1h-2z" />
                   </svg>
                 </button>
               </div>
