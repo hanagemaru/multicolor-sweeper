@@ -51,11 +51,21 @@ interface RecordRow {
   updated_at: string;
 }
 
+interface RankedRecordRow {
+  player_id: string;
+  display_name: string | null;
+  mine_count: MineCount;
+  color_count: ColorCount;
+  time_ms: number;
+  rank: number;
+}
+
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
   "Cache-Control": "no-store"
 };
 const MAX_BODY_BYTES = 120_000;
+const RANKING_NEARBY_RADIUS = 3;
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS });
@@ -158,6 +168,18 @@ async function rankForPlayer(db: D1Database, mineCount: MineCount, playerId: str
   return row?.rank ?? null;
 }
 
+function rankingEntry(row: RankedRecordRow, playerId?: string): RankingEntryDto {
+  return {
+    rank: row.rank,
+    playerId: row.player_id,
+    name: row.display_name ?? "PLAYER",
+    mineCount: row.mine_count,
+    colorCount: row.color_count,
+    timeMs: row.time_ms,
+    isPlayer: playerId === row.player_id
+  };
+}
+
 async function handleRanking(request: Request, env: Env, url: URL): Promise<Response> {
   const parsedMineCount = Number(url.searchParams.get("mineCount"));
   if (!isMineCount(parsedMineCount)) return error("Invalid mineCount");
@@ -185,24 +207,9 @@ async function handleRanking(request: Request, env: Env, url: URL): Promise<Resp
      FROM ranked
      ORDER BY rank ASC
      LIMIT ?`
-  ).bind(mineCount, limit).all<{
-    player_id: string;
-    display_name: string | null;
-    mine_count: MineCount;
-    color_count: ColorCount;
-    time_ms: number;
-    rank: number;
-  }>();
+  ).bind(mineCount, limit).all<RankedRecordRow>();
 
-  const entries: RankingEntryDto[] = (rows.results ?? []).map((row) => ({
-    rank: row.rank,
-    playerId: row.player_id,
-    name: row.display_name ?? "PLAYER",
-    mineCount: row.mine_count,
-    colorCount: row.color_count,
-    timeMs: row.time_ms,
-    isPlayer: auth?.playerId === row.player_id
-  }));
+  const entries: RankingEntryDto[] = (rows.results ?? []).map((row) => rankingEntry(row, auth?.playerId));
 
   let yourRank: number | null = null;
   let yourBest: RankingResponse["yourBest"] = null;
@@ -212,6 +219,32 @@ async function handleRanking(request: Request, env: Env, url: URL): Promise<Resp
       "SELECT time_ms, color_count FROM records WHERE player_id = ? AND mine_count = ? AND verification_status = 'verified'"
     ).bind(auth.playerId, mineCount).first<{ time_ms: number; color_count: ColorCount }>();
     if (own) yourBest = { timeMs: own.time_ms, colorCount: own.color_count };
+
+    if (yourRank !== null) {
+      const nearbyStart = Math.max(1, yourRank - RANKING_NEARBY_RADIUS);
+      const nearbyEnd = yourRank + RANKING_NEARBY_RADIUS;
+      const nearbyRows = await env.DB.prepare(
+        `WITH ranked AS (
+           SELECT r.player_id, p.display_name, r.mine_count, r.color_count, r.time_ms,
+                  ROW_NUMBER() OVER (ORDER BY r.time_ms ASC, r.updated_at ASC, r.player_id ASC) AS rank
+           FROM records r
+           JOIN players p ON p.player_id = r.player_id
+           WHERE r.mine_count = ? AND r.verification_status = 'verified'
+         )
+         SELECT player_id, display_name, mine_count, color_count, time_ms, rank
+         FROM ranked
+         WHERE rank BETWEEN ? AND ?
+         ORDER BY rank ASC`
+      ).bind(mineCount, nearbyStart, nearbyEnd).all<RankedRecordRow>();
+
+      const includedRanks = new Set(entries.map((entry) => entry.rank));
+      for (const row of nearbyRows.results ?? []) {
+        if (includedRanks.has(row.rank)) continue;
+        entries.push(rankingEntry(row, auth.playerId));
+        includedRanks.add(row.rank);
+      }
+      entries.sort((a, b) => a.rank - b.rank);
+    }
   }
 
   return json({ entries, yourRank, yourBest } satisfies RankingResponse);

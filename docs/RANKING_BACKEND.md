@@ -43,6 +43,8 @@
 All writes require `Authorization: Bearer <playerId>.<credential>`.
 Ranking reads may include the same identity so the API can return `YOUR RANK`, but reads never create a player row.
 
+The ranking response contains the requested top entries plus, when the authenticated player has a verified record, that player's rank and up to three entries above and below it. Duplicate ranks are removed and the combined entries are returned in rank order. The production UI requests the top 10, so a player outside the top 10 sees the top 10 plus their nearby range; overlapping ranges (for example ranks 11 or 12) join without duplicates.
+
 ## V1 verification
 
 The server validates all fields and then:
