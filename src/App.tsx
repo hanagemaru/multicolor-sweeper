@@ -905,8 +905,8 @@ export default function App(): React.JSX.Element {
                   <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
                 </div>
                 <button className="settings-icon-button" type="button" aria-label={copy.settings} onClick={() => setSettingsOpen(true)}>
-                  <svg viewBox="0 0 24 24" aria-hidden="true" shapeRendering="crispEdges">
-                    <path d="M9 1h6v3h-6zM5 3h2v1h-2zM17 3h2v1h-2zM4 4h16v1h-16zM3 5h18v2h-18zM4 7h16v1h-16zM4 8h6v1h-6zM14 8h6v1h-6zM1 9h8v1h-8zM15 9h8v1h-8zM1 10h7v4h-7zM16 10h7v4h-7zM1 14h8v1h-8zM15 14h8v1h-8zM4 15h6v1h-6zM14 15h6v1h-6zM4 16h16v1h-16zM3 17h18v2h-18zM4 19h16v1h-16zM5 20h2v1h-2zM9 20h6v3h-6zM17 20h2v1h-2z" />
+                  <svg viewBox="0 0 28 28" aria-hidden="true" shapeRendering="crispEdges">
+                    <path d="M12 0h4v1h-4zM11 1h6v4h-6zM5 3h3v1h-3zM20 3h3v1h-3zM4 4h5v1h-5zM19 4h5v1h-5zM3 5h22v3h-22zM4 8h20v1h-20zM5 9h8v1h-8zM15 9h8v1h-8zM5 10h6v1h-6zM17 10h6v1h-6zM1 11h9v1h-9zM18 11h9v1h-9zM0 12h10v1h-10zM18 12h10v1h-10zM0 13h9v2h-9zM19 13h9v2h-9zM0 15h10v1h-10zM18 15h10v1h-10zM1 16h9v1h-9zM18 16h9v1h-9zM5 17h6v1h-6zM17 17h6v1h-6zM5 18h8v1h-8zM15 18h8v1h-8zM4 19h20v1h-20zM3 20h22v3h-22zM4 23h5v1h-5zM11 23h6v4h-6zM19 23h5v1h-5zM5 24h3v1h-3zM20 24h3v1h-3zM12 27h4v1h-4z" />
                   </svg>
                 </button>
               </div>
