@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { buttonUiText } from "./button-typography";
 import { GameBoard } from "./components/GameBoard";
 import { GestureArrow } from "./components/GestureArrow";
@@ -62,6 +62,7 @@ import {
   bestRecordStorageKey,
   canSubmitResult,
   destinationAfterSuccessfulSubmit,
+  hasRankingGap,
   PLAYER_NAME_STORAGE_KEY,
   resetLegacyTestRecordsOnce,
   type RankingEntry
@@ -826,10 +827,15 @@ export default function App(): React.JSX.Element {
                   <tr><td colSpan={4}>{rankingUnavailable}</td></tr>
                 ) : rankingEntries.length === 0 ? (
                   <tr><td colSpan={4}>--</td></tr>
-                ) : rankingEntries.slice(0, 10).map((entry) => (
-                  <tr key={`${entry.playerId ?? entry.rank}-${entry.mineCount}`} className={entry.isPlayer ? "is-player" : ""}>
-                    <td>#{entry.rank}</td><td>{mixedUiText(entry.name)}</td><td>{entry.colorCount}</td><td>{formatTime(entry.timeMs)}</td>
-                  </tr>
+                ) : rankingEntries.map((entry, index) => (
+                  <Fragment key={`${entry.playerId ?? entry.rank}-${entry.mineCount}`}>
+                    {hasRankingGap(rankingEntries[index - 1], entry) ? (
+                      <tr className="ranking-gap" aria-hidden="true"><td colSpan={4}>…</td></tr>
+                    ) : null}
+                    <tr className={entry.isPlayer ? "is-player" : ""}>
+                      <td>#{entry.rank}</td><td>{mixedUiText(entry.name)}</td><td>{entry.colorCount}</td><td>{formatTime(entry.timeMs)}</td>
+                    </tr>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
