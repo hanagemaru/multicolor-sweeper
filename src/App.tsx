@@ -905,8 +905,8 @@ export default function App(): React.JSX.Element {
                   <button type="button" className={language === "en" ? "selected" : ""} onClick={() => selectLanguage("en")}>{buttonUiText("EN")}</button>
                 </div>
                 <button className="settings-icon-button" type="button" aria-label={copy.settings} onClick={() => setSettingsOpen(true)}>
-                  <svg viewBox="0 0 56 56" aria-hidden="true" shapeRendering="crispEdges">
-                    <path d="M23 1h10v1h-10zM22 2h12v8h-12zM12 6h2v1h-2zM42 6h2v1h-2zM10 7h5v1h-5zM41 7h5v1h-5zM9 8h7v1h-7zM40 8h7v1h-7zM8 9h9v1h-9zM39 9h9v1h-9zM7 10h11v1h-11zM21 10h14v1h-14zM38 10h11v1h-11zM7 11h42v1h-42zM6 12h44v2h-44zM7 14h42v1h-42zM8 15h40v1h-40zM9 16h38v1h-38zM10 17h36v1h-36zM11 18h34v1h-34zM11 19h14v1h-14zM31 19h14v1h-14zM11 20h12v1h-12zM33 20h12v1h-12zM10 21h12v1h-12zM34 21h12v1h-12zM2 22h19v1h-19zM35 22h19v1h-19zM1 23h19v2h-19zM36 23h19v2h-19zM1 25h18v6h-18zM37 25h18v6h-18zM1 31h19v2h-19zM36 31h19v2h-19zM2 33h19v1h-19zM35 33h19v1h-19zM10 34h12v1h-12zM34 34h12v1h-12zM11 35h12v1h-12zM33 35h12v1h-12zM11 36h14v1h-14zM31 36h14v1h-14zM11 37h34v1h-34zM10 38h36v1h-36zM9 39h38v1h-38zM8 40h40v1h-40zM7 41h42v1h-42zM6 42h44v2h-44zM7 44h42v1h-42zM7 45h11v1h-11zM21 45h14v1h-14zM38 45h11v1h-11zM8 46h9v1h-9zM22 46h12v8h-12zM39 46h9v1h-9zM9 47h7v1h-7zM40 47h7v1h-7zM10 48h5v1h-5zM41 48h5v1h-5zM12 49h2v1h-2zM42 49h2v1h-2zM23 54h10v1h-10z" />
+                  <svg viewBox="0 0 28 28" aria-hidden="true" shapeRendering="crispEdges">
+                    <path d="M12 0h4v1h-4zM11 1h6v4h-6zM5 3h3v1h-3zM20 3h3v1h-3zM4 4h5v1h-5zM19 4h5v1h-5zM3 5h22v3h-22zM4 8h20v1h-20zM5 9h8v1h-8zM15 9h8v1h-8zM5 10h6v1h-6zM17 10h6v1h-6zM1 11h9v1h-9zM18 11h9v1h-9zM0 12h10v1h-10zM18 12h10v1h-10zM0 13h9v2h-9zM19 13h9v2h-9zM0 15h10v1h-10zM18 15h10v1h-10zM1 16h9v1h-9zM18 16h9v1h-9zM5 17h6v1h-6zM17 17h6v1h-6zM5 18h8v1h-8zM15 18h8v1h-8zM4 19h20v1h-20zM3 20h22v3h-22zM4 23h5v1h-5zM11 23h6v4h-6zM19 23h5v1h-5zM5 24h3v1h-3zM20 24h3v1h-3zM12 27h4v1h-4z" />
                   </svg>
                 </button>
               </div>

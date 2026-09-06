@@ -38,8 +38,9 @@
   --control-h-row: 52px;
   --control-h-header: 44px;
   --title-sub: clamp(18px, 3dvh, 22px);
-  --stack-gap: clamp(11px, 2.4dvh, 20px);
-  --action-gap: 9px;
+  --title-screen: clamp(24px, 4dvh, 29px);
+  --stack-gap: clamp(16px, 3.6dvh, 32px);
+  --action-gap: 13px;
   --option-gap: 7px;
   --cell-open-duration: 140ms;
   --cell-scan-duration: 275ms;
@@ -198,8 +199,8 @@ button:disabled {
 }
 
 .settings-icon-button svg {
-  width: calc(var(--control-h-header) - 16px);
-  height: calc(var(--control-h-header) - 16px);
+  width: 28px;
+  height: 28px;
   fill: currentColor;
 }
 
@@ -231,7 +232,7 @@ h1 {
 fieldset {
   min-width: 0;
   margin: 0;
-  padding: clamp(11px, 2.1dvh, 16px) 11px 11px;
+  padding: clamp(13px, 2.4dvh, 19px) 13px 13px;
   border: 2px solid #414866;
 }
 
@@ -246,8 +247,8 @@ legend {
 .ranking-header h1 {
   max-width: none;
   color: #dfe3ff;
-  font-size: var(--title-sub);
-  letter-spacing: 0.08em;
+  font-size: var(--title-screen);
+  letter-spacing: 0.06em;
   line-height: 1;
 }
 
@@ -1156,8 +1157,9 @@ legend {
     --control-h-row: 44px;
     --control-h-header: 40px;
     --title-sub: 18px;
-    --stack-gap: 8px;
-    --action-gap: 6px;
+    --title-screen: 22px;
+    --stack-gap: 10px;
+    --action-gap: 7px;
     --option-gap: 5px;
   }
   .app-shell { --shell-pad: 4px; }
@@ -1174,7 +1176,7 @@ legend {
   .eyebrow { font-size: 14px; }
   h1 { font-size: clamp(25px, 7.4vw, 30px); }
 
-  fieldset { padding: 8px 8px 8px; }
+  fieldset { padding: 9px 9px 9px; }
   .choice-row button,
   .ranking-tabs button { padding: 3px; }
   .player-setting { padding-block: 3px; }
