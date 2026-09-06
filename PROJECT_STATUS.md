@@ -1,6 +1,6 @@
 # Project Status
 
-最終更新: 2026-09-05
+最終更新: 2026-09-06
 
 ## 現在地
 
@@ -15,6 +15,8 @@
 - PR #29までmainへ反映済み
 - **PR #30でCloudflare Workers + D1の実オンラインランキングを実装済み。Cloudflare Preview・実API smoke test・ユーザー実画面確認まで完了**
 - **PR #34で正式公開前の設定・プライバシー導線を実装し、2026-09-05にmainへマージ済み**
+- **PR #38で設定導線・見出し階層・共通UIトークン・固定サイズ方針を整理し、2026-09-06にmainへマージ済み**
+- **PR #39でランキングを上位10位＋自分の前後3人表示へ拡張し、2026-09-06にmainへマージ済み**
 - 2026-09-05にCloudflare APIトークンをD1権限付きで作り直し、`CLOUDFLARE_API_TOKEN` を更新済み。GitHub ActionsのD1 migrationとdeployが成功することを確認（詳細は `DEPLOY.md`）
 - **2026-09-05に `mcsweeper.hanage.app` をMulticolor Sweeper Workerへ割り当て、iPhone Safariでゲームが正常に開くことを確認済み。hanage-hub PR #10でゲームリンクも正式URLへ切り替え済み**
 
@@ -26,7 +28,7 @@
 - `VIEW BOARD` 後の `RESULT` はHUD右端に表示し、盤面サイズ・位置を維持
 - 320×480を含む小画面で主要文字を極端に縮小しない
 - PAUSE中はタイマー停止、全81セルを未開封表示へマスクし、盤面操作を無効化
-- 日英切替は設定・ランキングに `日本語 | EN` を表示し端末保存
+- 日英切替はトップメニュー・設定・ランキングに `日本語 | EN` を表示し端末保存
 - 表記は `UI_TERMINOLOGY.md` を正とする
 - ボタン高さは `--control-h-lg / -md / -sm / -row / -header`、間隔は `--stack-gap / --action-gap / --option-gap` の共有トークンで揃える（画面ごとの個別値を増やさない）
 - 最大の見出しはトップメニューの製品名だけ。設定・ランキングの画面見出しは `--title-screen`、`難易度` / `色数` などのセクション見出しは `--title-sub` を使う
@@ -45,6 +47,10 @@
 - 設定・ランキングから名前登録/変更可能
 - 自己ベスト更新時だけ登録可能。未更新時はランキング閲覧のみ
 - 登録成功時は現在順位を表示し、自己ベスト更新時は約1秒後にランキングへ自動遷移
+- ランキング画面は上位10位を基本表示する
+- 自分が10位圏外の場合は自分の前後3人も表示する
+- 上位10位と自分周辺が重なる/隣接する場合は重複なく連結し、離れている場合だけ `…` を入れる
+- 例: 自分が1位なら1〜10位、11位なら1〜14位、12位なら1〜15位、127位なら1〜10位＋`…`＋124〜130位
 - 通信失敗時も結果確認、RETRY、MENU、盤面確認を妨げない
 - 旧localStorageのモックランキング/保存済みテスト記録はオンラインへ自動送信しない
 - 保存済み表示名は引き継ぐ
@@ -62,6 +68,7 @@
   - `PUT /api/player`
   - `DELETE /api/player`
   - `POST /api/records`
+- `GET /api/rankings` は要求された上位件数に加え、認証済みplayerにverified recordがあれば自分の前後3件を返す。重複順位は除外し、順位順で返す
 
 ### プレイヤー識別
 
@@ -111,15 +118,13 @@
 
 ## 検証
 
-PR #30でランキング検証テストを追加し、PR #34で設定・削除フローのテストを追加。現在は **81 tests**。
+PR #30でランキング検証テスト、PR #34で設定・削除フロー、PR #39でランキングの順位ギャップ表示テストを追加済み。
 
-PR #34の最終CIは以下すべて成功済み:
+PR #39のCIでは以下すべて成功済み:
 - `npm run typecheck`
-- `npm test`（15 files / 81 tests）
+- `npm test`
 - `npm run test:api`
 - `npm run build`
-- `git diff --check`
-- Cloudflare Preview build / D1 migration / API smoke
 
 API smoke testでは以下を確認済み。
 - 15 / 20 / 25 BOMBS取得
@@ -150,7 +155,7 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 - production D1 migrationはmainデプロイ時にdeploy workflowが自動適用する
 - 公開Custom Domain: `https://mcsweeper.hanage.app/`（2026-09-05割り当て・iPhone Safari確認済み）
 - Worker既定URL: `https://multicolor-sweeper.jibunnha.workers.dev/`
-- Preview alias: `https://pr-30-multicolor-sweeper.jibunnha.workers.dev`
+- Preview aliasはPRごとに `https://pr-<番号>-multicolor-sweeper.jibunnha.workers.dev` を使用
 
 ## 既存の確定事項
 
