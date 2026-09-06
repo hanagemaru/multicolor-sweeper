@@ -3,6 +3,7 @@ import {
   bestRecordStorageKey,
   canSubmitResult,
   destinationAfterSuccessfulSubmit,
+  hasRankingGap,
   playerRank,
   rankedEntries,
   resetLegacyTestRecordsOnce,
@@ -26,6 +27,16 @@ describe("ranking", () => {
       { name: "YOU", colorCount: 3, timeMs: 2000, mineCount: 20, isPlayer: true }
     ]);
     expect(playerRank(ranked)).toBe(2);
+  });
+
+  it("detects only real gaps between displayed ranking ranges", () => {
+    const rank10 = { rank: 10, name: "A", colorCount: 3 as const, timeMs: 1000, mineCount: 20 as const };
+    const rank11 = { rank: 11, name: "B", colorCount: 3 as const, timeMs: 1100, mineCount: 20 as const };
+    const rank12 = { rank: 12, name: "C", colorCount: 3 as const, timeMs: 1200, mineCount: 20 as const };
+
+    expect(hasRankingGap(rank10, rank11)).toBe(false);
+    expect(hasRankingGap(rank10, rank12)).toBe(true);
+    expect(hasRankingGap(undefined, rank10)).toBe(false);
   });
 
   it("opens the ranking automatically only after a new best", () => {
