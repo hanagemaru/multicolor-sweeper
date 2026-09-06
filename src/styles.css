@@ -199,11 +199,11 @@ button:disabled {
   cursor: pointer;
 }
 
-/* 1 unit of the 24-unit artwork must land on exactly 1px, or crispEdges snapping
-   distorts the teeth. Keep the icon at 24px and never scale it. */
+/* 1 unit of the 20-unit artwork must land on exactly 1px, or crispEdges snapping
+   distorts the teeth. Keep the icon at 20px and never scale it. */
 .settings-icon-button svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
 }
 
