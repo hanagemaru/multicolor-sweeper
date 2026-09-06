@@ -27,6 +27,14 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function range(start, end) {
+  return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+}
+
+function authForRank(rank) {
+  return { Authorization: `Bearer p-self-${rank}.${"a".repeat(64)}` };
+}
+
 async function stopWorker(worker) {
   if (worker.exitCode !== null || !worker.pid) return;
 
@@ -77,8 +85,10 @@ try {
   const ranking20 = await fetch(`${baseUrl}/api/rankings?mineCount=20&limit=50`);
   assert(ranking20.status === 200, "20-bomb ranking failed");
   const ranking20Body = await ranking20.json();
-  assert(JSON.stringify(ranking20Body.entries.map((entry) => entry.timeMs)) === JSON.stringify([10000, 11000, 12000]), "ranking order is wrong");
-  assert(JSON.stringify(ranking20Body.entries.map((entry) => entry.colorCount)) === JSON.stringify([4, 3, 3]), "3/4-color mixing is wrong");
+  assert(ranking20Body.entries.length === 50, "20-bomb top-50 length is wrong");
+  assert(ranking20Body.entries[0]?.rank === 1 && ranking20Body.entries[49]?.rank === 50, "20-bomb ranks are wrong");
+  assert(ranking20Body.entries[0]?.timeMs === 10000 && ranking20Body.entries[49]?.timeMs === 59000, "20-bomb ranking order is wrong");
+  assert(ranking20Body.entries[0]?.colorCount === 3 && ranking20Body.entries[1]?.colorCount === 4, "3/4-color mixing is wrong");
 
   for (const mineCount of [15, 25]) {
     const response = await fetch(`${baseUrl}/api/rankings?mineCount=${mineCount}&limit=50`);
@@ -86,22 +96,34 @@ try {
     assert(response.status === 200 && body.entries.length === 1, `${mineCount}-bomb ranking failed`);
   }
 
-  const auth = { Authorization: `Bearer p-self.${"a".repeat(64)}` };
-  const ownRanking = await fetch(`${baseUrl}/api/rankings?mineCount=20&limit=50`, { headers: auth });
-  const ownBody = await ownRanking.json();
-  assert(ownRanking.status === 200, "authenticated ranking failed");
-  assert(ownBody.yourRank === 2, "own rank is wrong");
-  assert(ownBody.entries.some((entry) => entry.playerId === "p-self" && entry.isPlayer), "player row was not marked");
+  const nearbyCases = [
+    { rank: 1, expected: range(1, 10) },
+    { rank: 11, expected: range(1, 14) },
+    { rank: 12, expected: range(1, 15) },
+    { rank: 127, expected: [...range(1, 10), ...range(124, 130)] }
+  ];
 
+  for (const testCase of nearbyCases) {
+    const response = await fetch(`${baseUrl}/api/rankings?mineCount=20&limit=10`, { headers: authForRank(testCase.rank) });
+    const body = await response.json();
+    const ranks = body.entries.map((entry) => entry.rank);
+    assert(response.status === 200, `rank ${testCase.rank} authenticated ranking failed`);
+    assert(body.yourRank === testCase.rank, `rank ${testCase.rank} own rank is wrong`);
+    assert(JSON.stringify(ranks) === JSON.stringify(testCase.expected), `rank ${testCase.rank} displayed range is wrong: ${JSON.stringify(ranks)}`);
+    const playerRows = body.entries.filter((entry) => entry.isPlayer);
+    assert(playerRows.length === 1 && playerRows[0].rank === testCase.rank, `rank ${testCase.rank} player row was not marked exactly once`);
+  }
+
+  const auth = authForRank(11);
   const rename = await fetch(`${baseUrl}/api/player`, {
     method: "PUT",
     headers: { ...auth, "Content-Type": "application/json" },
-    body: JSON.stringify({ displayName: "SELF2" })
+    body: JSON.stringify({ displayName: "SELF11X" })
   });
   assert(rename.status === 200, "name update failed");
   const renamedRanking = await fetch(`${baseUrl}/api/rankings?mineCount=20&limit=50`);
   const renamedBody = await renamedRanking.json();
-  assert(renamedBody.entries.some((entry) => entry.playerId === "p-self" && entry.name === "SELF2"), "renamed player not reflected");
+  assert(renamedBody.entries.some((entry) => entry.playerId === "p-self-11" && entry.name === "SELF11X"), "renamed player not reflected");
 
   const badCategory = await fetch(`${baseUrl}/api/rankings?mineCount=30`);
   assert(badCategory.status === 400, "invalid ranking category was not rejected");
