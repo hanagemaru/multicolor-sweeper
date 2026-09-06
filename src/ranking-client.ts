@@ -64,7 +64,7 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 
 export async function fetchRanking(identity: PlayerIdentity, mineCount: MineCount): Promise<RankingResponse> {
-  const response = await fetch(`/api/rankings?mineCount=${mineCount}&limit=50`, {
+  const response = await fetch(`/api/rankings?mineCount=${mineCount}&limit=10`, {
     method: "GET",
     headers: authHeaders(identity),
     cache: "no-store"
