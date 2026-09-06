@@ -59,3 +59,7 @@ export function rankedEntries(entries: readonly RankingEntry[]): RankingEntry[] 
 export function playerRank(entries: readonly RankingEntry[]): number | null {
   return entries.find((entry) => entry.isPlayer)?.rank ?? null;
 }
+
+export function hasRankingGap(previous: RankingEntry | undefined, current: RankingEntry): boolean {
+  return previous?.rank !== undefined && current.rank !== undefined && current.rank > previous.rank + 1;
+}
