@@ -40,7 +40,7 @@
   --title-sub: clamp(18px, 3dvh, 22px);
   --title-screen: clamp(24px, 4dvh, 29px);
   --stack-gap: clamp(16px, 3.6dvh, 32px);
-  --action-gap: 13px;
+  --action-gap: clamp(9px, 1.5dvh, 13px);
   --option-gap: 7px;
   --cell-open-duration: 140ms;
   --cell-scan-duration: 275ms;
@@ -189,6 +189,8 @@ button:disabled {
   width: var(--control-h-header);
   height: var(--control-h-header);
   flex: 0 0 var(--control-h-header);
+  /* the inset bottom shadow eats 3px of the visible face: offset the icon to match */
+  padding-bottom: 3px;
   place-items: center;
   border: 2px solid var(--line);
   border-radius: 3px;
@@ -199,8 +201,8 @@ button:disabled {
 }
 
 .settings-icon-button svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   fill: currentColor;
 }
 
@@ -1158,12 +1160,12 @@ legend {
     --control-h-header: 40px;
     --title-sub: 18px;
     --title-screen: 22px;
-    --stack-gap: 10px;
-    --action-gap: 7px;
+    --stack-gap: clamp(8px, 4.4dvh, 26px);
+    --action-gap: clamp(5px, 1.6dvh, 11px);
     --option-gap: 5px;
   }
   .app-shell { --shell-pad: 4px; }
-  .app-shell:not(.app-shell-gameplay) .game-panel { padding: 9px; }
+  .app-shell:not(.app-shell-gameplay) .game-panel { padding: clamp(7px, 1.9dvh, 15px); }
   .game-panel {
     padding: 6px;
     border-radius: 5px;
@@ -1176,7 +1178,7 @@ legend {
   .eyebrow { font-size: 14px; }
   h1 { font-size: clamp(25px, 7.4vw, 30px); }
 
-  fieldset { padding: 9px 9px 9px; }
+  fieldset { padding: clamp(7px, 1.7dvh, 13px) 9px 9px; }
   .choice-row button,
   .ranking-tabs button { padding: 3px; }
   .player-setting { padding-block: 3px; }
@@ -1220,6 +1222,19 @@ legend {
   .ranking-table th { font-size: 14px; }
   .ranking-table th,
   .ranking-table td { height: 28px; padding: 2px 4px; }
+}
+
+@media (max-height: 400px) {
+  :root {
+    --stack-gap: clamp(6px, 2.6dvh, 11px);
+    --action-gap: 5px;
+    --option-gap: 4px;
+  }
+  .app-shell:not(.app-shell-gameplay) .game-panel { padding: 6px; }
+  fieldset { padding: 6px 7px 7px; }
+  .settings-screen-header,
+  .game-header,
+  .ranking-header { padding-bottom: 5px; }
 }
 
 @media (max-width: 350px) and (max-height: 600px) {

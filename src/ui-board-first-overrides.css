@@ -10,14 +10,14 @@
   min-height: var(--control-h-header);
   gap: 2px;
   padding: 2px;
-  border: 1px solid var(--line-soft, #333955);
+  border: 2px solid var(--line, #4e5576);
   border-radius: 3px;
-  background: #121526;
+  background: #1b1f33;
   white-space: nowrap;
 }
 
 .language-toggle button {
-  min-height: calc(var(--control-h-header) - 6px);
+  min-height: calc(var(--control-h-header) - 8px);
   padding: 2px 7px;
   border: 1px solid transparent;
   border-radius: 2px;
