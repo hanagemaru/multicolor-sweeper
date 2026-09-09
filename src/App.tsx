@@ -34,12 +34,14 @@ import {
 } from "./game/rules";
 import type { Board, ColorCount, FlagColor, MineCount } from "./game/types";
 import {
+  HUB_PRIVACY_PATH,
   bombCountLabel,
   colorCountLabel,
   difficultyLabel,
   flagLabel,
   flagsRemainingLabel,
   getCopy,
+  hubUrl,
   persistLanguage,
   readInitialLanguage,
   type Language
@@ -758,7 +760,7 @@ export default function App(): React.JSX.Element {
               <span><small>{copy.player}</small>{mixedUiText(playerName || copy.notSet)}</span>
               <button type="button" onClick={() => openNameEditor("profile")}>{buttonUiText(playerName ? copy.changeName : copy.setName)}</button>
             </div>
-            <a className="settings-link" href="https://hanage.app/privacy/" target="_blank" rel="noopener noreferrer">
+            <a className="settings-link" href={hubUrl(language, HUB_PRIVACY_PATH)} target="_blank" rel="noopener noreferrer">
               <span>{buttonUiText(copy.privacyPolicy)}</span>
               <small>{copy.opensNewTab}</small>
             </a>

@@ -175,6 +175,18 @@ export function persistLanguage(language: Language): void {
 
 export function getCopy(language: Language) { return COPY[language]; }
 
+const HUB_ORIGIN = "https://hanage.app";
+
+/**
+ * ハブ（hanage.app）のページURL。**言語からパスを組み立てるのはここだけ。**
+ * 日本語は接頭辞なし、英語は `/en/` 配下。ハブ側の `src/lib/i18n.ts` の規則に合わせる。
+ */
+export function hubUrl(language: Language, path: string): string {
+  return `${HUB_ORIGIN}${language === "en" ? "/en" : ""}${path}`;
+}
+
+export const HUB_PRIVACY_PATH = "/privacy/";
+
 export function difficultyLabel(language: Language, difficulty: "easy" | "normal" | "hard"): string {
   return COPY[language].difficulties[difficulty];
 }
