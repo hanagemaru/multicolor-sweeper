@@ -54,6 +54,16 @@ jobs:
             echo "[$preview_url/]($preview_url/)"
             echo
             echo "[$preview_url/?effects-lab=1]($preview_url/?effects-lab=1)"
+            echo
+            echo "### Ranking QA"
+            echo
+            echo "[Rank 1]($preview_url/?ranking-test=1)"
+            echo
+            echo "[Rank 11]($preview_url/?ranking-test=11)"
+            echo
+            echo "[Rank 12]($preview_url/?ranking-test=12)"
+            echo
+            echo "[Rank 127]($preview_url/?ranking-test=127)"
           } >> "$GITHUB_STEP_SUMMARY"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
