@@ -9,8 +9,8 @@ function readArg(name, fallback) {
 }
 
 const seed = readArg("seed", `hanage-social-${new Date().toISOString().slice(0, 10)}`);
-const durationMs = Math.max(4000, Number(readArg("duration", "14000")) || 14000);
-const speedMs = Math.max(70, Number(readArg("speed", "150")) || 150);
+const targetGameplayMs = Math.max(16000, Number(readArg("target", "22000")) || 22000);
+const durationMs = Math.max(targetGameplayMs + 7000, Number(readArg("duration", "32000")) || 32000);
 const output = path.resolve(readArg("output", `social-output/multicolor-sweeper-${Date.now()}.webm`));
 const port = Number(readArg("port", "4173")) || 4173;
 const baseUrl = `http://127.0.0.1:${port}`;
@@ -37,7 +37,7 @@ try {
   await vite.listen();
   browser = await chromium.launch({ headless: true });
 
-  const demoUrl = `${baseUrl}/?social-demo=1&seed=${encodeURIComponent(seed)}&speed=${speedMs}`;
+  const demoUrl = `${baseUrl}/?social-demo=1&seed=${encodeURIComponent(seed)}&target=${targetGameplayMs}`;
 
   // Warm the Vite modules and deterministic board generation before recording.
   const warmContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
