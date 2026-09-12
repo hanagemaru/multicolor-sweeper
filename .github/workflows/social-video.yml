@@ -25,6 +25,8 @@ jobs:
       - run: npm ci --no-audit
       - run: npm install --no-save playwright
       - run: npx playwright install --with-deps chromium
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npm run social:record -- --output social-output/multicolor-sweeper.webm
       - name: Convert social video to MP4
         run: |
