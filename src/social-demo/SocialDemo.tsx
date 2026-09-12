@@ -81,14 +81,18 @@ export default function SocialDemo(): React.JSX.Element {
   const [board, setBoard] = useState<Board>(() => cloneBoard(demo.board));
   const [actionIndex, setActionIndex] = useState(0);
   const [elapsedTenths, setElapsedTenths] = useState(0);
+  const [showClear, setShowClear] = useState(false);
+  const [captureComplete, setCaptureComplete] = useState(false);
   const startedRef = useRef(performance.now());
+  const solved = actionIndex >= demo.actions.length;
 
   useEffect(() => {
+    if (solved) return;
     const interval = window.setInterval(() => {
       setElapsedTenths(Math.floor((performance.now() - startedRef.current) / 100));
     }, 100);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [solved]);
 
   useEffect(() => {
     if (actionIndex >= demo.actions.length) return;
@@ -113,14 +117,23 @@ export default function SocialDemo(): React.JSX.Element {
     return () => window.clearTimeout(timer);
   }, [actionIndex, demo.actions, speedMs]);
 
+  useEffect(() => {
+    if (!solved) return;
+    const clearTimer = window.setTimeout(() => setShowClear(true), 780);
+    const completeTimer = window.setTimeout(() => setCaptureComplete(true), 2400);
+    return () => {
+      window.clearTimeout(clearTimer);
+      window.clearTimeout(completeTimer);
+    };
+  }, [solved]);
+
   const seconds = (elapsedTenths / 10).toFixed(1);
-  const complete = actionIndex >= demo.actions.length;
 
   return (
     <main
       className="social-demo-root"
       data-social-demo="ready"
-      data-social-demo-complete={complete ? "true" : "false"}
+      data-social-demo-complete={captureComplete ? "true" : "false"}
       data-social-demo-attempts={demo.attempts}
     >
       <section className="social-demo-stage">
@@ -138,9 +151,16 @@ export default function SocialDemo(): React.JSX.Element {
             interactive={false}
             review={false}
             awaitingFirst={false}
+            outcomeEffect={solved ? { id: 1, type: "clear", variant: "wave" } : null}
             onOpen={() => {}}
             onFlag={() => {}}
           />
+          {showClear ? (
+            <div className="social-demo-clear" aria-label="Clear">
+              <strong>CLEAR!</strong>
+              <span>{seconds}s</span>
+            </div>
+          ) : null}
         </div>
         <footer className="social-demo-footer">
           <span>NO-GUESS SOLVER PLAYBACK</span>
