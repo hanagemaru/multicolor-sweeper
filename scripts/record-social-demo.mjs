@@ -14,6 +14,7 @@ const durationMs = Math.max(targetGameplayMs + 7000, Number(readArg("duration", 
 const output = path.resolve(readArg("output", `social-output/multicolor-sweeper-${Date.now()}.webm`));
 const port = Number(readArg("port", "4173")) || 4173;
 const baseUrl = `http://127.0.0.1:${port}`;
+const captureSize = { width: 390, height: 640 };
 
 let chromium;
 try {
@@ -40,7 +41,7 @@ try {
   const demoUrl = `${baseUrl}/?social-demo=1&seed=${encodeURIComponent(seed)}&target=${targetGameplayMs}`;
 
   // Warm the Vite modules and deterministic board generation before recording.
-  const warmContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const warmContext = await browser.newContext({ viewport: captureSize });
   const warmPage = await warmContext.newPage();
   await warmPage.goto(demoUrl, { waitUntil: "networkidle" });
   await warmPage.locator('[data-social-demo="ready"]').waitFor();
@@ -48,10 +49,10 @@ try {
 
   await mkdir(path.dirname(output), { recursive: true });
   const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
+    viewport: captureSize,
     recordVideo: {
       dir: path.dirname(output),
-      size: { width: 390, height: 844 }
+      size: captureSize
     }
   });
   const page = await context.newPage();
