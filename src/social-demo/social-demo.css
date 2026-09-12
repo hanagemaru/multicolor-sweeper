@@ -8,10 +8,11 @@
 }
 
 .social-demo-stage {
-  width: min(92vw, 520px);
+  width: 100%;
+  max-width: 390px;
   display: grid;
   gap: 14px;
-  padding: 20px 14px 18px;
+  padding: 20px 18px 18px;
   box-sizing: border-box;
 }
 
@@ -45,12 +46,45 @@
 }
 
 .social-demo-board-wrap {
+  position: relative;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .social-demo-board-wrap .board {
-  width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
   aspect-ratio: 1;
+  box-sizing: border-box;
+}
+
+.social-demo-board-wrap .cell {
+  min-width: 0;
+}
+
+.social-demo-clear {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  pointer-events: none;
+  font-family: "VT323", monospace;
+  color: #fff;
+  text-shadow: 0 3px 0 #111, 2px 0 0 #111, -2px 0 0 #111;
+  animation: social-clear-in 180ms ease-out both;
+}
+
+.social-demo-clear strong {
+  font-size: 72px;
+  line-height: 0.85;
+  letter-spacing: 0.04em;
+}
+
+.social-demo-clear span {
+  margin-top: 10px;
+  font-size: 34px;
 }
 
 .social-demo-footer {
@@ -58,9 +92,20 @@
   opacity: 0.9;
 }
 
+@keyframes social-clear-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (max-height: 700px) {
   .social-demo-stage {
-    width: min(78vh, 92vw);
+    width: min(78vh, 100%);
     gap: 8px;
     padding-top: 10px;
     padding-bottom: 10px;
