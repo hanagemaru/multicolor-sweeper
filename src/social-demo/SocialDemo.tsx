@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GameBoard } from "../components/GameBoard";
-import { cloneBoard, revealCell, setFlag } from "../game/game-core";
-import { generateNoGuess } from "../game/no-guess-generator";
-import type { Board, Coordinate, FlagColor, GenerateSuccess, TraceStep } from "../game/types";
+import { cloneBoard, generateBoard, revealCell, setFlag } from "../game/game-core";
+import { solveBoard } from "../game/solver";
+import type { Board, Coordinate, FlagColor, TraceStep } from "../game/types";
 import "./social-demo.css";
 
 type DemoAction =
@@ -15,10 +15,6 @@ const COLOR_BY_NAME: Record<string, FlagColor | undefined> = {
   green: 2,
   yellow: 3
 };
-
-function isSuccess(result: ReturnType<typeof generateNoGuess>): result is GenerateSuccess {
-  return !("failed" in result);
-}
 
 function buildActions(trace: TraceStep[]): DemoAction[] {
   const actions: DemoAction[] = [];
@@ -55,20 +51,26 @@ function buildActions(trace: TraceStep[]): DemoAction[] {
 }
 
 function createDemo(seed: string): { board: Board; actions: DemoAction[]; attempts: number } {
-  const generated = generateNoGuess({
-    baseSeed: seed,
-    mineCount: 20,
-    firstRow: 4,
-    firstCol: 4,
-    includeTrace: true
-  });
-  if (!isSuccess(generated)) throw new Error("Could not generate a no-guess social demo board");
-  const trace = generated.results.three.trace ?? [];
-  return {
-    board: cloneBoard(generated.board3),
-    actions: buildActions(trace),
-    attempts: generated.attempts
-  };
+  // Social capture only needs one real 3-color no-guess board. Searching the
+  // production C-filter also solves 4-color and mono variants and can be slow
+  // enough to make a recording workflow hang, so keep capture generation lean.
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    const board = generateBoard({
+      seed: `${seed}|social-attempt:${attempt}`,
+      mineCount: 20,
+      colorCount: 3,
+      firstRow: 4,
+      firstCol: 4
+    });
+    const result = solveBoard(board, { includeTrace: true });
+    if (!result.noGuess) continue;
+    return {
+      board: cloneBoard(board),
+      actions: buildActions(result.trace ?? []),
+      attempts: attempt + 1
+    };
+  }
+  throw new Error("Could not generate a 3-color no-guess social demo board");
 }
 
 export default function SocialDemo(): React.JSX.Element {
