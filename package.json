@@ -13,6 +13,7 @@
     "typecheck": "tsc -b --pretty false",
     "icons": "node scripts/generate-icons.mjs",
     "social:record": "node scripts/record-social-demo.mjs",
+    "social:post": "node scripts/generate-social-post.mjs",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
