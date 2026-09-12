@@ -1,0 +1,48 @@
+name: Social Video
+
+on:
+  pull_request:
+    paths:
+      - "src/social-demo/**"
+      - "src/components/GameBoard.tsx"
+      - "src/game/**"
+      - "scripts/record-social-demo.mjs"
+      - "scripts/generate-social-post.mjs"
+      - "package.json"
+      - ".github/workflows/social-video.yml"
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: npm run social:record -- --output social-output/multicolor-sweeper.webm
+      - name: Convert social video to MP4
+        run: |
+          ffmpeg -y \
+            -i social-output/multicolor-sweeper.webm \
+            -c:v libx264 \
+            -pix_fmt yuv420p \
+            -movflags +faststart \
+            -an \
+            social-output/multicolor-sweeper.mp4
+      - run: npm run social:post -- --output social-output/post.txt --variant ${{ github.event.pull_request.number || github.run_number }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: multicolor-sweeper-social-package
+          path: |
+            social-output/multicolor-sweeper.mp4
+            social-output/post.txt
+          if-no-files-found: error
+          retention-days: 7
