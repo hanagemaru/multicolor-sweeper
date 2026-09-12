@@ -11,8 +11,8 @@
   width: 100%;
   max-width: 390px;
   display: grid;
-  gap: 14px;
-  padding: 20px 18px 18px;
+  gap: 10px;
+  padding: 10px 8px 8px;
   box-sizing: border-box;
 }
 
@@ -21,7 +21,7 @@
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   color: #f2f2f2;
   font-family: "VT323", monospace;
   letter-spacing: 0.04em;
@@ -88,8 +88,27 @@
 }
 
 .social-demo-footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
+  gap: 8px;
   opacity: 0.9;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.social-demo-footer span:first-child {
+  display: none;
+}
+
+.social-demo-footer::before {
+  content: "TAP = OPEN   SWIPE ↖ RED  ↗ BLUE  ↙ GREEN";
+  white-space: nowrap;
+}
+
+.social-demo-footer span:last-child {
+  font-size: 20px;
+  white-space: nowrap;
 }
 
 @keyframes social-clear-in {
@@ -105,9 +124,8 @@
 
 @media (max-height: 700px) {
   .social-demo-stage {
-    width: min(78vh, 100%);
     gap: 8px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 8px;
+    padding-bottom: 6px;
   }
 }
