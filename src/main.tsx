@@ -4,6 +4,9 @@ import "@fontsource/vt323/400.css";
 import App from "./App";
 import "./styles.css";
 import "./ui-board-first-overrides.css";
+import { installWebAnalytics } from "./web-analytics";
+
+installWebAnalytics();
 
 const EffectsLab = lazy(() => import("./effects-lab/EffectsLab"));
 const showEffectsLab = new URLSearchParams(window.location.search).has("effects-lab");
