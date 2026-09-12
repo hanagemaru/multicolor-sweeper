@@ -7,6 +7,7 @@ on:
       - "src/components/GameBoard.tsx"
       - "src/game/**"
       - "scripts/record-social-demo.mjs"
+      - "scripts/generate-social-post.mjs"
       - "package.json"
       - ".github/workflows/social-video.yml"
   workflow_dispatch:
@@ -14,6 +15,7 @@ on:
 jobs:
   record:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,9 +26,12 @@ jobs:
       - run: npm install --no-save playwright
       - run: npx playwright install --with-deps chromium
       - run: npm run social:record -- --output social-output/multicolor-sweeper.webm
+      - run: npm run social:post -- --output social-output/post.txt --variant ${{ github.event.pull_request.number || github.run_number }}
       - uses: actions/upload-artifact@v4
         with:
-          name: multicolor-sweeper-social-video
-          path: social-output/multicolor-sweeper.webm
+          name: multicolor-sweeper-social-package
+          path: |
+            social-output/multicolor-sweeper.webm
+            social-output/post.txt
           if-no-files-found: error
           retention-days: 7
