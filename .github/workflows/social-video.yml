@@ -26,12 +26,21 @@ jobs:
       - run: npm install --no-save playwright
       - run: npx playwright install --with-deps chromium
       - run: npm run social:record -- --output social-output/multicolor-sweeper.webm
+      - name: Convert social video to MP4
+        run: |
+          ffmpeg -y \
+            -i social-output/multicolor-sweeper.webm \
+            -c:v libx264 \
+            -pix_fmt yuv420p \
+            -movflags +faststart \
+            -an \
+            social-output/multicolor-sweeper.mp4
       - run: npm run social:post -- --output social-output/post.txt --variant ${{ github.event.pull_request.number || github.run_number }}
       - uses: actions/upload-artifact@v4
         with:
           name: multicolor-sweeper-social-package
           path: |
-            social-output/multicolor-sweeper.webm
+            social-output/multicolor-sweeper.mp4
             social-output/post.txt
           if-no-files-found: error
           retention-days: 7
