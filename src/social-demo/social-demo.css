@@ -91,9 +91,9 @@
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   opacity: 0.9;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
 }
 
@@ -102,12 +102,12 @@
 }
 
 .social-demo-footer::before {
-  content: "TAP = OPEN   SWIPE ↖ RED  ↗ BLUE  ↙ GREEN";
+  content: "TAP OPEN · SWIPE ↖RED ↗BLUE ↙GREEN";
   white-space: nowrap;
 }
 
 .social-demo-footer span:last-child {
-  font-size: 20px;
+  font-size: 18px;
   white-space: nowrap;
 }
 
