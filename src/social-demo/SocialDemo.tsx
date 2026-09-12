@@ -90,8 +90,13 @@ export default function SocialDemo(): React.JSX.Element {
 
   useEffect(() => {
     if (actionIndex >= demo.actions.length) return;
+    const action = demo.actions[actionIndex];
+    const delay = actionIndex === 0
+      ? 700
+      : action.type === "flag"
+        ? Math.max(90, speedMs - 30)
+        : speedMs;
     const timer = window.setTimeout(() => {
-      const action = demo.actions[actionIndex];
       setBoard((current) => {
         const next = cloneBoard(current);
         if (action.type === "open") {
@@ -102,7 +107,7 @@ export default function SocialDemo(): React.JSX.Element {
         return next;
       });
       setActionIndex((current) => current + 1);
-    }, actionIndex === 0 ? 700 : action.type === "flag" ? Math.max(90, speedMs - 30) : speedMs);
+    }, delay);
     return () => window.clearTimeout(timer);
   }, [actionIndex, demo.actions, speedMs]);
 
