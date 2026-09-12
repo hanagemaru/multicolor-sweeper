@@ -1,8 +1,8 @@
 type BgmTrack = "title" | "game" | "result";
 type BgmTimbre = "sine" | "organ" | "triangle";
 
-const BGM_FILTER_HZ = 4200;
-const BGM_BUS_GAIN = 0.82;
+const BGM_FILTER_HZ = 9500;
+const BGM_BUS_GAIN = 1.18;
 const BGM_FADE_IN_MS = 140;
 const BGM_FADE_OUT_MS = 70;
 const LOOP_LOOKAHEAD_SECONDS = 0.35;
@@ -114,7 +114,7 @@ export class GameBgm {
     const filter = context.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.setValueAtTime(BGM_FILTER_HZ, context.currentTime);
-    filter.Q.setValueAtTime(0.7, context.currentTime);
+    filter.Q.setValueAtTime(0.55, context.currentTime);
 
     const trackGain = context.createGain();
     trackGain.gain.setValueAtTime(0.0001, context.currentTime);
@@ -206,11 +206,11 @@ export class GameBgm {
 
     roots.forEach((root, bar) => {
       const base = start + bar * 4 * beat;
-      this.playBgmNote(context, destination, base, 0.34, root, 0.026, "organ", 0.014, 0.075);
+      this.playBgmNote(context, destination, base, 0.34, root, 0.026, "organ", 0.009, 0.055);
       this.playBgmNote(context, destination, base + 2 * beat, 0.28, root + 7, 0.02, "sine");
       motifs[bar].forEach((note, index) => {
         if (note === null) return;
-        this.playBgmNote(context, destination, base + index * beat / 2, 0.14, note, 0.013, "organ", 0.006, 0.045);
+        this.playBgmNote(context, destination, base + index * beat / 2, 0.14, note, 0.013, "organ", 0.0035, 0.028);
       });
     });
   }
@@ -235,14 +235,14 @@ export class GameBgm {
       });
       patterns[bar].forEach((note, index) => {
         if (note === null) return;
-        this.playBgmNote(context, destination, base + index * beat / 2, 0.12, note, 0.011, "organ", 0.006, 0.04);
+        this.playBgmNote(context, destination, base + index * beat / 2, 0.12, note, 0.011, "organ", 0.0035, 0.025);
       });
     });
 
     [
       [1, 67], [4.5, 69], [8, 67], [11.5, 72], [15, 69]
     ].forEach(([offset, note]) => {
-      this.playBgmNote(context, destination, start + offset * beat, 0.24, note, 0.016, "sine", 0.015, 0.09);
+      this.playBgmNote(context, destination, start + offset * beat, 0.24, note, 0.016, "triangle", 0.006, 0.05);
     });
   }
 
@@ -256,8 +256,8 @@ export class GameBgm {
 
     roots.forEach((root, bar) => {
       const base = start + 0.9 + bar * 4 * beat;
-      this.playBgmNote(context, destination, base, 1.1, root, 0.023, "organ", 0.014, 0.08);
-      this.playBgmNote(context, destination, base + 0.2, 0.75, root + 7, 0.014, "sine");
+      this.playBgmNote(context, destination, base, 1.1, root, 0.023, "organ", 0.009, 0.06);
+      this.playBgmNote(context, destination, base + 0.2, 0.75, root + 7, 0.014, "triangle", 0.008, 0.055);
       this.playBgmNote(context, destination, base + beat, 0.16, root + 12, 0.009, "triangle");
       this.playBgmNote(context, destination, base + 3 * beat, 0.16, root + 14, 0.009, "triangle");
     });
@@ -276,9 +276,10 @@ export class GameBgm {
   ): void {
     const frequency = midiToFrequency(midi);
     const harmonics = timbre === "organ"
-      ? [[1, 0.68], [2, 0.24], [3, 0.12], [4, 0.05]] as const
+      ? [[1, 0.6], [2, 0.28], [3, 0.18], [4, 0.1], [5, 0.05]] as const
       : [[1, 1]] as const;
     const oscillatorType: OscillatorType = timbre === "triangle" ? "triangle" : "sine";
+    const sustainRatio = timbre === "organ" ? 0.56 : 0.64;
 
     harmonics.forEach(([multiple, weight]) => {
       const oscillator = context.createOscillator();
@@ -286,11 +287,11 @@ export class GameBgm {
       oscillator.type = oscillatorType;
       oscillator.frequency.setValueAtTime(frequency * multiple, start);
       const peak = Math.max(volume * weight, 0.0002);
-      const sustain = Math.max(peak * 0.66, 0.0001);
+      const sustain = Math.max(peak * sustainRatio, 0.0001);
       const releaseStart = Math.max(start + attack + 0.01, start + duration - release);
       gain.gain.setValueAtTime(0.0001, start);
       gain.gain.exponentialRampToValueAtTime(peak, start + attack);
-      gain.gain.exponentialRampToValueAtTime(sustain, Math.min(releaseStart, start + attack + 0.04));
+      gain.gain.exponentialRampToValueAtTime(sustain, Math.min(releaseStart, start + attack + 0.03));
       gain.gain.setValueAtTime(sustain, releaseStart);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
       oscillator.connect(gain).connect(destination);

@@ -14,20 +14,33 @@ const MASTER_VOLUME = 1.8;
 export class GameAudio {
   private context: AudioContext | null = null;
   private readonly bgm = new GameBgm();
+  private startupUnlockCleanup: (() => void) | null = null;
+
+  constructor() {
+    this.installStartupUnlock();
+    // Start immediately on browsers/environments that permit audible autoplay.
+    // Where autoplay is blocked, the first pointer/touch/key interaction resumes it instead.
+    this.unlock();
+  }
 
   unlock(): void {
     const context = this.getContext();
     if (!context) return;
     if (context.state === "suspended") {
       void context.resume()
-        .then(() => this.bgm.onUnlock(context))
+        .then(() => {
+          this.bgm.onUnlock(context);
+          if (context.state === "running") this.clearStartupUnlock();
+        })
         .catch(() => {});
       return;
     }
     this.bgm.onUnlock(context);
+    if (context.state === "running") this.clearStartupUnlock();
   }
 
   dispose(): void {
+    this.clearStartupUnlock();
     this.bgm.dispose();
     if (this.context) void this.context.close();
     this.context = null;
@@ -162,6 +175,24 @@ export class GameAudio {
     }
     this.playTone(context, start, 440, 0.03, 0.017, "square");
     this.playTone(context, start + 0.004, 880, 0.022, 0.006, "triangle");
+  }
+
+  private installStartupUnlock(): void {
+    if (typeof document === "undefined" || this.startupUnlockCleanup) return;
+    const handleFirstInteraction = (): void => this.unlock();
+    document.addEventListener("pointerdown", handleFirstInteraction, true);
+    document.addEventListener("touchstart", handleFirstInteraction, { capture: true, passive: true });
+    document.addEventListener("keydown", handleFirstInteraction, true);
+    this.startupUnlockCleanup = () => {
+      document.removeEventListener("pointerdown", handleFirstInteraction, true);
+      document.removeEventListener("touchstart", handleFirstInteraction, true);
+      document.removeEventListener("keydown", handleFirstInteraction, true);
+    };
+  }
+
+  private clearStartupUnlock(): void {
+    this.startupUnlockCleanup?.();
+    this.startupUnlockCleanup = null;
   }
 
   private getContext(): AudioContext | null {
