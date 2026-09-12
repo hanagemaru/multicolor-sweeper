@@ -8,6 +8,8 @@ import type { UiSoundKind } from "./ui-sound";
 
 type BrowserWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
+const MASTER_VOLUME = 1.8;
+
 export class GameAudio {
   private context: AudioContext | null = null;
 
@@ -172,7 +174,7 @@ export class GameAudio {
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, start);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(volume, start + 0.006);
+    gain.gain.exponentialRampToValueAtTime(Math.min(volume * MASTER_VOLUME, 1), start + 0.006);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain).connect(context.destination);
     oscillator.start(start);
@@ -195,6 +197,7 @@ export class GameAudio {
 
   private playBoom(context: AudioContext, start: number, volume: number): void {
     this.playSweep(context, start, 130, 48, 0.24, volume, "triangle");
+    this.playSweep(context, start + 0.006, 260, 150, 0.16, volume * 0.24, "triangle");
     this.playTone(context, start + 0.028, 72, 0.11, volume * 0.35, "square");
   }
 
@@ -213,7 +216,7 @@ export class GameAudio {
     oscillator.frequency.setValueAtTime(from, start);
     oscillator.frequency.exponentialRampToValueAtTime(to, start + duration);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(volume, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(Math.min(volume * MASTER_VOLUME, 1), start + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain).connect(context.destination);
     oscillator.start(start);
