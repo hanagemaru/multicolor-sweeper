@@ -1,8 +1,8 @@
 type BgmTrack = "title" | "game" | "result";
 type BgmTimbre = "sine" | "organ" | "triangle";
 
-const BGM_FILTER_HZ = 2100;
-const BGM_BUS_GAIN = 0.62;
+const BGM_FILTER_HZ = 4200;
+const BGM_BUS_GAIN = 0.82;
 const BGM_FADE_IN_MS = 140;
 const BGM_FADE_OUT_MS = 70;
 const LOOP_LOOKAHEAD_SECONDS = 0.35;
@@ -206,11 +206,11 @@ export class GameBgm {
 
     roots.forEach((root, bar) => {
       const base = start + bar * 4 * beat;
-      this.playBgmNote(context, destination, base, 0.34, root, 0.026, "organ", 0.018, 0.1);
+      this.playBgmNote(context, destination, base, 0.34, root, 0.026, "organ", 0.014, 0.075);
       this.playBgmNote(context, destination, base + 2 * beat, 0.28, root + 7, 0.02, "sine");
       motifs[bar].forEach((note, index) => {
         if (note === null) return;
-        this.playBgmNote(context, destination, base + index * beat / 2, 0.14, note, 0.013, "organ", 0.012, 0.07);
+        this.playBgmNote(context, destination, base + index * beat / 2, 0.14, note, 0.013, "organ", 0.006, 0.045);
       });
     });
   }
@@ -235,7 +235,7 @@ export class GameBgm {
       });
       patterns[bar].forEach((note, index) => {
         if (note === null) return;
-        this.playBgmNote(context, destination, base + index * beat / 2, 0.12, note, 0.011, "organ", 0.012, 0.065);
+        this.playBgmNote(context, destination, base + index * beat / 2, 0.12, note, 0.011, "organ", 0.006, 0.04);
       });
     });
 
@@ -256,7 +256,7 @@ export class GameBgm {
 
     roots.forEach((root, bar) => {
       const base = start + 0.9 + bar * 4 * beat;
-      this.playBgmNote(context, destination, base, 1.1, root, 0.023, "organ", 0.02, 0.12);
+      this.playBgmNote(context, destination, base, 1.1, root, 0.023, "organ", 0.014, 0.08);
       this.playBgmNote(context, destination, base + 0.2, 0.75, root + 7, 0.014, "sine");
       this.playBgmNote(context, destination, base + beat, 0.16, root + 12, 0.009, "triangle");
       this.playBgmNote(context, destination, base + 3 * beat, 0.16, root + 14, 0.009, "triangle");
@@ -276,7 +276,7 @@ export class GameBgm {
   ): void {
     const frequency = midiToFrequency(midi);
     const harmonics = timbre === "organ"
-      ? [[1, 0.72], [2, 0.2], [3, 0.08]] as const
+      ? [[1, 0.68], [2, 0.24], [3, 0.12], [4, 0.05]] as const
       : [[1, 1]] as const;
     const oscillatorType: OscillatorType = timbre === "triangle" ? "triangle" : "sine";
 
