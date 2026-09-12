@@ -73,11 +73,55 @@ function createDemo(seed: string): { board: Board; actions: DemoAction[]; attemp
   throw new Error("Could not generate a 3-color no-guess social demo board");
 }
 
+function hashSeed(seed: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function makeRandom(seed: string): () => number {
+  let state = hashSeed(seed) || 1;
+  return () => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+    return (state >>> 0) / 4294967296;
+  };
+}
+
+function buildActionDelays(actions: DemoAction[], seed: string, targetGameplayMs: number): number[] {
+  if (actions.length === 0) return [];
+  if (actions.length === 1) return [900];
+
+  const random = makeRandom(`${seed}|pacing`);
+  const firstDelay = 900;
+  const weights = actions.slice(1).map((action) => {
+    let weight = (action.type === "flag" ? 0.86 : 1) * (0.72 + random() * 0.62);
+    // Occasionally leave a noticeably longer pause to make the solver feel like
+    // it is considering the next move rather than playing back at a fixed rate.
+    if (random() < 0.14) weight += 1.25 + random() * 1.35;
+    return weight;
+  });
+  const weightTotal = weights.reduce((sum, weight) => sum + weight, 0);
+  const remainingMs = Math.max(actions.length * 140, targetGameplayMs - firstDelay);
+  return [
+    firstDelay,
+    ...weights.map((weight) => Math.max(140, Math.round((remainingMs * weight) / weightTotal)))
+  ];
+}
+
 export default function SocialDemo(): React.JSX.Element {
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
   const seed = params.get("seed") ?? "hanage-social-demo-v1";
-  const speedMs = Math.max(70, Number(params.get("speed")) || 150);
+  const targetGameplayMs = Math.max(16000, Number(params.get("target")) || 22000);
   const demo = useMemo(() => createDemo(seed), [seed]);
+  const actionDelays = useMemo(
+    () => buildActionDelays(demo.actions, seed, targetGameplayMs),
+    [demo.actions, seed, targetGameplayMs]
+  );
   const [board, setBoard] = useState<Board>(() => cloneBoard(demo.board));
   const [actionIndex, setActionIndex] = useState(0);
   const [elapsedTenths, setElapsedTenths] = useState(0);
@@ -97,11 +141,7 @@ export default function SocialDemo(): React.JSX.Element {
   useEffect(() => {
     if (actionIndex >= demo.actions.length) return;
     const action = demo.actions[actionIndex];
-    const delay = actionIndex === 0
-      ? 700
-      : action.type === "flag"
-        ? Math.max(90, speedMs - 30)
-        : speedMs;
+    const delay = actionDelays[actionIndex] ?? 250;
     const timer = window.setTimeout(() => {
       setBoard((current) => {
         const next = cloneBoard(current);
@@ -115,7 +155,7 @@ export default function SocialDemo(): React.JSX.Element {
       setActionIndex((current) => current + 1);
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [actionIndex, demo.actions, speedMs]);
+  }, [actionDelays, actionIndex, demo.actions]);
 
   useEffect(() => {
     if (!solved) return;
