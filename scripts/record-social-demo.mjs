@@ -1,7 +1,7 @@
-import { spawn } from "node:child_process";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { createServer } from "vite";
 
 function readArg(name, fallback) {
   const index = process.argv.indexOf(`--${name}`);
@@ -15,20 +15,6 @@ const output = path.resolve(readArg("output", `social-output/multicolor-sweeper-
 const port = Number(readArg("port", "4173")) || 4173;
 const baseUrl = `http://127.0.0.1:${port}`;
 
-async function waitForServer(url, timeoutMs = 20000) {
-  const started = Date.now();
-  while (Date.now() - started < timeoutMs) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) return;
-    } catch {
-      // Vite is still starting.
-    }
-    await new Promise((resolve) => setTimeout(resolve, 200));
-  }
-  throw new Error(`Timed out waiting for ${url}`);
-}
-
 let chromium;
 try {
   ({ chromium } = await import("playwright"));
@@ -38,19 +24,17 @@ try {
   process.exit(1);
 }
 
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-const server = spawn(
-  npmCommand,
-  ["run", "dev", "--", "--host", "127.0.0.1", "--port", String(port), "--strictPort"],
-  { stdio: ["ignore", "pipe", "pipe"] }
-);
-
-server.stdout.on("data", (chunk) => process.stdout.write(`[vite] ${chunk}`));
-server.stderr.on("data", (chunk) => process.stderr.write(`[vite] ${chunk}`));
+const vite = await createServer({
+  server: {
+    host: "127.0.0.1",
+    port,
+    strictPort: true
+  }
+});
 
 let browser;
 try {
-  await waitForServer(baseUrl);
+  await vite.listen();
   browser = await chromium.launch({ headless: true });
 
   const demoUrl = `${baseUrl}/?social-demo=1&seed=${encodeURIComponent(seed)}&speed=${speedMs}`;
@@ -89,5 +73,5 @@ try {
   console.log(`Saved social video: ${output}`);
 } finally {
   if (browser) await browser.close();
-  server.kill();
+  await vite.close();
 }
