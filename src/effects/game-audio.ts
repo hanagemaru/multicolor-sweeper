@@ -1,3 +1,4 @@
+import { GameBgm } from "./game-bgm";
 import {
   EFFECT_TIMING,
   countedRevealPlan,
@@ -12,13 +13,22 @@ const MASTER_VOLUME = 1.8;
 
 export class GameAudio {
   private context: AudioContext | null = null;
+  private readonly bgm = new GameBgm();
 
   unlock(): void {
     const context = this.getContext();
-    if (context?.state === "suspended") void context.resume();
+    if (!context) return;
+    if (context.state === "suspended") {
+      void context.resume()
+        .then(() => this.bgm.onUnlock(context))
+        .catch(() => {});
+      return;
+    }
+    this.bgm.onUnlock(context);
   }
 
   dispose(): void {
+    this.bgm.dispose();
     if (this.context) void this.context.close();
     this.context = null;
   }
@@ -62,6 +72,7 @@ export class GameAudio {
   }
 
   playExplosion(variant: ExplosionEffectVariant = "pixel"): void {
+    this.bgm.onExplosion();
     const context = this.getContext();
     if (!context) return;
     const start = context.currentTime;
@@ -87,6 +98,7 @@ export class GameAudio {
   }
 
   playClear(variant: ClearEffectVariant = "wave", delayMs?: number): void {
+    this.bgm.onClear();
     const context = this.getContext();
     if (!context) return;
     const defaultDelayMs = variant === "wave" ? EFFECT_TIMING.clearJingleDelayMs : 100;
