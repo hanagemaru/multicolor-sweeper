@@ -1,8 +1,6 @@
 type BgmTrack = "title" | "game" | "result";
 type BgmTimbre = "sine" | "organ" | "triangle";
 
-type ContextProvider = () => AudioContext | null;
-
 const BGM_FILTER_HZ = 2100;
 const BGM_BUS_GAIN = 0.62;
 const BGM_FADE_IN_MS = 140;
@@ -20,6 +18,7 @@ function trackBpm(track: BgmTrack): number {
 }
 
 export class GameBgm {
+  private context: AudioContext | null = null;
   private desiredTrack: BgmTrack | null = null;
   private currentTrack: BgmTrack | null = null;
   private trackGain: GainNode | null = null;
@@ -30,7 +29,7 @@ export class GameBgm {
   private observer: MutationObserver | null = null;
   private outcomeHold = false;
 
-  constructor(private readonly getContext: ContextProvider) {
+  constructor() {
     if (typeof document !== "undefined" && typeof MutationObserver !== "undefined" && document.body) {
       this.observer = new MutationObserver(() => this.syncFromDom());
       this.observer.observe(document.body, {
@@ -44,6 +43,7 @@ export class GameBgm {
   }
 
   onUnlock(context: AudioContext): void {
+    this.context = context;
     this.syncFromDom();
     if (context.state === "running" && this.desiredTrack && this.currentTrack !== this.desiredTrack) {
       this.startTrack(context, this.desiredTrack);
@@ -58,7 +58,7 @@ export class GameBgm {
 
   onClear(): void {
     this.outcomeHold = true;
-    const context = this.getContext();
+    const context = this.context;
     const gain = this.trackGain;
     if (!context || !gain) return;
     const now = context.currentTime;
@@ -72,6 +72,7 @@ export class GameBgm {
     this.observer = null;
     this.desiredTrack = null;
     this.stopCurrent(0);
+    this.context = null;
   }
 
   private syncFromDom(): void {
@@ -99,7 +100,7 @@ export class GameBgm {
   private setTrack(track: BgmTrack): void {
     this.desiredTrack = track;
     if (this.currentTrack === track) return;
-    const context = this.getContext();
+    const context = this.context;
     if (!context || context.state !== "running") return;
     this.startTrack(context, track);
   }
@@ -134,7 +135,7 @@ export class GameBgm {
     }
     this.generation += 1;
 
-    const context = this.getContext();
+    const context = this.context;
     const gain = this.trackGain;
     const stopAt = context ? context.currentTime + fadeMs / 1000 : 0;
     if (context && gain) {
@@ -146,7 +147,8 @@ export class GameBgm {
 
     for (const source of this.sources) {
       try {
-        source.stop(context ? stopAt + 0.03 : undefined);
+        if (context) source.stop(stopAt + 0.03);
+        else source.stop();
       } catch {
         // Already stopped or never started; safe to ignore during a track change.
       }
