@@ -1,0 +1,32 @@
+name: Social Video
+
+on:
+  pull_request:
+    paths:
+      - "src/social-demo/**"
+      - "src/components/GameBoard.tsx"
+      - "src/game/**"
+      - "scripts/record-social-demo.mjs"
+      - "package.json"
+      - ".github/workflows/social-video.yml"
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - run: npm run social:record -- --output social-output/multicolor-sweeper.webm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: multicolor-sweeper-social-video
+          path: social-output/multicolor-sweeper.webm
+          if-no-files-found: error
+          retention-days: 7
