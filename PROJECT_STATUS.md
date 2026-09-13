@@ -1,6 +1,6 @@
 # Project Status
 
-最終更新: 2026-09-06
+最終更新: 2026-09-13
 
 ## 現在地
 
@@ -19,6 +19,10 @@
 - **PR #39でランキングを上位10位＋自分の前後3人表示へ拡張し、2026-09-06にmainへマージ済み**
 - 2026-09-05にCloudflare APIトークンをD1権限付きで作り直し、`CLOUDFLARE_API_TOKEN` を更新済み。GitHub ActionsのD1 migrationとdeployが成功することを確認（詳細は `DEPLOY.md`）
 - **2026-09-05に `mcsweeper.hanage.app` をMulticolor Sweeper Workerへ割り当て、iPhone Safariでゲームが正常に開くことを確認済み。hanage-hub PR #10でゲームリンクも正式URLへ切り替え済み**
+- PR #42でUIボタンの押下音、PR #43でアイコンを64グリッドで描き直し、PR #44でプライバシーポリシーのリンクをゲーム内の言語へ追従（英語は `/en/privacy/`）
+- **PR #46〜#49でBGMを実装済み。** トップ / プレイ中 / 結果で別アレンジを使い、外部アセットなしでWeb Audioから生成する。ブラウザが許すいちばん早い操作で鳴り始める
+- **PR #51でバックグラウンド復帰後に音が戻らない問題を修正済み**（iOS Safariの `interrupted` を含め、running以外は復帰させる。`src/effects/audio-context.ts`）。Puttでも同じ不具合を同じ日に直した
+- 音量調整・消音のUIは持たない
 
 ## Board First / 既存UI
 
@@ -174,6 +178,8 @@ Cloudflare Previewでも以下の実通信確認を自動実行し、成功済�
 
 1. iPhone / Android実機・アクセシビリティ最終QA
 2. 正式公開前にPWAインストール導線・アイコン・起動表示を実機確認する
+   （hanage.appの遊び方ページは2026-09-13から「ホーム画面に追加する」を公開文で案内している）
+3. BGMと効果音の音量バランスを実機で確認する。消音UIを持たないので、うるさい場合は既定値を下げる
 
 正式公開後の拡張候補: Effect Labに残してある未採用エフェクトのプリセット選択 / 視認性確認済みの盤面カラーテーマ。
 
