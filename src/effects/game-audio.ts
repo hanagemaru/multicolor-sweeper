@@ -1,3 +1,4 @@
+import { discardContext, isContextDead, resumeContext } from "./audio-context";
 import { GameBgm } from "./game-bgm";
 import {
   EFFECT_TIMING,
@@ -10,14 +11,20 @@ import type { UiSoundKind } from "./ui-sound";
 type BrowserWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
 const MASTER_VOLUME = 1.8;
+/** visibilitychange / pageshow / focus arrive together on return; collapse them into one pass. */
+const REVIVE_DEBOUNCE_MS = 80;
 
 export class GameAudio {
   private context: AudioContext | null = null;
   private readonly bgm = new GameBgm();
   private startupUnlockCleanup: (() => void) | null = null;
+  private lifecycleCleanup: (() => void) | null = null;
+  private reviveTimer: number | null = null;
+  private reviving = false;
 
   constructor() {
     this.installStartupUnlock();
+    this.installLifecycleRevive();
     // Start immediately on browsers/environments that permit audible autoplay.
     // Where autoplay is blocked, the first pointer/touch/key interaction resumes it instead.
     this.unlock();
@@ -26,21 +33,16 @@ export class GameAudio {
   unlock(): void {
     const context = this.getContext();
     if (!context) return;
-    if (context.state === "suspended") {
-      void context.resume()
-        .then(() => {
-          this.bgm.onUnlock(context);
-          if (context.state === "running") this.clearStartupUnlock();
-        })
-        .catch(() => {});
-      return;
-    }
-    this.bgm.onUnlock(context);
-    if (context.state === "running") this.clearStartupUnlock();
+    // Any non-running state is resumed here, including Safari's "interrupted".
+    void resumeContext(context).then((running) => {
+      if (running) this.bgm.onUnlock(context);
+    });
   }
 
   dispose(): void {
     this.clearStartupUnlock();
+    this.lifecycleCleanup?.();
+    this.lifecycleCleanup = null;
     this.bgm.dispose();
     if (this.context) void this.context.close();
     this.context = null;
@@ -177,6 +179,10 @@ export class GameAudio {
     this.playTone(context, start + 0.004, 880, 0.022, 0.006, "triangle");
   }
 
+  /**
+   * Kept for the whole session rather than removed once running: after an interruption
+   * the resume has to happen inside a user gesture, so the tap path must stay available.
+   */
   private installStartupUnlock(): void {
     if (typeof document === "undefined" || this.startupUnlockCleanup) return;
     const handleFirstInteraction = (): void => this.unlock();
@@ -193,6 +199,60 @@ export class GameAudio {
   private clearStartupUnlock(): void {
     this.startupUnlockCleanup?.();
     this.startupUnlockCleanup = null;
+  }
+
+  /**
+   * Closing the browser or switching apps interrupts the context on iOS Safari.
+   * Resume as soon as the page is visible again, and rebuild only a context that
+   * cannot be revived. Environments that refuse a gesture-less resume still recover
+   * through the interaction listeners above.
+   */
+  private installLifecycleRevive(): void {
+    if (typeof document === "undefined" || typeof window === "undefined") return;
+
+    const scheduleRevive = (): void => {
+      if (document.visibilityState === "hidden") return;
+      if (this.reviveTimer !== null) window.clearTimeout(this.reviveTimer);
+      this.reviveTimer = window.setTimeout(() => {
+        this.reviveTimer = null;
+        void this.revive();
+      }, REVIVE_DEBOUNCE_MS);
+    };
+
+    document.addEventListener("visibilitychange", scheduleRevive);
+    window.addEventListener("pageshow", scheduleRevive);
+    window.addEventListener("focus", scheduleRevive);
+    this.lifecycleCleanup = () => {
+      document.removeEventListener("visibilitychange", scheduleRevive);
+      window.removeEventListener("pageshow", scheduleRevive);
+      window.removeEventListener("focus", scheduleRevive);
+      if (this.reviveTimer !== null) window.clearTimeout(this.reviveTimer);
+      this.reviveTimer = null;
+    };
+  }
+
+  /** The liveness probe waits, so never let two revive passes overlap. */
+  private async revive(): Promise<void> {
+    if (this.reviving) return;
+    this.reviving = true;
+    try {
+      const context = this.getContext();
+      if (!context) return;
+      const running = await resumeContext(context);
+
+      if (await isContextDead(context)) {
+        // Rebuild before touching the BGM again, so nothing is scheduled on a dead context.
+        this.bgm.onContextLost();
+        discardContext(context);
+        this.context = null;
+        this.unlock();
+        return;
+      }
+
+      if (running) this.bgm.onUnlock(context);
+    } finally {
+      this.reviving = false;
+    }
   }
 
   private getContext(): AudioContext | null {

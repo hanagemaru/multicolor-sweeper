@@ -67,6 +67,23 @@ export class GameBgm {
     gain.gain.linearRampToValueAtTime(BGM_BUS_GAIN * 0.24, now + 0.18);
   }
 
+  /**
+   * Drop everything tied to a context that is being rebuilt. The old nodes are silent
+   * once that context closes, so they are released without being touched again.
+   * The next onUnlock() re-reads the DOM and restarts the matching track.
+   */
+  onContextLost(): void {
+    if (this.loopTimer !== null && typeof window !== "undefined") {
+      window.clearTimeout(this.loopTimer);
+      this.loopTimer = null;
+    }
+    this.generation += 1;
+    this.sources.clear();
+    this.trackGain = null;
+    this.currentTrack = null;
+    this.context = null;
+  }
+
   dispose(): void {
     this.observer?.disconnect();
     this.observer = null;
