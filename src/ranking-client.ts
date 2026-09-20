@@ -1,4 +1,5 @@
 import type { MineCount } from "./game/types";
+import { buildRankingPreviewResponse, readRankingPreviewCase } from "./ranking-preview";
 import {
   PLAYER_NAME_MAX_LENGTH,
   type PlayerIdentity,
@@ -64,6 +65,11 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 
 export async function fetchRanking(identity: PlayerIdentity, mineCount: MineCount): Promise<RankingResponse> {
+  if (typeof window !== "undefined") {
+    const previewCase = readRankingPreviewCase(window.location);
+    if (previewCase !== null) return buildRankingPreviewResponse(previewCase, mineCount);
+  }
+
   const response = await fetch(`/api/rankings?mineCount=${mineCount}&limit=10`, {
     method: "GET",
     headers: authHeaders(identity),
