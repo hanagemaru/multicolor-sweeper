@@ -9,13 +9,20 @@ import { installWebAnalytics } from "./web-analytics";
 installWebAnalytics();
 
 const EffectsLab = lazy(() => import("./effects-lab/EffectsLab"));
-const showEffectsLab = new URLSearchParams(window.location.search).has("effects-lab");
+const SocialDemo = lazy(() => import("./social-demo/SocialDemo"));
+const params = new URLSearchParams(window.location.search);
+const showEffectsLab = params.has("effects-lab");
+const showSocialDemo = import.meta.env.DEV && params.has("social-demo");
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     {showEffectsLab ? (
       <Suspense fallback={<div className="effects-lab-loading">LOADING EFFECT LAB...</div>}>
         <EffectsLab />
+      </Suspense>
+    ) : showSocialDemo ? (
+      <Suspense fallback={<div className="effects-lab-loading">LOADING SOCIAL DEMO...</div>}>
+        <SocialDemo />
       </Suspense>
     ) : <App />}
   </StrictMode>
