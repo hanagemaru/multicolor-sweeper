@@ -5,3 +5,9 @@ dist/
 coverage/
 .wrangler/
 social-output/
+
+# local environment / secrets
+.env
+.env.*
+.dev.vars
+.dev.vars.*
