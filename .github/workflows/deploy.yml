@@ -19,6 +19,9 @@ jobs:
           cache: npm
       - run: npm ci --no-audit
       - run: npm run build
+        env:
+          # Cloudflare Web Analytics のサイトトークン。未設定ならビーコンは出力されない。
+          VITE_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
       - name: Apply production D1 migrations
         run: npx wrangler d1 migrations apply multicolor-sweeper-ranking --remote
         env:
