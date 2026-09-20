@@ -1,15 +1,12 @@
 const token = import.meta.env.VITE_CF_BEACON_TOKEN;
 
-/**
- * Cloudflare Web Analytics beacon.
- *
- * The public site token is injected at build time via VITE_CF_BEACON_TOKEN.
- * Preview/local builds without the variable do not emit analytics traffic.
- */
+/** Production page-view analytics only; no player IDs or gameplay records are sent. */
 export function installWebAnalytics(): void {
-  if (!token) return;
+  if (!import.meta.env.PROD || !token) return;
+  if (window.location.hostname !== 'mcsweeper.hanage.app') return;
+  const params = new URLSearchParams(window.location.search);
+  if (['social-demo', 'effects-lab', 'ranking-test'].some((key) => params.has(key))) return;
   if (document.querySelector('script[data-cf-beacon]')) return;
-
   const script = document.createElement('script');
   script.defer = true;
   script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
