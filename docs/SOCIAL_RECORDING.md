@@ -43,3 +43,5 @@ http://127.0.0.1:5173/?social-demo=1&seed=post-001&speed=170
 ## Scope
 
 This first version only creates authentic solver-driven gameplay footage. Caption generation and X posting are intentionally separate follow-up steps so the visual output can be reviewed first.
+
+録画入口は開発サーバーでのみ有効。本番URLに `?social-demo=1` を付けても通常ゲームを表示する。投稿文は自動解答のデモと明記し、UTM付きURLを生成する。PV解析だけでUTM別のプレイ開始や継続率が測れるわけではない。

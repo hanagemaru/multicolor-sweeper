@@ -9,7 +9,7 @@ const EffectsLab = lazy(() => import("./effects-lab/EffectsLab"));
 const SocialDemo = lazy(() => import("./social-demo/SocialDemo"));
 const params = new URLSearchParams(window.location.search);
 const showEffectsLab = params.has("effects-lab");
-const showSocialDemo = params.has("social-demo");
+const showSocialDemo = import.meta.env.DEV && params.has("social-demo");
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

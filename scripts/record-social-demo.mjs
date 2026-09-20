@@ -66,6 +66,9 @@ try {
     if (complete === "true" && Date.now() - started > 5000) break;
     await page.waitForTimeout(200);
   }
+  if (await page.locator('[data-social-demo="ready"]').getAttribute("data-social-demo-complete") !== "true") {
+    throw new Error("Replay did not finish before the recording deadline");
+  }
   await page.waitForTimeout(500);
   await context.close();
 

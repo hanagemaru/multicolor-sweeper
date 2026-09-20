@@ -16,7 +16,13 @@ const posts = [
   "色付きの爆弾を推理して解くマインスイーパーです\nブラウザですぐ遊べます\n\nhttps://mcsweeper.hanage.app/"
 ];
 
-const text = posts[((variant % posts.length) + posts.length) % posts.length];
+const url = new URL("https://mcsweeper.hanage.app/");
+url.searchParams.set("utm_source", "x");
+url.searchParams.set("utm_medium", "organic_social");
+url.searchParams.set("utm_campaign", "first_play");
+url.searchParams.set("utm_content", `sweeper_${variant}`);
+const text = posts[((variant % posts.length) + posts.length) % posts.length]
+  .replace("https://mcsweeper.hanage.app/", `動画は自動解答のデモです。\n${url}`);
 await mkdir(path.dirname(output), { recursive: true });
 await writeFile(output, `${text}\n`, "utf8");
 console.log(text);
