@@ -163,6 +163,8 @@ export function resolveInitialLanguage(storedLanguage: string | null, browserLan
 
 export function readInitialLanguage(): Language {
   if (typeof window === "undefined") return "en";
+  const queryLanguage = new URLSearchParams(window.location.search).get("lang");
+  if (queryLanguage === "ja" || queryLanguage === "en") return queryLanguage;
   let storedLanguage: string | null = null;
   try { storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY); } catch {}
   const browserLanguages = navigator.languages.length > 0 ? navigator.languages : [navigator.language];
