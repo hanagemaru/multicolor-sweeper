@@ -1104,7 +1104,7 @@ export default function App(): React.JSX.Element {
                     <button className="secondary-button" type="button" onClick={() => openRanking("result")}>{buttonUiText(copy.ranking)}</button>
                   )
                 ) : null}
-                {resultPhase === "won" ? <ResultShareButton mineCount={mineCount} colorCount={colorCount} timeMs={elapsedMs} language={language} /> : null}
+                {resultPhase === "won" ? <ResultShareButton mineCount={mineCount} colorCount={colorCount} timeMs={elapsedMs} board={board} language={language} /> : null}
                 {resultPhase !== "error" ? (
                   <div className="result-aux-actions">
                     <button type="button" onClick={closeResult}>{buttonUiText(copy.viewBoard)}</button>

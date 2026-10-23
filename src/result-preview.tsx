@@ -1,7 +1,14 @@
+import { generateBoard } from './game/game-core';
 import { ResultShareButton } from './components/ResultShareButton';
 import { getCopy, type Language } from './i18n';
 import { buttonUiText } from './button-typography';
 import { shareTime } from './result-sharing';
+
+const previewBoard = generateBoard({ seed: 'share-preview', mineCount: 20, colorCount: 3, firstRow: 4, firstCol: 4 });
+for (const cell of previewBoard.cells.flat()) {
+  if (cell.mineColor === null) cell.state = 'revealed';
+  else cell.flag = cell.mineColor;
+}
 
 export default function ResultPreview() {
   const language: Language = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'ja';
@@ -14,7 +21,7 @@ export default function ResultPreview() {
         <p className="result-time"><small>{copy.clearTime}</small><strong>{shareTime(83450)}</strong></p>
         <p>PREVIEW</p>
         <div className="result-actions">
-          <ResultShareButton mineCount={20} colorCount={3} timeMs={83450} language={language} />
+          <ResultShareButton mineCount={20} colorCount={3} timeMs={83450} board={previewBoard} language={language} />
           <button className="secondary-button" type="button" onClick={() => { location.search = ''; }}>{buttonUiText(copy.menu)}</button>
         </div>
       </div>
