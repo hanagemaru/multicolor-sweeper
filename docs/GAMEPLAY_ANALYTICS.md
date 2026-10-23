@@ -1,6 +1,6 @@
 # 遊び始め計測
 
-2026-10-23: プレビューのみ。本番は未有効化。
+2026-10-23: ユーザーの本番有効化承認済み。ハブの日英ポリシー公開確認後にproduction設定で配信する。
 
 ## 意図
 
@@ -14,7 +14,7 @@ IDはsessionStorage（利用不能時はページメモリ）。30分の無操�
 
 新規受信時に30日超を削除。計測終了時は `DELETE FROM gameplay_events` を実行する。停止して受信がなければ自動削除は走らない。
 
-フロント `VITE_GAMEPLAY_ANALYTICS_MODE` とWorker `GAMEPLAY_ANALYTICS_MODE` の両方が必要。許可する値はpreview/production。今回productionは使わない。previewはバージョン/PR URLと専用D1に限定。通常画面に計測UIは追加しない。`?lang=ja&utm_source=x&utm_medium=cpc` で広告分類を試せる。結果プレビュー等は除外。
+フロント `VITE_GAMEPLAY_ANALYTICS_MODE` とWorker `GAMEPLAY_ANALYTICS_MODE` の両方が必要。許可する値はpreview/production。本番ビルド・Workerでproductionを有効化。previewはバージョン/PR URLと専用D1に限定。通常画面に計測UIは追加しない。`?lang=ja&utm_source=x&utm_medium=cpc` で広告分類を試せる。結果プレビュー等は除外。
 
 ## 集計
 
@@ -33,4 +33,4 @@ Preview workflowは専用D1に合成イベントを送信し、保存・重複�
 
 ## 本番へ進める条件
 
-ユーザーのプレビュー確認後、ハブの公開プライバシー記載がSweeperの一時訪問ID/開始計測も対象に含むことを確認し、productionの両設定を有効化。専用表移行と受信確認を行う。現在はプレビューのみで、本番設定は変更しない。
+ユーザーのプレビュー確認後、ハブの公開プライバシー記載がSweeperの一時訪問ID/開始計測も対象に含むことを確認し、productionの両設定を有効化。専用表移行と受信確認を行う。Deploy workflowが日英ポリシー公開を確認してから配信し、本番D1への保存と重複排除を検証する。検証用データは終了時に削除する。

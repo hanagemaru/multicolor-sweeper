@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           cp wrangler.jsonc wrangler.preview.jsonc
-          sed -i 's/"GAMEPLAY_ANALYTICS_MODE": "off"/"GAMEPLAY_ANALYTICS_MODE": "preview"/' wrangler.preview.jsonc
+          sed -i 's/"GAMEPLAY_ANALYTICS_MODE": "production"/"GAMEPLAY_ANALYTICS_MODE": "preview"/' wrangler.preview.jsonc
           sed -i 's/"database_name": "multicolor-sweeper-ranking"/"database_name": "multicolor-sweeper-ranking-preview"/' wrangler.preview.jsonc
           sed -i 's/"database_id": "bae4d381-409e-44e2-b76f-953b397f2be1"/"database_id": "0d70c1ca-2fa3-4f1d-925a-a12f993f200a"/' wrangler.preview.jsonc
       - name: Apply preview D1 migrations
