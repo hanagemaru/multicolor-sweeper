@@ -1,3 +1,4 @@
+import { trackGameplay } from './gameplay-analytics';
 import { ResultShareButton } from "./components/ResultShareButton";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { buttonUiText } from "./button-typography";
@@ -150,6 +151,7 @@ function persistRecord(key: string, record: LocalRecord): void {
 }
 
 export default function App(): React.JSX.Element {
+  useEffect(() => { trackGameplay('visit'); }, []);
   const [language, setLanguage] = useState<Language>(() => readInitialLanguage());
   const [mineCount, setMineCount] = useState<MineCount>(20);
   const [colorCount, setColorCount] = useState<ColorCount>(3);
@@ -422,6 +424,7 @@ export default function App(): React.JSX.Element {
       setElapsedMs(0);
       setStartedAt(performance.now());
       setPhase("playing");
+      trackGameplay("first_cell_open", mineCount, colorCount);
     } catch (error) {
       if (generationRequestRef.current !== requestId) return;
       console.error("Board generation failed", error);
