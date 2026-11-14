@@ -23,6 +23,9 @@ jobs:
           # Cloudflare Web Analytics のサイトトークン。未設定ならビーコンは出力されない。
           VITE_GAMEPLAY_ANALYTICS_MODE: "production"
           VITE_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
+          # New Sweeper and shared rankings were verified before enabling this notice.
+          # Set SWEEPER_HUB_PLAY_URL to "disabled" to hide the link on rollback.
+          VITE_LEGACY_NEW_SITE_URL: ${{ vars.SWEEPER_HUB_PLAY_URL || 'https://hanage.app/games/multicolor-sweeper/play/' }}
       - name: Verify published gameplay analytics disclosure
         run: |
           node --input-type=module <<'NODE'
@@ -59,6 +62,12 @@ jobs:
           console.log('Production ranking API health passed');
           NODE
 
+      - name: Install browser for actual old/new Sweeper navigation check
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.1
+          npx playwright install chromium --with-deps
+      - name: Verify old Sweeper announcement and new-tab opening in live browser
+        run: node scripts/verify-live-legacy-notice.mjs
       - name: Verify production gameplay event persistence
         run: node scripts/verify-gameplay-live.mjs
         env:
