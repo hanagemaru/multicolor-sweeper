@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sweeper-hub-preview",
+  "main": "./src/server/worker.ts",
+  "compatibility_date": "2026-08-01",
+  "assets": {
+    "directory": "./dist",
+    "base_path": "/games/multicolor-sweeper/play",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": ["/games/multicolor-sweeper/play/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "multicolor-sweeper-ranking-preview",
+      "database_id": "0d70c1ca-2fa3-4f1d-925a-a12f993f200a",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": { "GAMEPLAY_ANALYTICS_MODE": "off" },
+  "observability": { "enabled": true }
+}
