@@ -1,5 +1,12 @@
 # Project Status
 
+## 2026-11-15: 新URLのiPhone Safari実機確認済み（最新）
+
+- ユーザーが https://hanage.app/games/multicolor-sweeper/ からの「遊ぶ」別タブ起動、新しいゲームのプレイ、ランキング表示が問題ないと報告。
+- 新旧URL並行公開・既存D1のランキング共用・新旧URL別の訪問と最初のマス開封計測は2026-11-14に本番検証済み。
+- これにより**主要なiPhone Safari利用の確認も完了**。ホーム画面PWAの全条件・Search Consoleによる実インデックス・AdSense審査結果は未確認。
+- 以下2026-11-14の「iPhone実機未確認」は当時の履歴。
+
 ## 2026-11-14: Multicolor Sweeperをハブ配下に本番公開（最新）
 
 - 新URL **https://hanage.app/games/multicolor-sweeper/play/** を独立Cloudflare Worker`sweeper-hub`で追加。旧URL **https://mcsweeper.hanage.app/** はプレイ・ランキング登録・ホーム画面PWAを維持。
