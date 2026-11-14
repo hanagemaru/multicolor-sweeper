@@ -381,6 +381,12 @@ async function handleSubmit(request: Request, env: Env): Promise<Response> {
 
 export async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  // Both URL forms reach the same Worker and existing D1 rankings.
+  // Normalise a nested hub path once; old /api/* continues unchanged.
+  const prefix = "/games/multicolor-sweeper/play";
+  if (url.pathname.startsWith(prefix + "/api/")) {
+    url.pathname = url.pathname.slice(prefix.length);
+  }
   if (!url.pathname.startsWith("/api/")) return new Response("Not Found", { status: 404 });
   if (request.method === "POST" && url.pathname === "/api/gameplay-events") return receiveGameplay(request, env.DB, env.GAMEPLAY_ANALYTICS_MODE);
   if (request.method === "GET" && url.pathname === "/api/health") return json({ ok: true });
