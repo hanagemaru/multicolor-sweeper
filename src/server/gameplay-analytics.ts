@@ -35,9 +35,12 @@ export async function receiveGameplay(request: Request, db: Database | undefined
     try { p = JSON.parse(body); } catch { return new Response(null, { status: 400 }); }
     if (!valid(p)) return new Response(null, { status: 400 });
     const now = Date.now();
+    // Site variant is derived from the trusted request host, not client input.
+    // No extra visitor identifier, URL or referrer is persisted.
+    const siteVariant = url.hostname === 'hanage.app' ? 'hub' : 'legacy';
     const insert = (event: GameplayPayload['event'], mines: number, colors: number) => db.prepare(
-      'INSERT OR IGNORE INTO gameplay_events (session_id,event,source,mine_count,color_count,received_at) VALUES (?,?,?,?,?,?)',
-    ).bind(p.session, event, p.source, mines, colors, now);
+      'INSERT OR IGNORE INTO gameplay_events (session_id,event,source,mine_count,color_count,received_at,site_variant) VALUES (?,?,?,?,?,?,?)',
+    ).bind(p.session, event, p.source, mines, colors, now, siteVariant);
     const statements = [db.prepare('DELETE FROM gameplay_events WHERE received_at < ?').bind(now - RETENTION_MS), insert('visit', 0, 0)];
     if (p.event === 'first_cell_open') statements.push(insert(p.event, p.mineCount, p.colorCount));
     await db.batch(statements);
