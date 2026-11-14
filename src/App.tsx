@@ -153,6 +153,12 @@ function persistRecord(key: string, record: LocalRecord): void {
 export default function App(): React.JSX.Element {
   useEffect(() => { trackGameplay('visit'); }, []);
   const [language, setLanguage] = useState<Language>(() => readInitialLanguage());
+  const hubBase = "/games/multicolor-sweeper/play/";
+  const hubUrlPublished = "https://hanage.app" + hubBase;
+  const isHubGame = import.meta.env.BASE_URL === hubBase;
+  const onHubOrigin = window.location.origin === "https://hanage.app";
+  const legacyNotice = window.location.origin === "https://mcsweeper.hanage.app" &&
+    import.meta.env.VITE_LEGACY_NEW_SITE_URL === hubUrlPublished;
   const [mineCount, setMineCount] = useState<MineCount>(20);
   const [colorCount, setColorCount] = useState<ColorCount>(3);
   const [phase, setPhase] = useState<Phase>("settings");
@@ -974,6 +980,27 @@ export default function App(): React.JSX.Element {
                 <button className="start-button" type="button" onClick={() => enterBoard()}>{buttonUiText(copy.start)}</button>
                 <button className="ranking-button" type="button" onClick={() => openRanking("settings")}>{buttonUiText(copy.ranking)}</button>
               </div>
+              {isHubGame ? (
+                <nav className="game-hub-links" aria-label={language === "ja" ? "ゲーム情報" : "Game information"}>
+                  <a data-testid="sweeper-hub-details" href={hubUrl(language, "/games/multicolor-sweeper/")}
+                    target={onHubOrigin ? undefined : "_blank"} rel={onHubOrigin ? undefined : "noopener noreferrer"}>
+                    {language === "ja" ? "ゲーム紹介に戻る" : "Back to game details"}
+                  </a>
+                  <a data-testid="sweeper-hub-how-to" href={hubUrl(language, "/games/multicolor-sweeper/how-to-play/")}
+                    target="_blank" rel="noopener noreferrer">
+                    {language === "ja" ? "遊び方" : "How to play"}
+                  </a>
+                </nav>
+              ) : null}
+              {legacyNotice ? (
+                <aside className="legacy-new-site-notice">
+                  <p>{language === "ja" ? "新しいMulticolor Sweeperも公開しています。こちらでも引き続き遊べます。" : "A new Multicolor Sweeper is available. You can keep playing here."}</p>
+                  <p>{language === "ja" ? "ランキングは新旧共通です。プレイヤーIDと端末内の自己ベストはURLごとに別管理です。" : "Both versions share rankings. Player IDs and local best scores remain separate for each URL."}</p>
+                  <a data-testid="sweeper-new-site-link" href={hubUrlPublished} target="_blank" rel="noopener noreferrer">
+                    {language === "ja" ? "新しいSweeperで遊ぶ" : "Play the new Sweeper"}
+                  </a>
+                </aside>
+              ) : null}
             </div>
           </>
         ) : (
