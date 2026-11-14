@@ -8,7 +8,9 @@ function enabled(): boolean {
   if (!import.meta.env.PROD || !analyticsHostAllowed(location.hostname, import.meta.env.VITE_GAMEPLAY_ANALYTICS_MODE)) return false;
   const legacy = location.hostname === 'mcsweeper.hanage.app' && ['/', '/index.html'].includes(location.pathname);
   const hub = location.hostname === 'hanage.app' && ['/games/multicolor-sweeper/play/', '/games/multicolor-sweeper/play/index.html'].includes(location.pathname);
-  if (!legacy && !hub) return false;
+  const prPreview = import.meta.env.VITE_GAMEPLAY_ANALYTICS_MODE === 'preview' &&
+    ['/', '/index.html'].includes(location.pathname);
+  if (!legacy && !hub && !prPreview) return false;
   const params = new URLSearchParams(location.search);
   return !['resultPreview', 'effects-lab', 'social-demo', 'ranking-test', 'seed', 'debug'].some(key => params.has(key));
 }
