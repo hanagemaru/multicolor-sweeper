@@ -64,7 +64,7 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 
 export async function fetchRanking(identity: PlayerIdentity, mineCount: MineCount): Promise<RankingResponse> {
-  const response = await fetch(`/api/rankings?mineCount=${mineCount}&limit=10`, {
+  const response = await fetch(`${import.meta.env.BASE_URL}api/rankings?mineCount=${mineCount}&limit=10`, {
     method: "GET",
     headers: authHeaders(identity),
     cache: "no-store"
@@ -74,7 +74,7 @@ export async function fetchRanking(identity: PlayerIdentity, mineCount: MineCoun
 
 export async function updateOnlinePlayerName(identity: PlayerIdentity, displayName: string): Promise<void> {
   const body: UpdatePlayerRequest = { displayName: displayName.trim().slice(0, PLAYER_NAME_MAX_LENGTH) };
-  const response = await fetch("/api/player", {
+  const response = await fetch(`${import.meta.env.BASE_URL}api/player`, {
     method: "PUT",
     headers: authHeaders(identity),
     body: JSON.stringify(body)
@@ -86,7 +86,7 @@ export async function submitOnlineRecord(
   identity: PlayerIdentity,
   body: SubmitRecordRequest
 ): Promise<SubmitRecordResponse> {
-  const response = await fetch("/api/records", {
+  const response = await fetch(`${import.meta.env.BASE_URL}api/records`, {
     method: "POST",
     headers: authHeaders(identity),
     body: JSON.stringify(body)
@@ -95,7 +95,7 @@ export async function submitOnlineRecord(
 }
 
 export async function deleteOnlinePlayer(identity: PlayerIdentity): Promise<void> {
-  const response = await fetch("/api/player", {
+  const response = await fetch(`${import.meta.env.BASE_URL}api/player`, {
     method: "DELETE",
     headers: authHeaders(identity)
   });

@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sweeper-hub",
+  "main": "./src/server/worker.ts",
+  "compatibility_date": "2026-08-01",
+  "routes": [
+    { "pattern": "hanage.app/games/multicolor-sweeper/play", "zone_name": "hanage.app" },
+    { "pattern": "hanage.app/games/multicolor-sweeper/play/*", "zone_name": "hanage.app" }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "base_path": "/games/multicolor-sweeper/play",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": ["/games/multicolor-sweeper/play/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "multicolor-sweeper-ranking",
+      "database_id": "bae4d381-409e-44e2-b76f-953b397f2be1",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": { "GAMEPLAY_ANALYTICS_MODE": "production" },
+  "observability": { "enabled": true }
+}

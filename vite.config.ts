@@ -2,12 +2,30 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
 
-// mcsweeper.hanage.app 専用ドメインに配信するため base は "/" 固定。
-// サブパス配信にするとService Workerのscopeとアセットの絶対パスが崩れる。
+// This project deliberately omits @types/node; Vite config runs in Node.
+declare const process: { env: Record<string, string | undefined> };
+
+// Legacy PWA remains rooted at "/". Only the *separate* hub Worker is
+// built under /games/multicolor-sweeper/play/. Never change the old scope.
+const hubBase = "/games/multicolor-sweeper/play/";
+const basePath = process.env.SWEEPER_BASE === hubBase ? hubBase : "/";
+const hubCanonical = "https://hanage.app/games/multicolor-sweeper/play/";
+
 export default defineConfig({
-  base: "/",
+  base: basePath,
   plugins: [
     react(),
+    {
+      name: "sweeper-canonical",
+      transformIndexHtml(html) {
+        // Do not canonicalize the still-live old subdomain until the new
+        // hub game has actually shipped and its notice flag is enabled.
+        const published = process.env.VITE_LEGACY_NEW_SITE_URL === hubCanonical;
+        return basePath === hubBase || published
+          ? html.replace("</head>", `  <link rel="canonical" href="${hubCanonical}" />\n  </head>`)
+          : html;
+      },
+    },
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
@@ -22,7 +40,7 @@ export default defineConfig({
         "fonts/VT323-OFL.txt"
       ],
       manifest: {
-        id: "/",
+        id: basePath,
         name: "Multicolor Sweeper",
         short_name: "MCSweeper",
         description: "A multicolor Minesweeper puzzle with three- and four-color modes.",
@@ -30,36 +48,36 @@ export default defineConfig({
         background_color: "#15182b",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/",
-        scope: "/",
+        start_url: basePath,
+        scope: basePath,
         lang: "en",
         icons: [
           {
-            src: "/icons/icon-192.png",
+            src: `${basePath}icons/icon-192.png`,
             sizes: "192x192",
             type: "image/png",
             purpose: "any"
           },
           {
-            src: "/icons/icon-512.png",
+            src: `${basePath}icons/icon-512.png`,
             sizes: "512x512",
             type: "image/png",
             purpose: "any"
           },
           {
-            src: "/icons/maskable-192.png",
+            src: `${basePath}icons/maskable-192.png`,
             sizes: "192x192",
             type: "image/png",
             purpose: "maskable"
           },
           {
-            src: "/icons/maskable-512.png",
+            src: `${basePath}icons/maskable-512.png`,
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable"
           },
           {
-            src: "/icon.svg",
+            src: `${basePath}icon.svg`,
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any"

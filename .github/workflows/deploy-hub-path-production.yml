@@ -1,0 +1,75 @@
+name: Deploy Sweeper at hanage.app game path
+
+# Only after the original Sweeper Deploy has succeeded (including D1 migrations).
+# The old Custom Domain, Worker, and rankings remain untouched.
+on:
+  workflow_run:
+    workflows: ["Deploy"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sweeper-hub-path-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build new hub-hosted Sweeper; legacy site remains root-based
+        run: npm run build
+        env:
+          SWEEPER_BASE: '/games/multicolor-sweeper/play/'
+          VITE_GAMEPLAY_ANALYTICS_MODE: 'production'
+          VITE_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
+      - run: node scripts/verify-hub-preview.mjs
+      - name: Check old Sweeper and hub still work before route addition
+        run: |
+          node --input-type=module <<'NODE'
+          for (const url of [
+            'https://mcsweeper.hanage.app/',
+            'https://mcsweeper.hanage.app/api/health',
+            'https://hanage.app/',
+            'https://hanage.app/games/multicolor-sweeper/',
+          ]) {
+            const response=await fetch(url,{signal:AbortSignal.timeout(16000)});
+            if (!response.ok) throw new Error(`Preflight ${url} HTTP ${response.status}`);
+            console.log('PASS: '+url);
+          }
+          NODE
+      - name: Deploy only new Sweeper game route, sharing existing D1
+        run: npx --yes wrangler@4.148.0 deploy --config wrangler.hub-production.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Verify live game/PWA and identical old/new ranking (GET only)
+        run: node scripts/verify-live-hub-release.mjs
+      - name: Verify new URL gameplay analytics and remove test events
+        run: node scripts/verify-live-hub-analytics.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Record release URL
+        if: always()
+        run: |
+          {
+            echo '### Sweeper new production game URL'
+            echo
+            echo 'https://hanage.app/games/multicolor-sweeper/play/'
+            echo 'Old game: https://mcsweeper.hanage.app/ (preserved)'
+            echo
+            echo 'Existing D1 is shared. Temporary analytics verification rows are deleted.'
+          } >> "$GITHUB_STEP_SUMMARY"

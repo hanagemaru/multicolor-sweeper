@@ -27,6 +27,20 @@ describe('gameplay event receiver',()=>{
   ])('rejects invalid or extra data',async(body)=>{
     const db=database();expect((await receiveGameplay(request(body),db,'preview')).status).toBe(400);expect(db.batch).not.toHaveBeenCalled();
   });
+  it.each([
+    ['https://mcsweeper.hanage.app', 'legacy'],
+    ['https://hanage.app', 'hub'],
+  ])('classifies production events by site URL, not submitted player data: %s', async (site, expected) => {
+    const db = database();
+    const req = new Request(site + '/games/multicolor-sweeper/play/api/gameplay-events', {
+      method: 'POST',
+      headers: { Origin: site, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    expect((await receiveGameplay(req, db, 'production')).status).toBe(204);
+    expect(db.statements[1].values[6]).toBe(expected);
+    expect(db.statements[2].values[6]).toBe(expected);
+  });
   it('rejects cross-origin and production requests in preview mode',async()=>{
     const db=database();expect((await receiveGameplay(request(payload,{Origin:'https://evil.example'}),db,'preview')).status).toBe(403);
     expect((await receiveGameplay(request(),db,'production')).status).toBe(403);

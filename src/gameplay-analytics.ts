@@ -6,7 +6,11 @@ let memory: Session | null = null;
 const sent = new Set<string>();
 function enabled(): boolean {
   if (!import.meta.env.PROD || !analyticsHostAllowed(location.hostname, import.meta.env.VITE_GAMEPLAY_ANALYTICS_MODE)) return false;
-  if (!['/', '/index.html'].includes(location.pathname)) return false;
+  const legacy = location.hostname === 'mcsweeper.hanage.app' && ['/', '/index.html'].includes(location.pathname);
+  const hub = location.hostname === 'hanage.app' && ['/games/multicolor-sweeper/play/', '/games/multicolor-sweeper/play/index.html'].includes(location.pathname);
+  const prPreview = import.meta.env.VITE_GAMEPLAY_ANALYTICS_MODE === 'preview' &&
+    ['/', '/index.html'].includes(location.pathname);
+  if (!legacy && !hub && !prPreview) return false;
   const params = new URLSearchParams(location.search);
   return !['resultPreview', 'effects-lab', 'social-demo', 'ranking-test', 'seed', 'debug'].some(key => params.has(key));
 }
@@ -25,7 +29,7 @@ function send(payload: GameplayPayload): void {
   const key = `${payload.session}:${payload.event}`;
   if (sent.has(key)) return;
   sent.add(key);
-  void fetch('/api/gameplay-events', {
+  void fetch(`${import.meta.env.BASE_URL}api/gameplay-events`, {
     method: 'POST', credentials: 'omit', keepalive: true,
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
   }).then(response => { if (!response.ok) sent.delete(key); }).catch(() => { sent.delete(key); });

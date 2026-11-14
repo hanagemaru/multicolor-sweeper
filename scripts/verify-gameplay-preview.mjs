@@ -16,7 +16,7 @@ const post = payload => fetch(`${origin}/api/gameplay-events`, {
   body:JSON.stringify(payload), signal:AbortSignal.timeout(20000),
 });
 try {
-  query(`INSERT INTO gameplay_events VALUES ('${staleSession}','visit','direct',0,0,${Date.now()-31*86400000})`);
+  query(`INSERT INTO gameplay_events (session_id,event,source,mine_count,color_count,received_at) VALUES ('${staleSession}','visit','direct',0,0,${Date.now()-31*86400000})`);
   const base = {session,source:'share'};
   // First opening can arrive before visit: both must exist once, even after duplicates/retries.
   for (const payload of [

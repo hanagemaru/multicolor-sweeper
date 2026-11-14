@@ -1,0 +1,78 @@
+name: Preview Sweeper under hanage.app game path (isolated D1)
+
+on:
+  push:
+    branches: [feature/hub-path-sweeper-20261114]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'vite.config.ts'
+      - 'wrangler.hub-preview.jsonc'
+      - 'wrangler.hub-production.jsonc'
+      - 'scripts/verify-hub-preview.mjs'
+      - 'scripts/verify-hub-browser.mjs'
+      - '.github/workflows/hub-path-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:api
+      - name: Build independent Sweeper at hub path
+        run: npm run build
+        env:
+          SWEEPER_BASE: '/games/multicolor-sweeper/play/'
+          VITE_GAMEPLAY_ANALYTICS_MODE: 'off'
+      - run: node scripts/verify-hub-preview.mjs
+      - name: Prevent preview indexing
+        run: |
+          printf '/games/multicolor-sweeper/play/*\n  X-Robots-Tag: noindex, nofollow\n' > dist/_headers
+      - name: Dry-run production routes and existing D1 binding (no publish)
+        run: npx --yes wrangler@4.148.0 deploy --dry-run --config wrangler.hub-production.jsonc --outdir /tmp/sweeper-production-check
+      - name: Deploy separate Sweeper preview Worker using nonproduction D1
+        run: npx --yes wrangler@4.148.0 deploy --config wrangler.hub-preview.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Public preview health, leaderboard, assets and noindex smoke
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          const base = 'https://sweeper-hub-preview.jibunnha.workers.dev/games/multicolor-sweeper/play/';
+          for (const suffix of ['', 'manifest.webmanifest','sw.js','api/health', 'api/rankings?mineCount=20&limit=10']) {
+            const response = await fetch(base + suffix, {signal:AbortSignal.timeout(20000)});
+            assert.equal(response.status,200,`GET ${suffix}: ${response.status}`);
+            if (!suffix) {
+              const html = await response.text();
+              assert.ok(html.includes('Multicolor Sweeper'));
+              assert.ok(html.includes('https://hanage.app/games/multicolor-sweeper/play/'));
+              assert.match(response.headers.get('x-robots-tag') || '', /noindex/);
+            }
+            if (suffix.startsWith('api/rankings')) assert.ok(Array.isArray((await response.json()).entries));
+            if (suffix === 'manifest.webmanifest') {
+              const m = await response.json();
+              assert.equal(m.scope, '/games/multicolor-sweeper/play/');
+            }
+          }
+          console.log('PASS: isolated Sweeper preview and ranking data (no production DB)');
+          NODE
+      - name: Browser check mobile layout, hub navigation and leaderboard
+        run: |
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.1
+          npx playwright install chromium --with-deps
+          node scripts/verify-hub-browser.mjs
+      - name: Record preview
+        run: echo 'https://sweeper-hub-preview.jibunnha.workers.dev/games/multicolor-sweeper/play/' >> "$GITHUB_STEP_SUMMARY"
