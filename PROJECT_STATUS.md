@@ -1,5 +1,18 @@
 # Project Status
 
+## 2026-11-14: Multicolor Sweeperをハブ配下に本番公開（最新）
+
+- 新URL **https://hanage.app/games/multicolor-sweeper/play/** を独立Cloudflare Worker`sweeper-hub`で追加。旧URL **https://mcsweeper.hanage.app/** はプレイ・ランキング登録・ホーム画面PWAを維持。
+- ハブの紹介ページ `https://hanage.app/games/multicolor-sweeper/` の「遊ぶ」は**新URLを別タブで開く**。新ゲームから「ゲーム紹介へ戻る」は同タブ、「遊び方」は別タブ。
+- 新旧で既存D1 `multicolor-sweeper-ranking` の同一ランキング3部門を共用。プレイヤーID・自己ベストはオリジン別、ユーザー操作によるデータ引き継ぎは行わない。
+- 計測：**両URLでvisit/first_cell_openが有効**。同一D1の`gameplay_events`に追加した`site_variant`で`legacy`（旧URL）と`hub`（新URL）を識別し、URL別集計が可能。元データはdefault legacyで保持。新URLの合成イベントを記録し、`hub`として保存されることと、合成データ削除を確認済み。
+- 新URLのゲーム/PWA/ランキング/計測の本番確認成功：[新Worker Actions](https://github.com/hanagemaru/multicolor-sweeper/actions/runs/43608035207)。
+- 旧サイトの新URL案内と旧/新の実ブラウザ導線、旧サイトの計測検証成功：[旧Worker Actions](https://github.com/hanagemaru/multicolor-sweeper/actions/runs/43608605304)。
+- ハブのリンク・sitemap・www Sweeper/Putt限定302リダイレクトは本番検証済み：[ハブ Actions](https://github.com/hanagemaru/hanage-hub/actions/runs/43608440293)。
+- **未確認:** ユーザーによる新SweeperのiPhone Safari/PWA実機プレイ、Search Consoleでの実インデックスとAdSense審査結果。
+- 以下の同日「本番公開前」は当時の検証段階の履歴。**本項が最新**。
+
+
 最終更新: 2026-09-06
 
 ## 2026-11-14: hanage.app配下へのSweeper追加準備（本番公開前）
