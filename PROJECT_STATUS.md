@@ -2,6 +2,17 @@
 
 最終更新: 2026-09-06
 
+## 2026-11-14: hanage.app配下へのSweeper追加準備（本番公開前）
+
+- Puttと同じ「旧サブドメイン維持・新しいハブ配下URL追加・同一D1ランキング共用・匿名プレイヤーはURLごとに独立」を採用。ユーザーに手動引き継ぎを求めない。
+- 旧URL https://mcsweeper.hanage.app/ に影響しない、`SWEEPER_BASE=/games/multicolor-sweeper/play/`専用ビルドを追加。PWAのscope/start_url/アイコンとAPI fetchを配信先パスへ対応。
+- `sweeper-hub-preview`は別Workerで、ランキングはプレビュー専用D1、ゲーム計測は無効。現時点のプレビュー：https://sweeper-hub-preview.jibunnha.workers.dev/games/multicolor-sweeper/play/
+- 新URLの画面にゲーム紹介へ同タブで戻るリンク、遊び方の別タブリンク。旧サイトは新URL稼働確認後にだけ案内を表示するためのフラグを設けた。
+- 旧URL・新URLでゲーム計測が継続するようクライアント/Workerを対応。D1に追加した`site_variant`列で古いアクセス（`legacy`）と新URL（`hub`）を区別。既存イベントは既定値`legacy`で保持し、ユーザー識別情報・実URLは追加保存しない。
+- 本番Worker`sweeper-hub`の2つのRouteと既存`multicolor-sweeper-ranking`D1へのバインドをdry-run確認。CIは旧SweeperのDeploy成功後にだけ新Workerを公開する構成。
+- プレビューの型チェック・全テスト・ローカルランキングAPI・ビルド・公開HTTP・モバイルブラウザのランキングとリンク確認に成功：[Actions](https://github.com/hanagemaru/multicolor-sweeper/actions/runs/43607401011)。
+- **本項執筆時点で本番の新Sweeper URL・ハブリンク・旧Sweeperはまだ変更していない。** 本番公開が完了した場合は、実HTTPのActions証跡とともに本項より上に記録する。
+
 ## 現在地
 
 - React / Vite / TypeScript / PWAの製品版基礎構成を作成済み
