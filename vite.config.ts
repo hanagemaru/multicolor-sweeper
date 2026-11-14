@@ -2,6 +2,9 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vitest/config";
 
+// This project deliberately omits @types/node; Vite config runs in Node.
+declare const process: { env: Record<string, string | undefined> };
+
 // Legacy PWA remains rooted at "/". Only the *separate* hub Worker is
 // built under /games/multicolor-sweeper/play/. Never change the old scope.
 const hubBase = "/games/multicolor-sweeper/play/";
