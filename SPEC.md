@@ -305,7 +305,7 @@ UIレイアウト・文字・配色の品質改善では、完成案C「Board Fi
 - 静的成果物は `dist/` に出力し、`wrangler.jsonc` のAssetsから配る
 - `/api/*` はWorkerコードを先に実行する
 - 公開URLは `https://mcsweeper.hanage.app/`。Worker既定URL `https://multicolor-sweeper.jibunnha.workers.dev/` も利用可能
-- 専用ドメイン前提のため Vite の `base` と manifest の `start_url` / `scope` はいずれも `/`
+- **現行の旧サブドメイン向けビルドでは** Vite の `base` と manifest の `start_url` / `scope` はいずれも `/`。将来 `hanage.app/games/multicolor-sweeper/play/` に追加公開する際は、アセット・PWA・APIをサブパスに対応させる。既存の `mcsweeper.hanage.app` は廃止しない。
 - ヘッダーは `public/_headers` で指定する
 - D1 migrationは `migrations/` で管理する
 - PR Previewは本番トラフィックを変更せずpreview D1へ接続する

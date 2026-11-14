@@ -1,5 +1,7 @@
 # デプロイ手順
 
+> **公開先の今後の方針（2026-11-14）:** 現在の正式に動作するURLは `https://mcsweeper.hanage.app/` のままです。将来は独立リポジトリ・独立Workerと既存ランキングD1を維持しつつ、`https://hanage.app/games/multicolor-sweeper/play/` を**追加公開**する予定です（現時点では未公開）。新旧URLは並行運用し、旧URLを強制転送せず、手動のプレイヤー記録引き継ぎも実施しません。Puttで先行した共通方針は [hanage-hubの並行公開計画](https://github.com/hanagemaru/hanage-hub/blob/main/docs/GAME_URL_AND_PLAYER_MIGRATION_2026-11-14.md) を参照。以下の既存手順は**旧URLの継続運用**に有効です。
+
 配信先は **Cloudflare Workers（Static Assets + `/api/*`）**、公開URLは `https://mcsweeper.hanage.app/`。
 
 2026-09-05に `mcsweeper.hanage.app` を `multicolor-sweeper` WorkerへCustom Domainとして割り当て、iPhone Safariで正常にゲームが開くことを確認済み。
