@@ -28,6 +28,6 @@ export function acquisitionSource(search: string, referrer: string): Source {
   return host && host !== 'mcsweeper.hanage.app' ? 'other' : 'direct';
 }
 export function analyticsHostAllowed(host: string, mode: string | undefined): boolean {
-  if (mode === 'production') return host === 'mcsweeper.hanage.app';
+  if (mode === 'production') return ['mcsweeper.hanage.app', 'hanage.app'].includes(host);
   return mode === 'preview' && /^[a-z0-9-]+-multicolor-sweeper\.jibunnha\.workers\.dev$/.test(host);
 }
