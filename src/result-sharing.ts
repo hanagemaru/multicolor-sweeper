@@ -15,7 +15,7 @@ export function sweeperShareData(result: SweeperResult, language: Language): { t
   const text = language === 'ja'
     ? `Multicolor Sweeper｜${difficulty}・${result.colorCount}色\nクリアタイム ${shareTime(result.timeMs)}`
     : `Multicolor Sweeper | ${difficulty} · ${result.colorCount} colors\nClear time ${shareTime(result.timeMs)}`;
-  const url = new URL('https://mcsweeper.hanage.app/');
+  const url = new URL('https://hanage.app/games/multicolor-sweeper/play/');
   url.search = new URLSearchParams({ lang: language, utm_source: 'share', utm_medium: 'share' }).toString();
   return { text, url: url.toString() };
 }
@@ -48,7 +48,7 @@ export async function sweeperResultImage(result: SweeperResult): Promise<File> {
     ctx.fillRect(64 + i * 76, 548, 48, 48);
   }
   drawClearBoard(ctx, result.board);
-  text('mcsweeper.hanage.app', 710, 36, '#b8c1f5');
+  text('hanage.app', 710, 36, '#b8c1f5');
   const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('PNG failed')), 'image/png'));
   return new File([blob], 'multicolor-sweeper-result.png', { type: 'image/png' });
 }
