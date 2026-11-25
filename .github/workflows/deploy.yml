@@ -30,8 +30,8 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           for (const [path, text] of [
-            ['/privacy/', 'PuttとMulticolor Sweeperでは、'],
-            ['/en/privacy/', 'Putt and Multicolor Sweeper record a temporary visit ID'],
+            ['/privacy/', '一時的な訪問ID'],
+            ['/en/privacy/', 'temporary visit ID'],
           ]) {
             const response = await fetch(`https://hanage.app${path}`, { cache: 'no-store' });
             if (!response.ok || !(await response.text()).includes(text)) throw new Error(`Disclosure not published: ${path}`);
